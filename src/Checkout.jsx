@@ -3,8 +3,6 @@ import { fmtD } from './data.js'
 import { distOf } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-const DELIVERY_FEE = 9.9
-
 const METHODS = [
   ['card', 'Card', 'card', 'Pay now'],
   ['apple', 'Apple Pay', 'phone', 'Pay now'],
@@ -48,9 +46,7 @@ function cardErrors(card) {
 }
 
 export default function Checkout({ item: it, me, canMessage, onMessage, onShowMap, onClose }) {
-  const [handover, setHandover] = useState('meet')
-  const [pay, setPay] = useState('card')
-  const [address, setAddress] = useState('')
+  const [method, setMethod] = useState('card')
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
   const [touched, setTouched] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -61,13 +57,8 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
     headRef.current?.focus()
   }, [done])
 
-  const delivery = handover === 'ship'
-  const method = delivery && pay === 'cash' ? 'card' : pay
-  const total = it.p + (delivery ? DELIVERY_FEE : 0)
-  const errs = {
-    ...(method === 'card' ? cardErrors(card) : {}),
-    ...(delivery && address.trim().length < 6 ? { address: 'Enter a full delivery address.' } : {}),
-  }
+  const total = it.p
+  const errs = method === 'card' ? cardErrors(card) : {}
   const show = k => touched && errs[k]
 
   const setField = k => e => {
@@ -88,7 +79,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
     setBusy(true)
     setTimeout(() => {
       setBusy(false)
-      setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method, delivery })
+      setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method })
     }, 1200)
   }
 
@@ -100,7 +91,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
           <h1 id="co-h" tabIndex={-1} ref={headRef}>{done.method !== 'cash' ? `Paid ${eur(done.total)}` : 'Reserved'}</h1>
           <p>
             {done.method !== 'cash'
-              ? `${it.t} is yours. ${it.s} has been told to ${done.delivery ? 'send it to your address' : 'keep it for you'}.`
+              ? `${it.t} is yours. ${it.s} has been told to keep it for you.`
               : `${it.t} is set aside for you. Bring ${eur(done.total)} in cash when you meet ${it.s}.`}
           </p>
           <p className="mono co-ref">Order {done.ref}</p>
@@ -110,11 +101,9 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
                 <Icon name="chat" size={18} />Message {it.s}
               </button>
             )}
-            {!done.delivery && (
-              <button className={`btn${canMessage(it) ? '' : ' primary'}`} onClick={() => onShowMap(it.id)}>
-                <Icon name="map" size={18} />Directions to the seller
-              </button>
-            )}
+            <button className={`btn${canMessage(it) ? '' : ' primary'}`} onClick={() => onShowMap(it.id)}>
+              <Icon name="map" size={18} />Directions to the seller
+            </button>
             <button className="btn" onClick={onClose}>Done</button>
           </div>
         </div>
@@ -140,39 +129,17 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
           <span className="price">{eur(it.p)}</span>
         </section>
 
-        <fieldset className="co-sec">
-          <legend>How do you get it?</legend>
-          <div className="seg" role="group" aria-label="Handover">
-            <button type="button" aria-pressed={!delivery} onClick={() => setHandover('meet')}>
-              <span className="l"><Icon name="walk" size={16} />Meet the seller</span>
-              <span className="f">Free</span>
-            </button>
-            <button type="button" aria-pressed={delivery} onClick={() => setHandover('ship')}>
-              <span className="l"><Icon name="car" size={16} />Home delivery</span>
-              <span className="f">{eur(DELIVERY_FEE)}</span>
-            </button>
-          </div>
-          {delivery && (
-            <label className="field">
-              Delivery address
-              <input type="text" autoComplete="street-address" value={address} onChange={e => setAddress(e.target.value)} aria-invalid={!!show('address')} />
-              {show('address') && <small className="co-err">{errs.address}</small>}
-            </label>
-          )}
-        </fieldset>
+        <p className="co-test"><Icon name="walk" size={16} />You collect it in person from {it.s}.</p>
 
         <fieldset className="co-sec">
           <legend>How do you pay?</legend>
           <div className="seg" role="group" aria-label="Payment method">
-            {METHODS.map(([id, label, ic, sub]) => {
-              const off = id === 'cash' && delivery
-              return (
-                <button key={id} type="button" aria-pressed={method === id} disabled={off} onClick={() => setPay(id)}>
-                  <span className="l"><Icon name={ic} size={16} />{label}</span>
-                  <span className="f">{off ? 'Only when meeting' : sub}</span>
-                </button>
-              )
-            })}
+            {METHODS.map(([id, label, ic, sub]) => (
+              <button key={id} type="button" aria-pressed={method === id} onClick={() => setMethod(id)}>
+                <span className="l"><Icon name={ic} size={16} />{label}</span>
+                <span className="f">{sub}</span>
+              </button>
+            ))}
           </div>
           {WALLET_NOTE[method] && (
             <div className="co-card">
@@ -211,7 +178,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
 
         <section className="co-sum" aria-label="Summary">
           <div><span>Item</span><span className="mono">{eur(it.p)}</span></div>
-          <div><span>{delivery ? 'Delivery' : 'Handover'}</span><span className="mono">{delivery ? eur(DELIVERY_FEE) : 'Free'}</span></div>
+          <div><span>Handover in person</span><span className="mono">Free</span></div>
           <div className="co-total"><span>Total</span><span className="mono">{eur(total)}</span></div>
         </section>
 
