@@ -89,7 +89,7 @@ export function Toast({ toast, onUndo }) {
   )
 }
 
-export function AuthScreen({ onSubmit }) {
+export function AuthScreen({ onSubmit, onClose }) {
   const [mode, setMode] = useState('signin')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -110,9 +110,12 @@ export function AuthScreen({ onSubmit }) {
   }
 
   return (
-    <div className="gate on" role="dialog" aria-modal="true" aria-labelledby="auth-h">
+    <div className="gate on auth" role="dialog" aria-modal="true" aria-labelledby="auth-h">
       <form className="gate-in gut" onSubmit={submit}>
-        <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
+        <div className="auth-top">
+          <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
+          {onClose && <button className="linkbtn" type="button" onClick={onClose}>Not now</button>}
+        </div>
         <h1 id="auth-h">{mode === 'signin' ? 'Welcome back.' : 'Create your account.'}</h1>
         <p>Your saved items and messages follow you to any device.</p>
         <label className="field" htmlFor="auth-email">

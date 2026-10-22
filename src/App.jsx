@@ -7,11 +7,12 @@ import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
+import Profile from './Profile.jsx'
 import MapView from './MapView.jsx'
 import Landing from './Landing.jsx'
 import { AuthScreen, Gate, LocModal, Toast } from './Overlays.jsx'
 
-const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat']]
+const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat'], ['profile', 'Profile', 'user']]
 const SAMPLE_TOAST = 'We saved six sample items so the map has something on it.'
 
 function initState() {
@@ -96,7 +97,7 @@ export default function App() {
   const [convs, setConvs] = useState([])
   const [chatId, setChatId] = useState(null)
   const [session, setSession] = useState(null)
-  const [authReady, setAuthReady] = useState(!backendEnabled)
+  const [authOpen, setAuthOpen] = useState(false)
   const [syncedUid, setSyncedUid] = useState(null)
   const [, setItemsVersion] = useState(0)
   const uidRef = useRef(null)
@@ -107,7 +108,7 @@ export default function App() {
 
   const uid = session?.user?.id ?? null
   const synced = !backendEnabled || (uid !== null && syncedUid === uid)
-  const needsAuth = backendEnabled && authReady && !session
+  const signedOut = backendEnabled && !session
   const data = { me, saved, passed }
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
@@ -148,17 +149,19 @@ export default function App() {
     [showToast],
   )
 
-  useEffect(() => {
-    if (!backendEnabled) return
+  const reloadItems = useCallback(() => {
     api
       .fetchItems()
       .then(rows => {
-        if (!rows.length) return
         replaceItems(rows)
         setItemsVersion(v => v + 1)
       })
       .catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (backendEnabled) reloadItems()
+  }, [reloadItems])
 
   useEffect(() => {
     if (!backendEnabled) return
@@ -167,9 +170,9 @@ export default function App() {
       .getSession()
       .then(s => live && setSession(s))
       .catch(() => {})
-      .finally(() => live && setAuthReady(true))
     const sub = api.onAuthChange(s => {
       setSession(s)
+      if (s) setAuthOpen(false)
       if (!s) {
         setRole(null)
         setSaved([])
@@ -232,7 +235,10 @@ export default function App() {
 
   const canMessage = it => !!uid && !!it.sid && it.sid !== uid
   const messageSeller = async it => {
-    if (!uid) return showToast('Sign in to message sellers.')
+    if (!uid) {
+      setAuthOpen(true)
+      return showToast('Sign in to message sellers.')
+    }
     if (!canMessage(it)) return showToast(it.sid ? 'This is your own listing.' : 'Sample listings have no seller to message.')
     try {
       const id = await api.startConversation(uid, it)
@@ -279,6 +285,10 @@ export default function App() {
   }, [sync])
   const decide = useCallback(
     (it, dir) => {
+      if (backendEnabled && !uidRef.current) {
+        setAuthOpen(true)
+        return showToast('Sign in to save items and keep your swipes.')
+      }
       if (dir > 0) setSaved(s => (s.includes(it.id) ? s : [...s, it.id]))
       else setPassed(p => [...p, it.id])
       setHist(h => [...h, { id: it.id, dir }])
@@ -381,7 +391,7 @@ export default function App() {
   }, [init.role, showToast])
 
   useEffect(() => {
-    const onKey = e => e.key === 'Escape' && setLocOpen(false)
+    const onKey = e => e.key === 'Escape' && (setLocOpen(false), setAuthOpen(false))
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -410,7 +420,7 @@ export default function App() {
   const savedList = listFor('saved', cat.saved, data)
   const mapList = listFor('map', cat.map, data)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || !role || needsAuth
+  const overlayOpen = landing || locOpen || (synced && !role) || authOpen
 
   return (
     <>
@@ -420,6 +430,12 @@ export default function App() {
             <span className="logo" aria-hidden="true" />twice
           </button>
           <Tabs tab={tab} onTab={setTab} className="tabs-top" unread={unread} />
+          {signedOut && (
+            <button className="btn primary small signin" onClick={() => setAuthOpen(true)}>
+              <Icon name="user" size={16} />
+              <span><span className="wide">Sign in / Sign up</span><span className="narrow">Sign in</span></span>
+            </button>
+          )}
           <button
             className="loc"
             aria-label="Change your position"
@@ -430,7 +446,7 @@ export default function App() {
             <span>{me.src === 'gps' ? 'Your location' : me.label}</span>
           </button>
         </header>
-        {tab !== 'messages' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
+        {tab !== 'messages' && tab !== 'profile' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
         <main>
           <section className={`view${tab === 'discover' ? ' on' : ''}`} id="v-discover" aria-label="Discover">
             {tab === 'discover' && (
@@ -488,13 +504,35 @@ export default function App() {
               <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} />
             )}
           </section>
+          <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label="Profile">
+            {tab === 'profile' && signedOut && (
+              <div className="empty">
+                <Icon name="user" size={40} />
+                <h2>Your profile lives here</h2>
+                <p>Sign in to add a photo, list items, write reviews and follow neighbours.</p>
+                <button className="btn primary" onClick={() => setAuthOpen(true)}>Sign in / Sign up</button>
+              </div>
+            )}
+            {tab === 'profile' && !signedOut && (
+              <Profile
+                key={uid || 'local'}
+                uid={uid}
+                backendOn={backendEnabled}
+                email={session?.user?.email}
+                me={me}
+                onSignOut={() => api.signOut()}
+                onToast={showToast}
+                onItemsChanged={reloadItems}
+              />
+            )}
+          </section>
         </main>
         <Tabs tab={tab} onTab={setTab} className="tabs-bottom gut" unread={unread} />
       </div>
 
-      {landing && <Landing onStart={startApp} />}
-      {needsAuth && <AuthScreen onSubmit={handleAuth} />}
-      {!needsAuth && synced && !role && <Gate onRole={chooseRole} />}
+      {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
+      {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
+      {synced && !role && <Gate onRole={chooseRole} />}
       <LocModal
         open={locOpen}
         me={me}

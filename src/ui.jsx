@@ -22,8 +22,12 @@ export function Art({ item, extra = '', children }) {
   const c = catOf(item.c)
   return (
     <div className={`art t${item.id % 8} ${extra}`.trim()}>
+      {item.img ? (
+        <img className="art-photo" src={item.img} alt="" loading="lazy" />
+      ) : (
+        <svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />
+      )}
       <span className="cl">{c.label}</span>
-      <svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />
       {children}
     </div>
   )
