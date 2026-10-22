@@ -7,6 +7,7 @@ const ICON={
   map:'<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
   arrow:'<path d="M3 11l18-8-8 18-2-8z"/>',
   chat:'<path d="M4 5h16v11H9l-5 4z"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
   plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
   walk:'<circle cx="13" cy="4.5" r="1.8"/><path d="M9.5 21l2-6 2.5 2.2V21M11.5 15l.8-5-3.3 1.6L8 15M12.3 10l3 2 2.7.5"/>',
   train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8 21l2-4M16 21l-2-4"/>',
