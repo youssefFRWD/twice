@@ -1,0 +1,41 @@
+-- twice: sample data. Run after schema.sql.
+
+insert into public.categories (id, label) values
+  ('furniture', 'Furniture'),
+  ('fashion', 'Fashion'),
+  ('electronics', 'Electronics'),
+  ('books', 'Books & Media'),
+  ('sports', 'Sports & Bikes'),
+  ('home', 'Home & Decor'),
+  ('kids', 'Kids');
+
+insert into public.items (seller_name, category_id, title, description, price_cents, condition, address, lat, lon) values
+  ('Marie L.', 'furniture', 'Mid-century oak sideboard', 'Three doors, brass handles, a few light marks on the top. You carry it, it fits in a small van.', 18000, 'Very good', 'Le Marais, Paris 3e', 48.862, 2.361),
+  ('Karim B.', 'furniture', 'Velvet two-seater sofa', 'Deep green velvet, solid wood legs. Smoke-free, no pets. Fourth-floor walk-up, so bring friends.', 24000, 'Good', 'Montreuil', 48.861, 2.438),
+  ('Léa D.', 'furniture', 'White ladder bookshelf', 'Five shelves, 180 cm tall. Comes apart in ten minutes with one Allen key.', 3500, 'Good', 'Boulogne-Billancourt', 48.835, 2.24),
+  ('Samir A.', 'fashion', 'Vintage leather jacket, size M', 'Brown, soft, quilted lining. Worn for two winters and still holds its shape.', 8500, 'Very good', 'Belleville, Paris 20e', 48.872, 2.379),
+  ('Camille R.', 'fashion', 'Wool trench coat, size M', 'Camel, double-breasted. Dry cleaned in September, bought the wrong size.', 6000, 'Like new', 'Saint-Germain, Paris 6e', 48.853, 2.333),
+  ('Inès M.', 'fashion', 'Leather ankle boots, size 39', 'Black, block heel, resoled last spring. Comfortable for a full day of walking.', 4500, 'Good', 'Batignolles, Paris 17e', 48.886, 2.319),
+  ('Julien P.', 'electronics', '13-inch ultrabook, 16 GB RAM', '512 GB SSD, battery lasts around 9 hours. Reset and ready; charger included.', 42000, 'Very good', 'Puteaux, La Défense', 48.884, 2.238),
+  ('Nina G.', 'electronics', '35 mm film camera with 50 mm lens', 'Fully mechanical, light meter works. Shutter tested on a fresh roll.', 13000, 'Good', 'Montmartre, Paris 18e', 48.887, 2.343),
+  ('Hugo T.', 'electronics', 'Turntable with built-in preamp', 'Belt drive, new stylus this year. Plays 33 and 45 rpm. Dust cover included.', 15000, 'Very good', 'Vincennes', 48.847, 2.439),
+  ('Aïcha N.', 'electronics', 'Noise-cancelling headphones', 'Over-ear, wireless, new ear pads. Case and cable included.', 9000, 'Good', 'Saint-Denis', 48.936, 2.356),
+  ('Paul V.', 'books', 'Box of 40 French paperbacks', 'Crime, classics and a few essays. Sold as one lot, pickup only.', 2500, 'Good', 'Quartier Latin, Paris 5e', 48.847, 2.35),
+  ('Odile F.', 'books', 'Illustrated atlas of Paris, 1950s', 'Fold-out maps intact, spine reglued. A nice object for a shelf or a wall.', 4000, 'Fair', 'Saint-Ouen-sur-Seine', 48.911, 2.334),
+  ('Marc E.', 'books', '30 jazz LPs, mixed labels', 'Sleeves graded, records cleaned. Happy for you to listen before you buy.', 12000, 'Very good', 'Pigalle, Paris 9e', 48.88, 2.338),
+  ('Thomas K.', 'sports', 'Road bike, 54 cm frame', 'Aluminium frame, 2x10 gears, new tyres and chain. Pedals not included.', 32000, 'Very good', 'Bastille, Paris 11e', 48.855, 2.372),
+  ('Claire S.', 'sports', 'Folding bike, 20-inch wheels', 'Folds in 15 seconds, fits under a desk. Three speeds, rear rack.', 18000, 'Good', 'Issy-les-Moulineaux', 48.824, 2.27),
+  ('Anaïs C.', 'sports', 'Two yoga mats and four blocks', 'Non-slip, 6 mm. Washed and rolled up. Strap included.', 2000, 'Good', 'Ivry-sur-Seine', 48.811, 2.385),
+  ('Yann H.', 'sports', 'Climbing shoes, size 42', 'Velcro, moderate downturn. Rubber has plenty of life left.', 4000, 'Good', 'Montparnasse, Paris 14e', 48.84, 2.326),
+  ('Elsa W.', 'home', 'Ceramic table lamp', 'Hand-glazed base, linen shade, warm bulb included.', 2800, 'Like new', 'Canal Saint-Martin, Paris 10e', 48.872, 2.364),
+  ('David O.', 'home', 'Large jute rug, 200 x 300 cm', 'Natural fibre, rolled up for storage. Lightly vacuumed, no stains.', 5500, 'Good', 'Créteil', 48.79, 2.455),
+  ('Sofia J.', 'home', 'Six stoneware dinner plates', 'Speckled grey glaze, dishwasher safe. No chips.', 3000, 'Very good', 'Nanterre', 48.892, 2.206),
+  ('Bernard Q.', 'home', 'Gilt wall mirror, 90 cm', 'Carved frame with age. Hanging wire already attached. Pickup near the château.', 9500, 'Good', 'Versailles', 48.805, 2.123),
+  ('Laura Z.', 'kids', 'Wooden toy kitchen', 'Pine, with a working door and a cooker top. Pots and pans included.', 4500, 'Very good', 'Levallois-Perret', 48.897, 2.287),
+  ('Mehdi R.', 'kids', 'Lightweight stroller', 'Folds with one hand, rain cover and shopping basket included.', 11000, 'Good', 'Paris 15e', 48.842, 2.293),
+  ('Chloé B.', 'kids', '3 kg of building bricks', 'Mixed sets, washed. Comes in a storage crate with a lid.', 3500, 'Good', 'Paris 13e', 48.828, 2.36),
+  ('Valérie A.', 'kids', 'Cot with mattress', 'Three height settings, drop side. Mattress is still in its cover.', 7000, 'Very good', 'Neuilly-sur-Seine', 48.884, 2.26),
+  ('Antoine L.', 'electronics', 'Espresso machine, two group heads', 'Descaled this month, steam wand works. Portafilter and tamper included.', 7500, 'Good', 'Paris 7e', 48.857, 2.312),
+  ('Rania D.', 'furniture', 'Electric standing desk', '140 x 70 cm top, memory presets. Disassembles flat for transport.', 15000, 'Very good', 'Paris 12e', 48.84, 2.39),
+  ('Geneviève M.', 'fashion', 'Hand-knit wool sweater', 'Oatmeal, size L, from a small workshop. Worn twice.', 2200, 'Like new', 'Paris 16e', 48.864, 2.274),
+  ('Olivier P.', 'home', 'Garden chairs, set of four', 'Powder-coated steel, foldable. Repainted last summer.', 6000, 'Good', 'Saint-Germain-en-Laye', 48.898, 2.094);
