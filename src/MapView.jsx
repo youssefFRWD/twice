@@ -26,7 +26,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, panelRef, list, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+function Panel({ canMessage, onMessage, onBuy, panelRef, list, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
   const it = sel != null ? itemById(sel) : null
   let body
   if (it && plans) {
@@ -64,9 +64,14 @@ function Panel({ canMessage, onMessage, panelRef, list, sel, plans, mode, plan, 
                 {fast === 'metro' && <span className="f">Fastest</span>}
               </button>
             </div>
-            <button className="btn small" disabled={!canMessage(it)} onClick={() => onMessage(it)} style={{ justifySelf: 'start' }}>
-              <Icon name="chat" size={16} />Message seller
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn small primary" onClick={() => onBuy(it.id)}>
+                <Icon name="bag" size={16} />Buy · €{it.p}
+              </button>
+              <button className="btn small" disabled={!canMessage(it)} onClick={() => onMessage(it)}>
+                <Icon name="chat" size={16} />Message seller
+              </button>
+            </div>
             {mode === 'metro' && m.none && <p className="note">{m.why} Showing the walking route.</p>}
             <Steps plan={plan} />
             <p className="note">
@@ -118,7 +123,7 @@ maplibregl.setWorkerUrl(workerUrl)
 
 export default function MapView(props) {
   const { active, me, radius, list, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
-  const { canMessage, onMessage, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
+  const { canMessage, onMessage, onBuy, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
   const boxRef = useRef(null)
   const mapElRef = useRef(null)
@@ -357,6 +362,7 @@ export default function MapView(props) {
       <Panel
         canMessage={canMessage}
         onMessage={onMessage}
+        onBuy={onBuy}
         panelRef={panelRef}
         list={list}
         sel={sel}
