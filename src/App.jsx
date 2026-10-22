@@ -9,6 +9,7 @@ import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
 import MapView from './MapView.jsx'
 import Landing from './Landing.jsx'
+import Checkout from './Checkout.jsx'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat']]
@@ -90,6 +91,7 @@ export default function App() {
   const [peek, setPeek] = useState(false)
   const [landing, setLanding] = useState(init.fresh)
   const [locOpen, setLocOpen] = useState(false)
+  const [buyId, setBuyId] = useState(null)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -370,7 +372,11 @@ export default function App() {
   }, [init.me.src, tryGPS])
 
   useEffect(() => {
-    const onKey = e => e.key === 'Escape' && setLocOpen(false)
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      setLocOpen(false)
+      setBuyId(null)
+    }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
@@ -396,7 +402,7 @@ export default function App() {
   const savedList = listFor('saved', cat.saved, data)
   const mapList = listFor('map', cat.map, data)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || needsAuth
+  const overlayOpen = landing || locOpen || needsAuth || buyId !== null
 
   return (
     <>
@@ -435,7 +441,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label="Saved items">
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
@@ -455,6 +461,7 @@ export default function App() {
               cmd={cmd}
               canMessage={canMessage}
               onMessage={messageSeller}
+              onBuy={setBuyId}
               onRadius={setRadius}
               onSelect={selectItem}
               onClose={clearSel}
@@ -480,6 +487,23 @@ export default function App() {
 
       {landing && <Landing onStart={startApp} />}
       {needsAuth && <AuthScreen onSubmit={handleAuth} />}
+      {buyId !== null && (
+        <Checkout
+          key={buyId}
+          item={itemById(buyId)}
+          me={me}
+          canMessage={canMessage}
+          onMessage={it => {
+            setBuyId(null)
+            messageSeller(it)
+          }}
+          onShowMap={id => {
+            setBuyId(null)
+            showOnMap(id)
+          }}
+          onClose={() => setBuyId(null)}
+        />
+      )}
       <LocModal
         open={locOpen}
         me={me}
