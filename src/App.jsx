@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
@@ -8,9 +8,11 @@ import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
 import Profile from './Profile.jsx'
-import MapView from './MapView.jsx'
 import Landing from './Landing.jsx'
-import { AuthScreen, Gate, LocModal, Toast } from './Overlays.jsx'
+import Checkout from './Checkout.jsx'
+import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
+
+const MapView = lazy(() => import('./MapView.jsx'))
 
 const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat'], ['profile', 'Profile', 'user']]
 const SAMPLE_TOAST = 'We saved six sample items so the map has something on it.'
@@ -20,7 +22,7 @@ function initState() {
   const hash = (location.hash || '').slice(1)
   const seeded = !!d?.seeded
   return {
-    role: d?.role || null,
+    fresh: !seeded,
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
     passed: d?.passed || [],
     me: d?.me?.lat ? d.me : DEFAULT_ME,
@@ -77,7 +79,6 @@ function Tabs({ tab, onTab, className, unread }) {
 
 export default function App() {
   const [init] = useState(initState)
-  const [role, setRole] = useState(init.role)
   const [saved, setSaved] = useState(init.saved)
   const [passed, setPassed] = useState(init.passed)
   const [me, setMeState] = useState(init.me)
@@ -90,8 +91,9 @@ export default function App() {
   const [mode, setMode] = useState('walk')
   const [placing, setPlacing] = useState(false)
   const [peek, setPeek] = useState(false)
-  const [landing, setLanding] = useState(!init.role)
+  const [landing, setLanding] = useState(init.fresh)
   const [locOpen, setLocOpen] = useState(false)
+  const [buyId, setBuyId] = useState(null)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -113,8 +115,8 @@ export default function App() {
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
   useEffect(() => {
-    persist({ role, saved, passed, seeded: true, me, tab })
-  }, [role, saved, passed, me, tab])
+    persist({ saved, passed, seeded: true, me, tab })
+  }, [saved, passed, me, tab])
 
   useEffect(() => {
     try {
@@ -174,7 +176,6 @@ export default function App() {
       setSession(s)
       if (s) setAuthOpen(false)
       if (!s) {
-        setRole(null)
         setSaved([])
         setPassed([])
         setHist([])
@@ -195,7 +196,6 @@ export default function App() {
       .fetchUserData(uid)
       .then(d => {
         if (!live) return
-        setRole(d.profile?.role || null)
         setSaved(d.saved)
         setPassed(d.passed)
         setHist([])
@@ -383,29 +383,23 @@ export default function App() {
   }, [init.me.src, tryGPS])
 
   useEffect(() => {
-    if (init.role && firstRun.current) {
-      firstRun.current = false
-      const t = setTimeout(() => showToast(SAMPLE_TOAST), 900)
-      return () => clearTimeout(t)
+    const onKey = e => {
+      if (e.key !== 'Escape') return
+      setLocOpen(false)
+      setAuthOpen(false)
+      setBuyId(null)
     }
-  }, [init.role, showToast])
-
-  useEffect(() => {
-    const onKey = e => e.key === 'Escape' && (setLocOpen(false), setAuthOpen(false))
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [])
 
   const startApp = () => {
     setLanding(false)
+    setTab('discover')
     if (firstRun.current) {
       firstRun.current = false
       setTimeout(() => showToast(SAMPLE_TOAST), 600)
     }
-  }
-  const chooseRole = r => {
-    setRole(r)
-    sync(id => api.setRole(id, r))
   }
   const handleAuth = async (mode, email, password) => {
     if (mode === 'signin') return void (await api.signIn(email, password))
@@ -420,7 +414,7 @@ export default function App() {
   const savedList = listFor('saved', cat.saved, data)
   const mapList = listFor('map', cat.map, data)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || (synced && !role) || authOpen
+  const overlayOpen = landing || locOpen || authOpen || buyId !== null
 
   return (
     <>
@@ -465,10 +459,11 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label="Saved items">
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
+            <Suspense fallback={null}>
             <MapView
               active={tab === 'map'}
               me={me}
@@ -485,6 +480,7 @@ export default function App() {
               cmd={cmd}
               canMessage={canMessage}
               onMessage={messageSeller}
+              onBuy={setBuyId}
               onRadius={setRadius}
               onSelect={selectItem}
               onClose={clearSel}
@@ -498,6 +494,7 @@ export default function App() {
               onCancelPlace={() => setPlacing(false)}
               onOpenLoc={() => setLocOpen(true)}
             />
+            </Suspense>
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
             {tab === 'messages' && (
@@ -532,11 +529,26 @@ export default function App() {
 
       {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
       {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
-      {synced && !role && <Gate onRole={chooseRole} />}
+      {buyId !== null && (
+        <Checkout
+          key={buyId}
+          item={itemById(buyId)}
+          me={me}
+          canMessage={canMessage}
+          onMessage={it => {
+            setBuyId(null)
+            messageSeller(it)
+          }}
+          onShowMap={id => {
+            setBuyId(null)
+            showOnMap(id)
+          }}
+          onClose={() => setBuyId(null)}
+        />
+      )}
       <LocModal
         open={locOpen}
         me={me}
-        role={role}
         signedIn={!!session}
         onSignOut={() => {
           setLocOpen(false)
@@ -556,16 +568,12 @@ export default function App() {
           setLocOpen(false)
           setPlacing(true)
           setTab('map', { keepView: true })
-          mapCmd('goTo', { k: 10, cx: 0, cy: 0, animate: false })
+          mapCmd('overview')
         }}
         onStation={s => {
           setLocOpen(false)
           setMe({ lat: s.lat, lon: s.lon, label: s.name, src: 'manual' })
           showToast('Starting from ' + s.name)
-        }}
-        onSwitchRole={() => {
-          setLocOpen(false)
-          setRole(null)
         }}
       />
       <Toast toast={toast} onUndo={runToastUndo} />

@@ -2,7 +2,7 @@ import { fmtD } from './data.js'
 import { distOf, meName } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage }) {
+export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy }) {
   if (!list.length) {
     return (
       <div className="empty">
@@ -33,8 +33,11 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
               <div className="meta"><span>{it.a}</span><span>{it.cond}</span></div>
               <p className="desc">{it.d}</p>
               <div className="foot">
-                <button className="btn primary small" onClick={() => onShowMap(it.id)}>
-                  <Icon name="map" size={16} />Show on map
+                <button className="btn primary small" onClick={() => onBuy(it.id)}>
+                  <Icon name="bag" size={16} />Buy · €{it.p}
+                </button>
+                <button className="btn small msgb" aria-label={`Show ${it.t} on the map`} title="Show on map" onClick={() => onShowMap(it.id)}>
+                  <Icon name="map" size={18} />
                 </button>
                 <button
                   className="btn small msgb"

@@ -41,7 +41,7 @@ export async function fetchItems() {
 /** Everything that belongs to one signed-in user. */
 export async function fetchUserData(uid) {
   const [profile, saved, passed] = await Promise.all([
-    supabase.from('profiles').select('role,home_label,home_lat,home_lon').eq('id', uid).maybeSingle(),
+    supabase.from('profiles').select('home_label,home_lat,home_lon').eq('id', uid).maybeSingle(),
     supabase.from('saved_items').select('item_id').eq('user_id', uid).order('created_at'),
     supabase.from('swipes').select('item_id').eq('user_id', uid).eq('direction', 'pass'),
   ])
@@ -66,7 +66,6 @@ export const unsaveItem = async (uid, itemId) =>
   ok(await supabase.from('saved_items').delete().eq('user_id', uid).eq('item_id', itemId))
 export const clearPassed = async uid =>
   ok(await supabase.from('swipes').delete().eq('user_id', uid).eq('direction', 'pass'))
-export const setRole = async (uid, role) => ok(await supabase.from('profiles').update({ role }).eq('id', uid))
 export const setHome = async (uid, me) =>
   ok(await supabase.from('profiles').update({ home_label: me.label, home_lat: me.lat, home_lon: me.lon }).eq('id', uid))
 export const logView = async (uid, itemId) =>

@@ -2,32 +2,6 @@ import { useState } from 'react'
 import { STN, STNMAP } from './data.js'
 import { Icon } from './ui.jsx'
 
-export function Gate({ onRole }) {
-  return (
-    <div className="gate on" role="dialog" aria-modal="true" aria-labelledby="gate-h">
-      <div className="gate-in gut">
-        <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
-        <h1 id="gate-h">Good things deserve a second home.</h1>
-        <p>
-          Pre-loved furniture, bikes, gadgets and more from people across Île-de-France. No shops, no resellers. First,
-          tell us why you are here.
-        </p>
-        <div className="roles">
-          <button className="role" onClick={() => onRole('buyer')}>
-            <span className="ri"><Icon name="bag" size={24} /></span>
-            <span><b>I want to buy</b><span>Swipe through items near you and save the ones you like.</span></span>
-          </button>
-          <button className="role" onClick={() => onRole('seller')}>
-            <span className="ri"><Icon name="tag" size={24} /></span>
-            <span><b>I want to sell</b><span>Put your items in front of people in your part of the region.</span></span>
-          </button>
-        </div>
-        <p style={{ fontSize: 13 }}>The app looks the same for everyone. You can switch later from the location menu.</p>
-      </div>
-    </div>
-  )
-}
-
 const stationOptions = STN.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'))
 
 export function LocModal({ open, onClose, ...rest }) {
@@ -38,7 +12,7 @@ export function LocModal({ open, onClose, ...rest }) {
   )
 }
 
-function LocBody({ me, role, signedIn, onClose, onGps, onPick, onStation, onSwitchRole, onSignOut }) {
+function LocBody({ me, signedIn, onClose, onGps, onPick, onStation, onSignOut }) {
   const [msg, setMsg] = useState('')
 
   const askGps = () => {
@@ -69,7 +43,7 @@ function LocBody({ me, role, signedIn, onClose, onGps, onPick, onStation, onSwit
           </select>
         </label>
         <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
-          <span style={{ display: "flex", gap: 14, flexWrap: "wrap" }}><button className="linkbtn" onClick={onSwitchRole}>Switch role ({role || "none"})</button>{signedIn && <button className="linkbtn" onClick={onSignOut}>Sign out</button>}</span>
+          <span>{signedIn && <button className="linkbtn" onClick={onSignOut}>Sign out</button>}</span>
           <button className="btn small" onClick={onClose}>Done</button>
         </div>
       </div>
