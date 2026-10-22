@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
@@ -7,9 +7,10 @@ import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
-import MapView from './MapView.jsx'
 import Landing from './Landing.jsx'
 import { AuthScreen, Gate, LocModal, Toast } from './Overlays.jsx'
+
+const MapView = lazy(() => import('./MapView.jsx'))
 
 const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat']]
 const SAMPLE_TOAST = 'We saved six sample items so the map has something on it.'
@@ -453,6 +454,7 @@ export default function App() {
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
+            <Suspense fallback={null}>
             <MapView
               active={tab === 'map'}
               me={me}
@@ -482,6 +484,7 @@ export default function App() {
               onCancelPlace={() => setPlacing(false)}
               onOpenLoc={() => setLocOpen(true)}
             />
+            </Suspense>
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
             {tab === 'messages' && (
@@ -518,7 +521,7 @@ export default function App() {
           setLocOpen(false)
           setPlacing(true)
           setTab('map', { keepView: true })
-          mapCmd('goTo', { k: 10, cx: 0, cy: 0, animate: false })
+          mapCmd('overview')
         }}
         onStation={s => {
           setLocOpen(false)

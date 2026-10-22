@@ -1,65 +1,11 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import {
-  CAT_ALL, FORESTS, LINE_ST, LM, MARNE, PARIS, PLACES, REGION, SEINE, STN, catOf, clamp, fmtD, fmtT,
-  fromXY, nearStations, toXY,
-} from './data.js'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+import * as maplibregl from 'maplibre-gl'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import { CAT_ALL, LM, fmtD, fmtT, nearStations } from './data.js'
 import { distOf, itemById, meName, reducedMotion, walkLabel } from './lib.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
-
-/* ---------- static geometry, computed once ---------- */
-const poly = pts => pts.map(([la, lo]) => toXY(la, lo).map(n => n.toFixed(2)).join(',')).join(' ')
-const pathD = pts =>
-  pts
-    .map(([la, lo], i) => {
-      const [x, y] = toXY(la, lo)
-      return (i ? 'L' : 'M') + x.toFixed(2) + ' ' + y.toFixed(2)
-    })
-    .join('')
-
-const GEO = {
-  region: poly(REGION),
-  paris: poly(PARIS),
-  greens: FORESTS.map(([la, lo, rx, ry]) => {
-    const [x, y] = toXY(la, lo)
-    return { x, y, rx: rx * 0.9, ry: ry * 0.9 }
-  }),
-  rivers: [
-    { d: pathD(SEINE), w: 1 },
-    { d: pathD(MARNE), w: 0.7 },
-  ],
-  lines: Object.keys(LINE_ST)
-    .slice()
-    .sort((a, b) => (LM[a].rer ? -1 : 0) - (LM[b].rer ? -1 : 0))
-    .map(L => ({ id: L, d: pathD(LINE_ST[L].map(s => [s.lat, s.lon])), col: LM[L].col })),
-}
-
-const MIN_K = 2.6
-const MAX_K = 220
-const stripIc = art => art.replace(/class="ic"/g, '')
-
-function StaticLayers({ k }) {
-  return (
-    <>
-      <polygon className="region" points={GEO.region} vectorEffect="non-scaling-stroke" />
-      <g>
-        {GEO.greens.map((g, i) => (
-          <ellipse key={i} className="green" cx={g.x} cy={g.y} rx={g.rx} ry={g.ry} />
-        ))}
-      </g>
-      <g className="river">
-        {GEO.rivers.map((r, i) => (
-          <path key={i} d={r.d} vectorEffect="non-scaling-stroke" strokeWidth={clamp(k * 0.2 * r.w, 2, 16)} />
-        ))}
-      </g>
-      <polygon className="paris" points={GEO.paris} vectorEffect="non-scaling-stroke" />
-      <g strokeWidth={clamp(k * 0.085, 1.8, 5.5)}>
-        {GEO.lines.map(l => (
-          <path key={l.id} className="mline" d={l.d} stroke={l.col} vectorEffect="non-scaling-stroke" />
-        ))}
-      </g>
-    </>
-  )
-}
+import { INK, METRO_LAYERS, PARIS, buildStyle, circleFeature, idfLatLng, meElement, pinElement } from './mapStyle.js'
 
 function Steps({ plan }) {
   return (
@@ -168,100 +114,175 @@ function Panel({ canMessage, onMessage, panelRef, list, sel, plans, mode, plan, 
   )
 }
 
+maplibregl.setWorkerUrl(workerUrl)
+
 export default function MapView(props) {
   const { active, me, radius, list, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
   const { canMessage, onMessage, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
   const boxRef = useRef(null)
-  const svgRef = useRef(null)
+  const mapElRef = useRef(null)
   const panelRef = useRef(null)
-  const [view, setView] = useState({ k: 12, cx: 0, cy: 0 })
-  const [size, setSize] = useState({ W: 0, H: 0 })
-  const [dragging, setDragging] = useState(false)
-  const viewRef = useRef(view)
-  const sizeRef = useRef(size)
-  const animRef = useRef(0)
+  const mapRef = useRef(null)
+  const markers = useRef({ pins: [], me: null })
+  const live = useRef({})
   const doneCmd = useRef(0)
+  const [ready, setReady] = useState(false)
+  const [metroOn, setMetroOn] = useState(false)
+  const [size, setSize] = useState({ W: 0, H: 0 })
 
-  const setV = v => {
-    viewRef.current = v
-    setView(v)
-  }
-
-  const go = useCallback((k, cx, cy, animate = true) => {
-    k = clamp(k, MIN_K, MAX_K)
-    cancelAnimationFrame(animRef.current)
-    if (!animate || reducedMotion()) {
-      setV({ k, cx, cy })
-      return
-    }
-    const { k: k0, cx: x0, cy: y0 } = viewRef.current
-    const t0 = performance.now()
-    const D = 320
-    const step = t => {
-      const p = clamp((t - t0) / D, 0, 1)
-      const e = 1 - Math.pow(1 - p, 3)
-      const lk = Math.log(k0) + (Math.log(k) - Math.log(k0)) * e
-      setV({ k: Math.exp(lk), cx: x0 + (cx - x0) * e, cy: y0 + (cy - y0) * e })
-      if (p < 1) animRef.current = requestAnimationFrame(step)
-    }
-    animRef.current = requestAnimationFrame(step)
-  }, [])
-
-  const fit = useCallback(
-    (pts, animate = true, maxK = 60) => {
-      const xy = pts.map(([la, lo]) => toXY(la, lo))
-      if (!xy.length) return
-      const { W, H } = sizeRef.current
-      let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity
-      xy.forEach(([x, y]) => {
-        x0 = Math.min(x0, x); x1 = Math.max(x1, x)
-        y0 = Math.min(y0, y); y1 = Math.max(y1, y)
-      })
-      const narrow = innerWidth < 900
-      const pad = { l: 40, r: narrow ? 40 : 70, t: narrow ? 70 : 60, b: narrow ? H * 0.42 : 60 }
-      const w = Math.max(x1 - x0, 0.4)
-      const h = Math.max(y1 - y0, 0.4)
-      const k = Math.min(maxK, (W - pad.l - pad.r) / w, (H - pad.t - pad.b) / h)
-      const kk = clamp(k, MIN_K, maxK)
-      const cx = (x0 + x1) / 2 - ((pad.l + W - pad.r) / 2 - W / 2) / kk
-      const cy = (y0 + y1) / 2 - ((pad.t + H - pad.b) / 2 - H / 2) / kk
-      go(kk, cx, cy, animate)
-    },
-    [go],
-  )
-
-  const fitSaved = animate => {
-    const pts = list.map(i => [i.lat, i.lon])
-    pts.push([me.lat, me.lon])
-    fit(pts, animate, 30)
-  }
-  const fitRoute = () => {
-    if (!plan) return
-    const pts = []
-    plan.geo.forEach(g => pts.push(...g.pts))
-    fit(pts, true, 40)
-  }
-
-  /* size tracking */
+  // latest callbacks for the long-lived map handlers
   useEffect(() => {
+    live.current = { placing, onSelect, onPlace }
+  })
+
+  /* create the map once */
+  useEffect(() => {
+    const map = new maplibregl.Map({
+      container: mapElRef.current,
+      style: buildStyle(),
+      center: PARIS,
+      zoom: 10,
+      minZoom: 7,
+      maxZoom: 18,
+      attributionControl: false,
+      dragRotate: false,
+      pitchWithRotate: false,
+    })
+    map.touchZoomRotate.disableRotation()
+    map.addControl(new maplibregl.AttributionControl({ compact: true }), 'bottom-left')
+    map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left')
+
+    let hovered = null
+    map.on('mousemove', 'arr-fill', e => {
+      const id = e.features[0]?.id
+      if (id === hovered) return
+      if (hovered !== null) map.setFeatureState({ source: 'arr', id: hovered }, { hover: false })
+      hovered = id ?? null
+      if (hovered !== null) map.setFeatureState({ source: 'arr', id: hovered }, { hover: true })
+    })
+    map.on('mouseleave', 'arr-fill', () => {
+      if (hovered !== null) map.setFeatureState({ source: 'arr', id: hovered }, { hover: false })
+      hovered = null
+    })
+    map.on('click', e => {
+      const l = live.current
+      if (!l.placing) return
+      const c = { lat: e.lngLat.lat, lon: e.lngLat.lng }
+      const n = nearStations(c, 5, 1)[0]
+      l.onPlace({ lat: c.lat, lon: c.lon, label: n ? `Near ${n.s.name}` : 'Dropped pin', src: 'manual' })
+    })
+    map.on('load', () => setReady(true))
+    mapRef.current = map
+
     const ro = new ResizeObserver(() => {
       const r = boxRef.current.getBoundingClientRect()
-      sizeRef.current = { W: r.width, H: r.height }
-      setSize(sizeRef.current)
+      setSize({ W: r.width, H: r.height })
+      map.resize()
     })
     ro.observe(boxRef.current)
-    return () => ro.disconnect()
+    return () => {
+      ro.disconnect()
+      markers.current = { pins: [], me: null }
+      map.remove()
+      mapRef.current = null
+      setReady(false)
+    }
   }, [])
 
-  /* view commands from the app, run once the map is visible and measured */
   useEffect(() => {
-    if (!cmd || cmd.n === doneCmd.current || !active || !size.W) return
+    if (mapRef.current) mapRef.current.getCanvas().style.cursor = placing ? 'crosshair' : ''
+  }, [placing, ready])
+
+  /* metro network on/off */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    METRO_LAYERS.forEach(id => map.setLayoutProperty(id, 'visibility', metroOn ? 'visible' : 'none'))
+  }, [metroOn, ready])
+
+  /* your position and search radius */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    map.getSource('radius').setData(circleFeature(me.lat, me.lon, radius))
+    markers.current.me?.remove()
+    markers.current.me = new maplibregl.Marker({ element: meElement(), anchor: 'center' }).setLngLat([me.lon, me.lat]).addTo(map)
+  }, [me, radius, ready])
+
+  /* item pins */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    markers.current.pins.forEach(m => m.remove())
+    markers.current.pins = list.map(it => {
+      const isSel = sel === it.id
+      const far = distOf(me, it) > radius && !isSel
+      const label = `${it.t}, ${it.p} euros, ${fmtD(distOf(me, it))} away`
+      const el = pinElement(it, (isSel ? ' sel' : '') + (far ? ' far' : ''))
+      el.tabIndex = 0
+      el.setAttribute('role', 'button')
+      el.setAttribute('aria-label', label)
+      el.title = label
+      el.style.zIndex = isSel ? 10 : Math.round(100 - it.lat)
+      el.addEventListener('click', e => {
+        e.stopPropagation()
+        live.current.onSelect(it.id)
+      })
+      el.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          live.current.onSelect(it.id)
+        }
+      })
+      return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, 7] }).setLngLat([it.lon, it.lat]).addTo(map)
+    })
+  }, [list, sel, me, radius, ready])
+
+  /* the chosen route */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    const features = plan
+      ? plan.geo.map(seg => ({
+          type: 'Feature',
+          properties: { kind: seg.kind, color: seg.kind === 'ride' ? LM[seg.line].col : INK },
+          geometry: { type: 'LineString', coordinates: seg.pts.map(([la, lo]) => [lo, la]) },
+        }))
+      : []
+    map.getSource('route').setData({ type: 'FeatureCollection', features })
+  }, [plan, ready])
+
+  /* view helpers */
+  const fit = useCallback((latlngs, maxZoom, animate = true) => {
+    const map = mapRef.current
+    if (!map || !latlngs.length) return
+    const b = new maplibregl.LngLatBounds()
+    latlngs.forEach(([la, lo]) => b.extend([lo, la]))
+    const narrow = innerWidth < 900
+    const H = boxRef.current.getBoundingClientRect().height
+    map.fitBounds(b, {
+      padding: { top: narrow ? 70 : 60, left: 40, right: narrow ? 40 : 70, bottom: narrow ? H * 0.42 : 60 },
+      maxZoom,
+      animate: animate && !reducedMotion(),
+      duration: 450,
+    })
+  }, [])
+  const fitSaved = animate => fit([...list.map(i => [i.lat, i.lon]), [me.lat, me.lon]], 12, animate)
+  const fitRoute = () => {
+    if (!plan) return
+    fit(plan.geo.flatMap(g => g.pts), 15)
+  }
+
+  /* view commands from the app, run once the map is visible */
+  useEffect(() => {
+    if (!cmd || cmd.n === doneCmd.current || !active || !ready || !size.W) return
     const id = requestAnimationFrame(() => {
       doneCmd.current = cmd.n
+      mapRef.current?.resize()
       if (cmd.type === 'fitSaved') fitSaved(cmd.animate !== false)
       else if (cmd.type === 'fitRoute') fitRoute()
-      else if (cmd.type === 'goTo') go(cmd.k, cmd.cx, cmd.cy, cmd.animate)
+      else if (cmd.type === 'overview') mapRef.current?.jumpTo({ center: PARIS, zoom: 10 })
     })
     return () => cancelAnimationFrame(id)
   })
@@ -274,242 +295,27 @@ export default function MapView(props) {
     return () => cancelAnimationFrame(id)
   }, [sel, plans, mode, peek, list.length, active, size.W, size.H])
 
-  /* pan / pinch / tap */
-  const ptrs = useRef(new Map())
-  const gesture = useRef({ moved: 0, downPin: null, pinch: null })
-  const s2w = (px, py) => {
-    const { k, cx, cy } = viewRef.current
-    const { W, H } = sizeRef.current
-    return [(px - W / 2) / k + cx, (py - H / 2) / k + cy]
-  }
-  const zoomAt = useCallback(
-    (f, px, py) => {
-      const { k: k0, cx, cy } = viewRef.current
-      const { W, H } = sizeRef.current
-      const wx = (px - W / 2) / k0 + cx
-      const wy = (py - H / 2) / k0 + cy
-      const k = clamp(k0 * f, MIN_K, MAX_K)
-      go(k, wx - (px - W / 2) / k, wy - (py - H / 2) / k, false)
-    },
-    [go],
-  )
-
-  const onPointerDown = e => {
-    cancelAnimationFrame(animRef.current)
-    const g = gesture.current
-    ptrs.current.set(e.pointerId, { x: e.clientX, y: e.clientY })
-    if (ptrs.current.size === 1) {
-      g.moved = 0
-      const p = e.target.closest && e.target.closest('.pin')
-      g.downPin = p ? +p.dataset.id : null
-    }
-    if (ptrs.current.size === 2) {
-      const [a, b] = [...ptrs.current.values()]
-      g.pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), k: viewRef.current.k }
-      g.downPin = null
-    }
-  }
-  const onPointerMove = e => {
-    const p = ptrs.current.get(e.pointerId)
-    if (!p) return
-    const g = gesture.current
-    const svg = svgRef.current
-    const dx = e.clientX - p.x
-    const dy = e.clientY - p.y
-    p.x = e.clientX
-    p.y = e.clientY
-    g.moved += Math.abs(dx) + Math.abs(dy)
-    if (ptrs.current.size === 1 && g.moved > 6) {
-      if (!svg.hasPointerCapture(e.pointerId)) {
-        try {
-          svg.setPointerCapture(e.pointerId)
-        } catch {
-          /* capture unsupported */
-        }
-      }
-      setDragging(true)
-      const v = viewRef.current
-      setV({ ...v, cx: v.cx - dx / v.k, cy: v.cy - dy / v.k })
-    } else if (ptrs.current.size === 2 && g.pinch) {
-      const [a, b] = [...ptrs.current.values()]
-      const d = Math.hypot(a.x - b.x, a.y - b.y)
-      const r = svg.getBoundingClientRect()
-      zoomAt((g.pinch.k * d) / g.pinch.d / viewRef.current.k, (a.x + b.x) / 2 - r.left, (a.y + b.y) / 2 - r.top)
-    }
-  }
-  const onPointerUp = e => {
-    if (!ptrs.current.has(e.pointerId)) return
-    const g = gesture.current
-    ptrs.current.delete(e.pointerId)
-    setDragging(false)
-    if (ptrs.current.size < 2) g.pinch = null
-    if (ptrs.current.size === 0 && g.moved <= 6) {
-      if (g.downPin != null) {
-        onSelect(g.downPin)
-        return
-      }
-      if (placing) {
-        const r = svgRef.current.getBoundingClientRect()
-        const [wx, wy] = s2w(e.clientX - r.left, e.clientY - r.top)
-        const c = fromXY(wx, wy)
-        const n = nearStations(c, 5, 1)[0]
-        onPlace({ lat: c.lat, lon: c.lon, label: n ? `Near ${n.s.name}` : 'Dropped pin', src: 'manual' })
-      }
-    }
-  }
-  const onKeyDown = e => {
-    if ((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('pin')) {
-      e.preventDefault()
-      onSelect(+e.target.dataset.id)
-    }
-  }
-  useEffect(() => {
-    const svg = svgRef.current
-    const onWheel = e => {
-      e.preventDefault()
-      const r = svg.getBoundingClientRect()
-      zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? 0.01 : 0.0016)), e.clientX - r.left, e.clientY - r.top)
-    }
-    svg.addEventListener('wheel', onWheel, { passive: false })
-    return () => svg.removeEventListener('wheel', onWheel)
-  }, [zoomAt])
-
-  /* ---------- screen-space layers ---------- */
-  const { k, cx, cy } = view
-  const { W, H } = size
-  const tx = W / 2 - cx * k
-  const ty = H / 2 - cy * k
-  const inv = (x, y) => {
-    const sx = x * k + tx
-    const sy = y * k + ty
-    return [sx, sy, sx > -40 && sx < W + 40 && sy > -30 && sy < H + 30]
-  }
-
-  const stations = []
-  const stationLabels = []
-  if (W) {
-    STN.forEach(s => {
-      const n = s.lines.length
-      const minK = n >= 3 ? 7 : n === 2 ? 11 : 15
-      if (k < minK) return
-      const [sx, sy, vis] = inv(s.x, s.y)
-      if (!vis) return
-      stations.push(<circle key={s.id} className="st" cx={sx} cy={sy} r={clamp(k * 0.04 + 1.6, 2.4, n >= 2 ? 6 : 4.5)} />)
-      if (k >= (n >= 3 ? 26 : n === 2 ? 42 : 62)) {
-        stationLabels.push(<text key={s.id} className="stl" x={sx + 8} y={sy + 4}>{s.name}</text>)
-      }
-    })
-  }
-  const places = W
-    ? PLACES.map(([n, la, lo, rk]) => {
-        const [x, y] = toXY(la, lo)
-        const [sx, sy, vis] = inv(x, y)
-        const minK = [0, 0, 5, 12, 26][rk]
-        if (!vis || k < minK || (n === 'Paris' && k > 12)) return null
-        return (
-          <text key={n} className={'cityl' + (rk === 1 && n === 'Paris' ? ' big' : '')} x={sx} y={sy} textAnchor="middle">{n}</text>
-        )
-      })
-    : null
-
-  const [mx, my] = toXY(me.lat, me.lon)
-  const [meX, meY] = inv(mx, my)
-
-  const pinOrder = useMemo(() => list.slice().sort((a, b) => b.lat - a.lat), [list])
-  const pinEls = []
-  let selEl = null
-  if (W) {
-    pinOrder.forEach(it => {
-      const [x, y] = toXY(it.lat, it.lon)
-      const [px, py] = inv(x, y)
-      if (!(px > -60 && px < W + 60 && py > -10 && py < H + 60)) return
-      const far = distOf(me, it) > radius
-      const isSel = sel === it.id
-      const el = (
-        <g
-          key={it.id}
-          className={'pin' + (isSel ? ' sel' : '') + (far && !isSel ? ' far' : '')}
-          tabIndex={0}
-          role="button"
-          aria-label={`${it.t}, ${it.p} euros, ${fmtD(distOf(me, it))} away`}
-          data-id={it.id}
-          transform={`translate(${px} ${py})`}
-        >
-          <path d="M-5 -7 L0 1 L5 -7z" />
-          <circle className="pb" cx="0" cy="-22" r="16" />
-          <g className="pi" transform="translate(-10 -32) scale(.2)" dangerouslySetInnerHTML={{ __html: stripIc(catOf(it.c).art) }} />
-        </g>
-      )
-      if (isSel) selEl = el
-      else pinEls.push(el)
-    })
-    if (selEl) pinEls.push(selEl)
-  }
-
-  const routeEls = plan
-    ? plan.geo.map((seg, i) => {
-        const d = pathD(seg.pts)
-        if (seg.kind === 'walk') {
-          return (
-            <g key={i}>
-              <path d={d} fill="none" stroke="var(--surface)" strokeWidth="7" strokeLinecap="round" vectorEffect="non-scaling-stroke" />
-              <path d={d} fill="none" stroke="var(--ink)" strokeWidth="3.5" strokeLinecap="round" strokeDasharray="1 7" vectorEffect="non-scaling-stroke" />
-            </g>
-          )
-        }
-        return (
-          <g key={i}>
-            <path d={d} fill="none" stroke="var(--surface)" strokeWidth="10" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-            <path d={d} fill="none" stroke={LM[seg.line].col} strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
-          </g>
-        )
-      })
-    : null
-
-  const [rx, ry] = [mx, my]
   const zoomBtn = a => {
-    if (a === 'in') go(k * 1.6, cx, cy)
-    else if (a === 'out') go(k / 1.6, cx, cy)
-    else if (a === 'me') go(Math.max(k, 22), rx, ry)
+    const map = mapRef.current
+    if (!map) return
+    if (a === 'in') map.zoomIn()
+    else if (a === 'out') map.zoomOut()
+    else if (a === 'me') map.easeTo({ center: [me.lon, me.lat], zoom: Math.max(map.getZoom(), 14), duration: reducedMotion() ? 0 : 450 })
     else if (a === 'fit') {
       if (sel != null) fitRoute()
       else fitSaved(true)
-    }
-    else if (a === 'all') fit(REGION, true, 10)
+    } else if (a === 'all') fit(idfLatLng, 9)
   }
 
   return (
     <>
       <div className="mapbox" ref={boxRef}>
-        <svg
-          ref={svgRef}
-          id="mapsvg"
-          className={(dragging ? 'drag ' : '') + (placing ? 'placing' : '')}
-          role="img"
+        <div
+          ref={mapElRef}
+          className="mapgl"
+          role="region"
           aria-label="Map of Île-de-France with your saved items, metro and RER lines"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
-          onKeyDown={onKeyDown}
-        >
-          {W > 0 && (
-            <>
-              <g transform={`translate(${tx} ${ty}) scale(${k})`}>
-                <StaticLayers k={k} />
-                <circle className="radius-c" cx={mx} cy={my} r={radius} vectorEffect="non-scaling-stroke" />
-                <g>{routeEls}</g>
-              </g>
-              <g>{stations}</g>
-              <g>{stationLabels}{places}</g>
-              <g transform={`translate(${meX} ${meY})`}>
-                <circle className="me-ring" r="18" />
-                <circle className="me-dot" r="7" />
-              </g>
-              <g>{pinEls}</g>
-            </>
-          )}
-        </svg>
+        />
         <div className="maptl">
           <label className="radius" htmlFor="rad">
             <span>Within <b className="mono">{radius} km</b></span>
@@ -537,8 +343,16 @@ export default function MapView(props) {
           <button className="mb" aria-label="Centre on my position" onClick={() => zoomBtn('me')}><Icon name="arrow" /></button>
           <button className="mb" aria-label="Fit saved items" onClick={() => zoomBtn('fit')}><Icon name="pin" /></button>
           <button className="mb" aria-label="Show all of Île-de-France" onClick={() => zoomBtn('all')}><Icon name="whole" /></button>
+          <button
+            className="mb"
+            aria-label="Show metro and RER lines"
+            aria-pressed={metroOn}
+            title="Metro and RER lines"
+            onClick={() => setMetroOn(v => !v)}
+          >
+            <Icon name="train" />
+          </button>
         </div>
-        <div className="legend">Schematic map. Station positions are approximate.</div>
       </div>
       <Panel
         canMessage={canMessage}
