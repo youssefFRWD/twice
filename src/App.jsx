@@ -568,6 +568,13 @@ export default function App() {
               <span><span className="wide">{t('signInUp')}</span><span className="narrow">{t('auth.signIn')}</span></span>
             </button>
           )}
+          {session && (
+            <button className="loops-pill" onClick={() => setTab('profile')} aria-label={t('loops.balance', { n: loops })} title={t('loops.balance', { n: loops })}>
+              <Icon name="loop" size={16} />
+              <b className="mono">{loops.toLocaleString()}</b>
+              <span className="wide">{t('loops.name')}</span>
+            </button>
+          )}
           <ViewSwitch />
           <button
             className="loc"

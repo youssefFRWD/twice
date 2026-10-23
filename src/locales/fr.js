@@ -113,7 +113,7 @@ export default {
   'co.approved': '{seller} a accepté votre achat.',
   'co.fee': 'Frais Twice (5 %)', 'co.noFeeCash': 'Aucuns en espèces', 'co.feeRemoved': 'Retirés avec des Loops', 'co.payFail': 'Le paiement n’a pas abouti. Réessayez.',
   'co.paidH': 'Déjà payé', 'co.paidP': 'Retrouvez {seller} pour récupérer l’objet, puis appuyez tous les deux sur « Remise faite » dans votre conversation.',
-  'loops.name': 'Loops', 'loops.useNoFee': 'Utiliser {n} Loops : aucuns frais sur cette vente', 'loops.useNoFeeShort': 'Utiliser {n} Loops : aucuns frais',
+  'loops.name': 'Loops', 'loops.balance': 'Vous avez {n} Loops', 'loops.useNoFee': 'Utiliser {n} Loops : aucuns frais sur cette vente', 'loops.useNoFeeShort': 'Utiliser {n} Loops : aucuns frais',
   'loops.youHave': 'Vous avez {n} Loops.', 'loops.needMore': 'Il vous manque {n} Loops.', 'loops.notEnough': 'Vous n’avez pas assez de Loops.',
   'loops.handoverDone': 'Remise faite', 'loops.buyerPaid': 'Vous avez payé {amount}. Une fois l’objet récupéré auprès de {name}, confirmez la remise.',
   'loops.sellerPaid': '{name} a payé {amount}. Vous recevez {receive}. Confirmez une fois l’objet remis.',

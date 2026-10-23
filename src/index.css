@@ -617,6 +617,9 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .signin .narrow{display:none}
 .auth-top{display:flex;justify-content:space-between;align-items:center}
 @media (max-width:599px){.signin .wide{display:none}.signin .narrow{display:inline}}
+.loops-pill{flex:none;display:flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:13px;font-weight:700;white-space:nowrap}
+.loops-pill b{font-size:13.5px}
+@media (max-width:599px){.loops-pill .wide{display:none}}
 .lp-actions{display:flex;gap:8px;align-items:center}
 .gate.auth{z-index:70}
 /* MAP (MapLibre) */

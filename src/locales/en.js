@@ -114,7 +114,7 @@ export default {
   'co.approved': '{seller} approved your purchase.',
   'co.fee': 'Twice fee (5%)', 'co.noFeeCash': 'None on cash', 'co.feeRemoved': 'Removed with Loops', 'co.payFail': 'The payment did not go through. Try again.',
   'co.paidH': 'Already paid', 'co.paidP': 'Meet {seller} to collect it, then both tap “Handover done” in your conversation.',
-  'loops.name': 'Loops', 'loops.useNoFee': 'Use {n} Loops: no fee on this sale', 'loops.useNoFeeShort': 'Use {n} Loops: no fee',
+  'loops.name': 'Loops', 'loops.balance': 'You have {n} Loops', 'loops.useNoFee': 'Use {n} Loops: no fee on this sale', 'loops.useNoFeeShort': 'Use {n} Loops: no fee',
   'loops.youHave': 'You have {n} Loops.', 'loops.needMore': 'You need {n} more Loops.', 'loops.notEnough': 'You don’t have enough Loops.',
   'loops.handoverDone': 'Handover done', 'loops.buyerPaid': 'You paid {amount}. Once you have the item from {name}, confirm the handover.',
   'loops.sellerPaid': '{name} paid {amount}. You receive {receive}. Confirm once you have handed it over.',
