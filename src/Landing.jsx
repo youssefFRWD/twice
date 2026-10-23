@@ -4,7 +4,7 @@ import { sendContact } from './api.js'
 import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
 import { Art, Icon } from './ui.jsx'
-import HeroActs from './HeroActs.jsx'
+import HeroScene from './HeroScene.jsx'
 import secondHome from './assets/second-home.png'
 
 const place = a => a.split(',')[0]
@@ -325,7 +325,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       </div>
       <div className="gut">
         <section className="lp-in lp-hero ha-hero">
-          <HeroActs />
+          <HeroScene />
           <div className="lp-cta center">
             <button className="btn primary big" data-magnet ref={goRef} onClick={onStart}>{t('lp.start')}</button>
             <button className="btn big" data-magnet onClick={how}>{t('lp.how')}</button>
