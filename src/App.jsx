@@ -292,6 +292,7 @@ export default function App() {
       const [list, balance] = await Promise.all([api.fetchConversations(id), api.fetchLoops().catch(() => null)])
       setConvs(list)
       if (balance != null) setLoops(balance)
+      return list
     } catch {
       /* keep the last list; the next poll retries */
     }
@@ -313,7 +314,11 @@ export default function App() {
     if (!canMessage(it)) return showToast(it.sid ? t('toast.ownListing') : t('toast.sampleNoSeller'))
     try {
       const id = await api.startConversation(uid, it)
-      await reloadConvs()
+      const list = await reloadConvs()
+      if (!list?.some(c => c.id === id)) {
+        // the list didn't load (or doesn't have it yet): open the thread anyway, the next poll fills in the rest
+        setConvs(l => (l.some(c => c.id === id) ? l : [api.draftConversation(id, it), ...l]))
+      }
       setChatId(id)
       setTab('messages')
     } catch {

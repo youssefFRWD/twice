@@ -31,16 +31,33 @@ const rowToItem = r => ({
 })
 
 const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,boosted_until,item_images(storage_path,position)'
+const OLD_ITEM_COLS = ITEM_COLS.replace(',boosted_until', '') // before the Loops migration
+
+// Codes Supabase returns when a column, table or relationship doesn't exist yet, i.e. a migration isn't applied.
+const SCHEMA_MISSING = new Set(['42703', '42P01', 'PGRST200', 'PGRST204', 'PGRST205'])
+/** Selects with the newest columns first, then older column sets while the latest migrations aren't applied yet. */
+const selectWithFallback = async (query, ...colSets) => {
+  let res
+  for (const cols of colSets) {
+    res = await query(cols)
+    if (!res.error || !SCHEMA_MISSING.has(res.error.code)) break
+  }
+  return ok(res)
+}
 
 /** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).in('status', ['active', 'reserved']).order('id'))
+  const rows = await selectWithFallback(cols => supabase.from('items').select(cols).in('status', ['active', 'reserved']).order('id'), ITEM_COLS, OLD_ITEM_COLS)
   return rows.map(rowToItem)
 }
 
 /** Someone's listings that are live right now, newest first (for their public profile). */
 export async function fetchSellerListings(sellerId) {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('seller_id', sellerId).eq('status', 'active').order('created_at', { ascending: false }))
+  const rows = await selectWithFallback(
+    cols => supabase.from('items').select(cols).eq('seller_id', sellerId).eq('status', 'active').order('created_at', { ascending: false }),
+    ITEM_COLS,
+    OLD_ITEM_COLS,
+  )
   return rows.map(rowToItem)
 }
 
@@ -121,7 +138,11 @@ const rowToListing = r => ({
 })
 
 export async function fetchMyListings(uid) {
-  const rows = ok(await supabase.from('items').select(LISTING_COLS).eq('seller_id', uid).neq('status', 'removed').order('created_at', { ascending: false }))
+  const rows = await selectWithFallback(
+    cols => supabase.from('items').select(cols).eq('seller_id', uid).neq('status', 'removed').order('created_at', { ascending: false }),
+    LISTING_COLS,
+    LISTING_COLS.replace(',boosted_until', ''),
+  )
   return rows.map(rowToListing)
 }
 
@@ -238,10 +259,15 @@ const byTime = (x, y) => new Date(x.created_at) - new Date(y.created_at)
 
 /** One row per conversation the user is part of, newest activity first. */
 export async function fetchConversations(uid) {
-  const rows = ok(
-    await supabase
-      .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status),sales(method,paid_at,transfer_id,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded)'),
+  const base = 'id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at)'
+  const sale = 'method,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded'
+  // approvals and sales come from the approval, Loops and Stripe migrations; conversations load with whatever exists
+  const rows = await selectWithFallback(
+    cols => supabase.from('conversations').select(cols),
+    `${base},sale_approvals(status),sales(${sale},paid_at,transfer_id)`,
+    `${base},sale_approvals(status),sales(${sale})`,
+    `${base},sale_approvals(status)`,
+    base,
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -257,7 +283,8 @@ export async function fetchConversations(uid) {
       const iAmBuyer = r.buyer_id === uid
       const approval = [].concat(r.sale_approvals ?? [])[0]
       const row = [].concat(r.sales ?? [])[0]
-      const sale = row?.paid_at ? row : null // an online payment that was started but not completed doesn't count yet
+      // an online payment that was started but not completed doesn't count yet (before the Stripe migration, every sale is paid)
+      const sale = row && (row.paid_at || !('paid_at' in row)) ? row : null
       return {
         id: r.id,
         iAmBuyer,
@@ -388,3 +415,9 @@ export const confirmOnlineHandover = (conversationId, useLoops) =>
 
 /** Seller payouts: 'link' returns { url } to Stripe's onboarding, 'status' returns { connected, payouts_enabled }. */
 export const stripeConnect = action => callFunction('stripe-connect', { action })
+
+/** A conversation as the list shows it, for one that was just started and hasn't come back from the server yet. */
+export const draftConversation = (id, item) => {
+  const at = new Date().toISOString()
+  return { id, iAmBuyer: true, partnerId: item.sid, itemId: item.id, itemTitle: item.t, partner: item.s, approval: null, sale: null, last: null, unread: 0, at, theirAt: null }
+}
