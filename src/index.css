@@ -141,6 +141,8 @@ main{flex:1;min-height:0;position:relative}
 .titlebar{width:100%;max-width:1180px;margin:0 auto 12px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .titlebar h1{margin:0;font:800 26px/1.1 var(--font-display);letter-spacing:-.02em}
 .titlebar span{color:var(--muted);font-size:13.5px}
+.br-title{align-items:center;flex-wrap:wrap}
+.br-title-r{display:flex;align-items:center;gap:12px}
 
 /* MAP */
 #v-map{display:none;flex-direction:row}

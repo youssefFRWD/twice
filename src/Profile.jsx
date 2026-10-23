@@ -301,7 +301,7 @@ function NeedsBackend() {
   return <p className="pf-empty">{t('pf.needsBackend')}</p>
 }
 
-export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged, onShowMap, onBuy, canMessage, onMessage, loops = 0, onBoost }) {
+export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged, onShowMap, onBuy, canMessage, onMessage, loops = 0, onBoost, newListing = false, onNewListingShown }) {
   const { t } = useI18n()
   const [page, setPage] = useState(() => (backendOn ? null : loadLocal()))
   const [loadErr, setLoadErr] = useState(false)
@@ -516,7 +516,7 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
                   section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
 
                 ) : section === 'listings' ? (
-                  <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} loops={loops} onBoost={onBoost} />
+                  <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} loops={loops} onBoost={onBoost} startNew={newListing} onStartShown={onNewListingShown} />
                 ) : section === 'reviews' ? (
                   <ProfileReviews uid={uid} received={received} written={written} onChanged={reload} onToast={onToast} />
                 ) : section === 'friends' ? (

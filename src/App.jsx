@@ -142,6 +142,7 @@ export default function App() {
   const [convs, setConvs] = useState([])
   const [loops, setLoops] = useState(0) // the signed-in user's Loops balance
   const [chatId, setChatId] = useState(null)
+  const [newListing, setNewListing] = useState(false) // open the new-listing form when the profile next shows
   const [sampleChats, setSampleChats] = useState([]) // sample listings contacted from checkout, shown as sample conversations
   const [session, setSession] = useState(null)
   const [authOpen, setAuthOpen] = useState(false)
@@ -383,6 +384,15 @@ export default function App() {
     }
   }
   const openCheckout = id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))
+  /** "New listing" outside the profile (Browse): listings are created on the profile, so open it with the form showing. */
+  const startNewListing = () => {
+    if (!uid) {
+      setAuthOpen(true)
+      return showToast(t('ls.signInToSell'))
+    }
+    setNewListing(true)
+    setTab('profile')
+  }
 
   /* ---------- Loops: paying, confirming the handover, boosting ---------- */
   const buyerConvOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)
@@ -663,6 +673,7 @@ export default function App() {
                 onMessage={messageSeller}
                 onSeller={setSeller}
                 onOpen={setDetail}
+                onNewListing={startNewListing}
               />
             )}
           </section>
@@ -744,6 +755,8 @@ export default function App() {
                 onMessage={messageSeller}
                 loops={loops}
                 onBoost={boostListing}
+                newListing={newListing}
+                onNewListingShown={() => setNewListing(false)}
               />
             )}
           </section>

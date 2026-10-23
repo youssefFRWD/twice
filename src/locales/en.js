@@ -153,7 +153,7 @@ export default {
   'av.unreadable': 'We could not read that image.', 'av.prepFail': 'Could not prepare the photo.',
 
   // listings
-  'ls.new': 'New listing', 'ls.edit': 'Edit listing', 'ls.publish': 'Publish listing',
+  'ls.new': 'New listing', 'ls.signInToSell': 'Sign in to sell something.', 'ls.edit': 'Edit listing', 'ls.publish': 'Publish listing',
   'ls.photos': 'Photos', 'ls.cover': 'the first one is the cover', 'ls.photoN': 'Photo {n}', 'ls.earlier': 'Move photo {n} earlier',
   'ls.later': 'Move photo {n} later', 'ls.removePhoto': 'Remove photo {n}', 'ls.add': 'Add', 'ls.category': 'Category',
   'ls.brand': 'Brand', 'ls.ifApplicable': 'if applicable', 'ls.price': 'Price (€, euros)', 'ls.condition': 'Condition',

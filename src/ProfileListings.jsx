@@ -171,10 +171,13 @@ function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
   )
 }
 
-export default function ProfileListings({ uid, name, me, arrondissement, onChanged, onToast, loops = 0, onBoost }) {
+export default function ProfileListings({ uid, name, me, arrondissement, onChanged, onToast, loops = 0, onBoost, startNew = false, onStartShown }) {
   const { t, cat, cond, money } = useI18n()
   const [list, setList] = useState(null)
-  const [form, setForm] = useState(null) // null | 'new' | listing
+  const [form, setForm] = useState(startNew ? 'new' : null) // null | 'new' | listing (opened from Browse's "New listing")
+  useEffect(() => {
+    if (startNew) onStartShown?.() // shown once; coming back to the profile later doesn't reopen it
+  }, [startNew, onStartShown])
   const [confirmId, setConfirmId] = useState(null)
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
