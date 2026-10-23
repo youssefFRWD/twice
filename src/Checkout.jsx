@@ -42,7 +42,7 @@ function cardErrors(card, t) {
   return e
 }
 
-export default function Checkout({ item: it, me, canMessage, onMessage, onShowMap, onClose }) {
+export default function Checkout({ item: it, me, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
   const [method, setMethod] = useState('card')
@@ -78,6 +78,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
     setBusy(true)
     setTimeout(() => {
       setBusy(false)
+      onPaid?.()
       setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method })
     }, 1200)
   }

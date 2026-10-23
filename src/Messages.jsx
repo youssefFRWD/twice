@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
-import { locale } from './locale.js'
+import { currencyName, locale } from './locale.js'
+import { currencyList, dealsOf, deriveOffers, formatMoney, offerBody, parseBody, replyBody, toEur } from './offers.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -23,14 +24,14 @@ const SHOW_SAMPLES = true
 const ago = ms => new Date(Date.now() - ms).toISOString()
 const MIN = 60000
 const SAMPLE_CONVS = [
-  { id: 'demo-1', sample: true, partnerId: 'demo-a', itemId: 1, partner: 'Marie Laurent', itemTitle: 'Mid-century oak sideboard', last: { body: 'Great, see you at 6pm then!', mine: false }, unread: 2, at: ago(4 * MIN), theirAt: ago(4 * MIN) },
-  { id: 'demo-2', sample: true, partnerId: 'demo-b', itemId: 2, partner: 'Karim Benali', itemTitle: 'Velvet two-seater sofa', last: { body: 'Could you do 200 for it?', mine: true }, unread: 0, at: ago(2 * 86400000), theirAt: ago(2 * 86400000 + 30 * MIN) },
-  { id: 'demo-3', sample: true, partnerId: 'demo-c', itemId: 26, partner: 'Antoine Lefebvre', itemTitle: 'Espresso machine, two group heads', last: { body: 'Thanks, I will think about it.', mine: false }, unread: 0, at: ago(9 * 86400000), theirAt: ago(9 * 86400000) },
-  { id: 'demo-4', sample: true, partnerId: 'demo-f', itemId: 3, partner: 'Léa Dubois', itemTitle: 'White ladder bookshelf', last: { body: 'I can bring it down on Saturday.', mine: false }, unread: 1, at: ago(35 * MIN), theirAt: ago(35 * MIN) },
-  { id: 'demo-5', sample: true, partnerId: 'demo-g', itemId: 5, partner: 'Camille Roux', itemTitle: 'Wool trench coat, size M', last: { body: 'Is it still available?', mine: false }, unread: 3, at: ago(3 * 3600000), theirAt: ago(3 * 3600000) },
-  { id: 'demo-6', sample: true, partnerId: 'demo-h', itemId: 7, partner: 'Samir Aziz', itemTitle: '13-inch ultrabook, 16 GB RAM', last: { body: 'Does it come with the charger?', mine: true }, unread: 0, at: ago(26 * 3600000), theirAt: ago(3 * 86400000) },
-  { id: 'demo-7', sample: true, partnerId: 'demo-i', itemId: 8, partner: 'Inès Martin', itemTitle: '35 mm film camera with 50 mm lens', last: { body: 'Perfect, thank you!', mine: false }, unread: 0, at: ago(5 * 86400000), theirAt: ago(5 * 86400000) },
-  { id: 'demo-8', sample: true, partnerId: 'demo-j', itemId: 9, partner: 'Hugo Petit', itemTitle: 'Turntable with built-in preamp', last: { body: 'I will pick it up next week.', mine: false }, unread: 0, at: ago(12 * 86400000), theirAt: ago(12 * 86400000) },
+  { id: 'demo-1', sample: true, iAmBuyer: true, partnerId: 'demo-a', itemId: 1, partner: 'Marie Laurent', itemTitle: 'Mid-century oak sideboard', last: { body: 'Great, see you at 6pm then!', mine: false }, unread: 2, at: ago(4 * MIN), theirAt: ago(4 * MIN) },
+  { id: 'demo-2', sample: true, iAmBuyer: true, partnerId: 'demo-b', itemId: 2, partner: 'Karim Benali', itemTitle: 'Velvet two-seater sofa', last: { body: 'Could you do 200 for it?', mine: true }, unread: 0, at: ago(2 * 86400000), theirAt: ago(2 * 86400000 + 30 * MIN) },
+  { id: 'demo-3', sample: true, iAmBuyer: true, partnerId: 'demo-c', itemId: 26, partner: 'Antoine Lefebvre', itemTitle: 'Espresso machine, two group heads', last: { body: 'Thanks, I will think about it.', mine: false }, unread: 0, at: ago(9 * 86400000), theirAt: ago(9 * 86400000) },
+  { id: 'demo-4', sample: true, iAmBuyer: true, partnerId: 'demo-f', itemId: 3, partner: 'Léa Dubois', itemTitle: 'White ladder bookshelf', last: { body: 'I can bring it down on Saturday.', mine: false }, unread: 1, at: ago(35 * MIN), theirAt: ago(35 * MIN) },
+  { id: 'demo-5', sample: true, iAmBuyer: true, partnerId: 'demo-g', itemId: 5, partner: 'Camille Roux', itemTitle: 'Wool trench coat, size M', last: { body: 'Is it still available?', mine: false }, unread: 3, at: ago(3 * 3600000), theirAt: ago(3 * 3600000) },
+  { id: 'demo-6', sample: true, iAmBuyer: true, partnerId: 'demo-h', itemId: 7, partner: 'Samir Aziz', itemTitle: '13-inch ultrabook, 16 GB RAM', last: { body: 'Does it come with the charger?', mine: true }, unread: 0, at: ago(26 * 3600000), theirAt: ago(3 * 86400000) },
+  { id: 'demo-7', sample: true, iAmBuyer: true, partnerId: 'demo-i', itemId: 8, partner: 'Inès Martin', itemTitle: '35 mm film camera with 50 mm lens', last: { body: 'Perfect, thank you!', mine: false }, unread: 0, at: ago(5 * 86400000), theirAt: ago(5 * 86400000) },
+  { id: 'demo-8', sample: true, iAmBuyer: true, partnerId: 'demo-j', itemId: 9, partner: 'Hugo Petit', itemTitle: 'Turntable with built-in preamp', last: { body: 'I will pick it up next week.', mine: false }, unread: 0, at: ago(12 * 86400000), theirAt: ago(12 * 86400000) },
 ]
 const SAMPLE_OWNERS = [
   { sid: 'demo-a', name: 'Marie Laurent', title: 'Mid-century oak sideboard', item: { id: 1 } },
@@ -38,7 +39,7 @@ const SAMPLE_OWNERS = [
   { sid: 'demo-e', name: 'Lucas Moreau', title: 'Solid wood bookshelf', item: { id: 4 } },
 ]
 const SAMPLE_MSGS = {
-  'demo-4': [['me', 'Hi Léa, is the bookshelf easy to carry?', 80, true], ['them', 'Yes, it splits in two. I can bring it down on Saturday.', 35]],
+  'demo-4': [['me', 'Hi Léa, is the bookshelf easy to carry?', 80, true], ['them', 'Yes, it splits in two. I can bring it down on Saturday.', 35], ['them', offerBody({ price: 45, cur: 'EUR', note: 'Cash on Saturday?', itemId: 3, title: 'White ladder bookshelf' }), 30]],
   'demo-5': [['them', 'Hello!', 190], ['them', 'Is it still available?', 180]],
   'demo-6': [['them', 'Battery is at about 90% health.', 4400], ['me', 'Does it come with the charger?', 1560, true]],
   'demo-7': [['me', 'I will take it, thanks!', 7300, true], ['them', 'Perfect, thank you!', 7200]],
@@ -48,17 +49,22 @@ const SAMPLE_MSGS = {
     ['me', 'Yes it is. Pick-up is in Le Marais, near Rambuteau.', 185, true],
     ['them', 'Perfect. Could I come by this evening?', 170],
     ['me', 'Sure, anytime after 5.', 160, true],
+    ['me', offerBody({ price: 160, cur: 'EUR', note: 'Cash at pick-up?', itemId: 1, title: 'Mid-century oak sideboard' }), 150, true],
+    ['them', replyBody({ to: 'demo-1-4', action: 'accept' }), 140],
     ['them', 'Great, see you at 6pm then!', 4],
   ],
   'demo-2': [
     ['me', 'Hello, the sofa looks lovely. Is the price negotiable?', 3000, true],
     ['them', 'A little, yes. What did you have in mind?', 2950],
     ['me', 'Could you do 200 for it?', 2880, true],
+    ['me', offerBody({ price: 200, cur: 'EUR', note: 'Cash on pick-up, today if possible.', itemId: 2, title: 'Velvet two-seater sofa' }), 2860, true],
   ],
   'demo-3': [
     ['them', 'The machine was descaled last month, steam wand works fine.', 13200],
     ['me', 'Thanks for the details, that helps.', 13190, true],
     ['them', 'Thanks, I will think about it.', 13100],
+    ['me', offerBody({ price: 55, cur: 'EUR', note: 'Would you take this for it?', itemId: 26, title: 'Espresso machine, two group heads' }), 13080, true],
+    ['them', replyBody({ to: 'demo-3-3', action: 'refuse' }), 13060],
   ],
 }
 const sampleMsgs = id =>
@@ -328,9 +334,123 @@ function StarredPage({ items, convIds, onBack, onGo, onUnstar }) {
   )
 }
 
-function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem }) {
-  const { t } = useI18n()
-  const [msgs, setMsgs] = useState(() => (conv.sample ? sampleMsgs(conv.id) : []))
+function OfferCard({ e, mine, partner, busy, onAccept, onCounter, onRefuse }) {
+  const { m, o, status } = e
+  return (
+    <div className={`bub-row offer-row${mine ? ' mine' : ''}`} data-mid={m.id}>
+      <div className={`offer ${status}`}>
+        <div className="offer-top">
+          <span><Icon name="tag" size={15} />{o.re ? 'Counter-offer' : 'Offer'}</span>
+          <time dateTime={m.created_at}>{when(m.created_at)}</time>
+        </div>
+        <div className="offer-price">{formatMoney(o.price, o.cur)}</div>
+        {o.cur !== 'EUR' && <div className="offer-eur">≈ {formatMoney(toEur(o.price, o.cur), 'EUR')}</div>}
+        {o.note && <p className="offer-note">“{o.note}”</p>}
+        {status === 'pending' && !mine && (
+          <div className="offer-actions">
+            <button className="btn primary small" disabled={busy} onClick={() => onAccept(e)}>Accept</button>
+            <button className="btn small" disabled={busy} onClick={() => onCounter(e)}>Counter</button>
+            <button className="btn small danger" disabled={busy} onClick={() => onRefuse(e)}>Refuse</button>
+          </div>
+        )}
+        {status === 'pending' && mine && <p className="offer-state">Waiting for {partner} to respond</p>}
+        {status === 'accepted' && <p className="offer-state ok"><Icon name="check" size={14} />Accepted · added to the cart</p>}
+        {status === 'refused' && <p className="offer-state no"><Icon name="x" size={14} />Refused</p>}
+        {status === 'countered' && <p className="offer-state">Countered</p>}
+      </div>
+    </div>
+  )
+}
+
+function OfferComposer({ init, busy, onSend, onClose }) {
+  const [price, setPrice] = useState(init.price ?? '')
+  const [cur, setCur] = useState(init.cur)
+  const [note, setNote] = useState('')
+  const [err, setErr] = useState('')
+  useEffect(() => {
+    const key = e => e.key === 'Escape' && onClose()
+    document.addEventListener('keydown', key)
+    return () => document.removeEventListener('keydown', key)
+  }, [onClose])
+  const submit = e => {
+    e.preventDefault()
+    const n = Number(String(price).replace(',', '.'))
+    if (!(n > 0) || n > 1e7) return setErr('Enter a price above 0.')
+    onSend({ price: Math.round(n * 100) / 100, cur, note: note.trim().slice(0, 200) })
+  }
+  return (
+    <form className="offer-box" onSubmit={submit} aria-label={init.re ? 'Counter-offer' : 'Make an offer'}>
+      <header>
+        <b>{init.re ? 'Make a counter-offer' : 'Make an offer'}</b>
+        <button type="button" className="gd-x" onClick={onClose} aria-label="Close"><Icon name="x" size={16} /></button>
+      </header>
+      <div className="offer-row-in">
+        <label>
+          <span>Price</span>
+          <input type="text" inputMode="decimal" autoFocus placeholder="0.00" value={price} onChange={e => { setPrice(e.target.value); setErr('') }} />
+        </label>
+        <label>
+          <span>Currency</span>
+          <select value={cur} onChange={e => setCur(e.target.value)}>
+            {currencyList().map(c => (
+              <option key={c} value={c}>{c} – {currencyName(c)}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <label>
+        <span>Note (optional)</span>
+        <textarea rows={2} maxLength={200} placeholder="For example: cash at pick-up, tomorrow evening" value={note} onChange={e => setNote(e.target.value)} />
+      </label>
+      {err && <p className="note th-error" role="alert">{err}</p>}
+      <div className="offer-go">
+        <button type="button" className="btn small" onClick={onClose}>Cancel</button>
+        <button type="submit" className="btn primary small" disabled={busy}>{init.re ? 'Send counter-offer' : 'Send offer'}</button>
+      </div>
+    </form>
+  )
+}
+
+function CartPanel({ deals, onPay, onGo, onClose }) {
+  return (
+    <aside className="msg-cart" aria-label="Cart">
+      <header>
+        <button className="btn small cart-close" onClick={onClose}><Icon name="undo" size={16} />Back</button>
+        <h2>Cart</h2>
+        {deals.length > 0 && <i>{deals.length}</i>}
+      </header>
+      <p className="note cart-sub">Accepted offers, ready to pay.</p>
+      <div className="cart-list">
+        {deals.length === 0 && (
+          <div className="cart-empty">
+            <Icon name="bag" size={32} />
+            <p>Nothing here yet. When an offer is accepted, the item is added to your cart.</p>
+          </div>
+        )}
+        {deals.map(d => (
+          <div key={d.id} className="cart-item">
+            <button className="cart-title" onClick={() => onGo(d.convId)}>{d.title}</button>
+            <small>with {d.partner}</small>
+            <div className="cart-price">
+              <b>{formatMoney(d.price, d.cur)}</b>
+              {d.cur !== 'EUR' && <span>≈ {formatMoney(d.eur, 'EUR')}</span>}
+            </div>
+            <button className="btn primary small" onClick={() => onPay(d)}>
+              <Icon name="card" size={15} />Pay
+            </button>
+          </div>
+        ))}
+      </div>
+    </aside>
+  )
+}
+
+function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem }) {
+  const { t, currency } = useI18n()
+  const [realMsgs, setMsgs] = useState([])
+  const msgs = conv.sample ? demoList : realMsgs
+  const offers = useMemo(() => deriveOffers(msgs), [msgs])
+  const [composer, setComposer] = useState(null)
   const [text, setText] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -394,7 +514,7 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
   useEffect(() => {
     if (!lang) return
     msgs
-      .filter(m => !asked.current.has(`${lang}:${m.id}`))
+      .filter(m => !asked.current.has(`${lang}:${m.id}`) && !parseBody(m.body))
       .forEach(async m => {
         const k = `${lang}:${m.id}`
         asked.current.add(k)
@@ -408,25 +528,60 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
       })
   }, [lang, msgs])
 
+  const post = async body => {
+    if (conv.sample) {
+      onDemoAdd({ id: `${convId}-${Date.now()}`, sender_id: uid, body, created_at: new Date().toISOString(), read_at: null })
+      return
+    }
+    const m = await api.sendMessage(uid, convId, body)
+    setMsgs(prev => [...prev, m])
+    onChanged()
+  }
+
   const send = async e => {
     e.preventDefault()
     const body = text.trim()
     if (!body || busy) return
     setBusy(true)
     setError('')
-    if (conv.sample) {
-      setMsgs(prev => [...prev, { id: `${convId}-${Date.now()}`, sender_id: uid, body, created_at: new Date().toISOString(), read_at: null }])
-      setText('')
-      setBusy(false)
-      return
-    }
     try {
-      const m = await api.sendMessage(uid, convId, body)
-      setMsgs(prev => [...prev, m])
+      await post(body)
       setText('')
-      onChanged()
     } catch {
       setError(t('msg.sendFail'))
+    }
+    setBusy(false)
+  }
+
+  const say = msg => {
+    setFlash(msg)
+    setTimeout(() => setFlash(''), 4000)
+  }
+  const respond = async (e, action) => {
+    setBusy(true)
+    setError('')
+    try {
+      await post(replyBody({ to: e.m.id, action }))
+      if (action === 'refuse') say('Offer refused.')
+      else say(conv.iAmBuyer ? `Offer accepted. “${e.o.title || conv.itemTitle}” was added to your cart.` : `Offer accepted. “${e.o.title || conv.itemTitle}” was added to ${conv.partner}'s cart.`)
+    } catch {
+      setError('Could not send your answer. Check your connection and try again.')
+    }
+    setBusy(false)
+  }
+  const openOffer = counterOf => {
+    const cur = counterOf ? counterOf.o.cur : currency
+    setComposer({ re: counterOf?.m.id, price: counterOf?.o.price, cur: currencyList().includes(cur) ? cur : 'EUR' })
+  }
+  const sendOffer = async ({ price, cur, note }) => {
+    setBusy(true)
+    setError('')
+    try {
+      await post(offerBody({ price, cur, note, itemId: conv.itemId, title: conv.itemTitle, re: composer.re }))
+      say(composer.re ? 'Counter-offer sent.' : 'Offer sent.')
+      setComposer(null)
+    } catch {
+      setError('Offer not sent. Check your connection and try again.')
     }
     setBusy(false)
   }
@@ -488,29 +643,49 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
-        {msgs.map(m => (
-          <Bubble
-            key={m.id}
-            m={m}
-            mine={m.sender_id === uid}
-            shown={lang && tr[`${lang}:${m.id}`]}
-            flags={{
-              like: liked.includes(m.id),
-              star: !!starMsgs[m.id],
-              highlight: marked.includes(m.id),
-              report: reported.includes(m.id),
-            }}
-            isLast={m.id === lastSeen}
-            seenAt={m.read_at}
-            jump={jumpId === m.id}
-            onAct={act}
-          />
-        ))}
+        {msgs.map(m => {
+          const p = parseBody(m.body)
+          if (p?.kind === 'offer') {
+            return <OfferCard key={m.id} e={offers.get(m.id)} mine={m.sender_id === uid} partner={conv.partner} busy={busy} onAccept={e => respond(e, 'accept')} onRefuse={e => respond(e, 'refuse')} onCounter={openOffer} />
+          }
+          if (p?.kind === 'reply') {
+            const e = offers.get(p.to)
+            if (!e || e.by !== m.id) return null
+            const who = m.sender_id === uid ? 'You' : conv.partner
+            const price = formatMoney(e.o.price, e.o.cur)
+            return (
+              <p key={m.id} className={`offer-sys ${p.action === 'accept' ? 'ok' : 'no'}`} data-mid={m.id}>
+                {p.action === 'accept'
+                  ? `${who} accepted the offer of ${price}. “${e.o.title || conv.itemTitle}” was added to ${conv.iAmBuyer ? 'your' : `${conv.partner}'s`} cart.`
+                  : `${who} refused the offer of ${price}.`}
+              </p>
+            )
+          }
+          return (
+            <Bubble
+              key={m.id}
+              m={m}
+              mine={m.sender_id === uid}
+              shown={lang && tr[`${lang}:${m.id}`]}
+              flags={{
+                like: liked.includes(m.id),
+                star: !!starMsgs[m.id],
+                highlight: marked.includes(m.id),
+                report: reported.includes(m.id),
+              }}
+              isLast={m.id === lastSeen}
+              seenAt={m.read_at}
+              jump={jumpId === m.id}
+              onAct={act}
+            />
+          )
+        })}
         <div ref={endRef} />
       </div>
       {flash && <p className="note th-flash" role="status">{flash}</p>}
       {error && <p className="note th-error" role="alert">{error}</p>}
       <form className="th-send" onSubmit={send}>
+        {composer && <OfferComposer init={composer} busy={busy} onSend={sendOffer} onClose={() => setComposer(null)} />}
         <input
           type="text"
           aria-label={t('msg.write')}
@@ -519,6 +694,11 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
           value={text}
           onChange={e => setText(e.target.value)}
         />
+        {conv.itemId && (
+          <button type="button" className="btn offer-btn" onClick={() => openOffer(null)} disabled={busy}>
+            <Icon name="tag" size={16} />Make an offer
+          </button>
+        )}
         <button className="btn primary" type="submit" disabled={busy || !text.trim()}>Send</button>
       </form>
     </section>
@@ -552,12 +732,18 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay }) {
   const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
-  const convs = demo ? SAMPLE_CONVS : realConvs
+  const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
+  const demoConvs = useMemo(
+    () => SAMPLE_CONVS.map(c => ({ ...c, deals: dealsOf(demoMsgs[c.id], { convId: c.id, iAmBuyer: true, partner: c.partner, itemId: c.itemId, itemTitle: c.itemTitle }) })),
+    [demoMsgs],
+  )
+  const convs = demo ? demoConvs : realConvs
+  const [showCart, setShowCart] = useState(false)
   const [stars, setStars] = useStored(`twice.stars.${uid}`, [])
   const [likes, setLikes] = useStored(`twice.likes.${uid}`, [])
   const [query, setQuery] = useState('')
@@ -589,6 +775,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
   }
   const starredList = Object.values(starMsgs).sort((a, b) => new Date(b.at) - new Date(a.at))
   const openConv = id => {
+    setShowCart(false)
     setShowStarred(false)
     onOpen(id)
   }
@@ -597,6 +784,10 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     setShowStarred(false)
     onOpen(it.convId)
   }
+  const deals = convs
+    .flatMap(c => c.deals || [])
+    .filter(d => !paid.includes(d.id))
+    .sort((a, b) => new Date(b.at) - new Date(a.at))
   const clearJump = () => setTimeout(() => setJump(null), 2600)
   const toggleLike = id => setLikes(likes.includes(id) ? likes.filter(l => l !== id) : [...likes, id])
 
@@ -636,13 +827,17 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
   return (
     <div className="msgs-page">
       <div className="msg-bar">
+        <button className="gd-btn cart-btn" onClick={() => setShowCart(c => !c)} aria-pressed={showCart}>
+          <Icon name="bag" size={16} />Cart{deals.length > 0 && <i>{deals.length}</i>}
+        </button>
         <button className="gd-btn" onClick={() => setGuide(true)} aria-haspopup="dialog">
           <Icon name="info" size={16} />Guidelines
         </button>
       </div>
       {guide && <Guidelines onClose={() => setGuide(false)} />}
-    <div className={`msgs${open || showStarred ? ' has-thread' : ''}`}>
+    <div className={`msgs${open || showStarred ? ' has-thread' : ''}${showCart ? ' show-cart' : ''}`}>
       <div className="msg-list">
+        <div className="msg-top">
         <div className="msg-head">
           <h1 className="msg-title">{t('tab.messages')}</h1>
           <div className="msg-tools">
@@ -731,7 +926,10 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
                 )}
               </div>
             )}
-            {owners.length > 0 && (
+          </>
+        )}
+        </div>
+        {!finding && owners.length > 0 && (
               <section className="owners" aria-label="Owners from your favorites">
                 <h2>Owners from your favorites</h2>
                 <ul>
@@ -757,8 +955,6 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
                 </ul>
               </section>
             )}
-          </>
-        )}
       </div>
       {showStarred ? (
         <StarredPage items={starredList} convIds={new Set(convs.map(c => c.id))} onBack={() => setShowStarred(false)} onGo={goToMessage} onUnstar={id => toggleStarMsg(starMsgs[id])} />
@@ -766,6 +962,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
         <Thread
           key={open.id}
           conv={open}
+          demoList={demoMsgs[open.id] || []}
+          onDemoAdd={m => setDemoMsgs(prev => ({ ...prev, [open.id]: [...(prev[open.id] || []), m] }))}
           uid={uid}
           liked={likes}
           onLike={toggleLike}
@@ -781,6 +979,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
       ) : (
         <div className="msg-thread th-none"><p className="note">{t('msg.select')}</p></div>
       )}
+      <CartPanel deals={deals} onPay={d => onPay?.(d)} onGo={openConv} onClose={() => setShowCart(false)} />
     </div>
     </div>
   )

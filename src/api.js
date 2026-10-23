@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { dealsOf, previewOf } from './offers.js'
 
 export const backendEnabled = !!supabase
 
@@ -246,14 +247,19 @@ export async function fetchConversations(uid) {
     .map(r => {
       const msgs = (r.messages || []).slice().sort(byTime)
       const last = msgs[msgs.length - 1]
+      const partner = names.get(partnerOf(r)) || 'Neighbour'
+      const itemTitle = r.items?.title || 'Listing no longer available'
+      const iAmBuyer = r.buyer_id === uid
       return {
         id: r.id,
+        iAmBuyer,
+        deals: dealsOf(msgs, { convId: r.id, iAmBuyer, partner, itemId: r.item_id, itemTitle }),
         partnerId: partnerOf(r),
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
-        itemTitle: r.items?.title || 'Listing no longer available',
-        partner: names.get(partnerOf(r)) || 'Neighbour',
-        last: last ? { body: last.body, mine: last.sender_id === uid } : null,
+        itemTitle,
+        partner,
+        last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
         unread: msgs.filter(m => m.sender_id !== uid && !m.read_at).length,
         at: last ? last.created_at : r.created_at,
       }
