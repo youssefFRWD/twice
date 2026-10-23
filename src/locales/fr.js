@@ -122,6 +122,8 @@ export default {
   'pay.loadFail': 'Impossible de vérifier votre compte de versement.', 'pay.linkFail': 'Impossible d’ouvrir Stripe. Réessayez.',
   'pay.payoutPending': 'Votre versement n’est pas encore passé.', 'pay.retry': 'Relancer le versement',
   'co.paidH': 'Déjà payé', 'co.paidP': 'Retrouvez {seller} pour récupérer l’objet, puis appuyez tous les deux sur « Remise faite » dans votre conversation.',
+  'offer.notReady': 'Les offres acceptées ne valident pas encore la vente : la dernière mise à jour de la base n’est pas appliquée. Demandez au vendeur d’appuyer sur Valider la vente.',
+  'offer.approveFail': 'Impossible de confirmer l’offre acceptée : {reason}',
   'loops.name': 'Loops', 'loops.balance': 'Vous avez {n} Loops', 'loops.useNoFee': 'Utiliser {n} Loops : aucuns frais sur cette vente', 'loops.useNoFeeShort': 'Utiliser {n} Loops : aucuns frais',
   'loops.youHave': 'Vous avez {n} Loops.', 'loops.needMore': 'Il vous manque {n} Loops.', 'loops.notEnough': 'Vous n’avez pas assez de Loops.',
   'loops.handoverDone': 'Remise faite', 'loops.buyerPaid': 'Vous avez payé {amount}. Une fois l’objet récupéré auprès de {name}, confirmez la remise.',

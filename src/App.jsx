@@ -328,24 +328,28 @@ export default function App() {
   const unread = convs.reduce((n, c) => n + c.unread, 0)
 
   /* ---------- sale approval: the seller approves in the conversation, then the buyer can pay ---------- */
-  // checking out an accepted offer is already approved: the seller agreed to that price in the chat
-  const approvalOf = it =>
-    dealPay?.itemId === it.id ? 'approved' : (convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null)
-  /** Records an accepted offer as the sale's approval (reserving the item), then refreshes. */
+  // only what the database has recorded counts, so the checkout never shows an approval that payment would refuse
+  const approvalOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null
+  /** Records an accepted offer as the sale's approval (reserving the item). Returns false, after saying why, if it can't. */
   const approveFromOffer = async conv => {
+    if (conv.approval === 'approved') return true
     try {
       await api.approveByOffer(conv.id)
       await Promise.all([reloadConvs(), reloadItems()])
-    } catch {
-      /* not applied yet, or the item went to someone else: the checkout shows what's possible */
+      return true
+    } catch (e) {
+      // PGRST202: the function isn't in the database yet (migration 20261026000000_offer_approval not applied)
+      showToast(e?.code === 'PGRST202' ? t('offer.notReady') : t('offer.approveFail', { reason: e?.message ?? '' }))
+      return false
     }
   }
-  const payOffer = deal => {
+  /** "Go to checkout" on an accepted offer: record the approval first, then open the checkout at the agreed price. */
+  const payOffer = async deal => {
     if (!itemById(deal.itemId)) return showToast('This listing is no longer available.')
+    const conv = convs.find(c => c.iAmBuyer && c.itemId === deal.itemId)
+    if (conv) await approveFromOffer(conv)
     setDealPay(deal)
     setBuyId(deal.itemId)
-    const conv = convs.find(c => c.iAmBuyer && c.itemId === deal.itemId)
-    if (conv) approveFromOffer(conv)
   }
   /* the checkout's message button opens a conversation with the seller; sample listings get a sample one */
   const contactOwner = it => {

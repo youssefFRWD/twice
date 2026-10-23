@@ -123,6 +123,8 @@ export default {
   'pay.loadFail': 'Could not check your payout account.', 'pay.linkFail': 'Could not open Stripe. Try again.',
   'pay.payoutPending': 'Your payout hasn’t gone through yet.', 'pay.retry': 'Retry payout',
   'co.paidH': 'Already paid', 'co.paidP': 'Meet {seller} to collect it, then both tap “Handover done” in your conversation.',
+  'offer.notReady': 'Accepted offers can’t approve sales yet: the latest database update hasn’t been applied. Ask the seller to tap Approve sale.',
+  'offer.approveFail': 'Could not confirm the accepted offer: {reason}',
   'loops.name': 'Loops', 'loops.balance': 'You have {n} Loops', 'loops.useNoFee': 'Use {n} Loops: no fee on this sale', 'loops.useNoFeeShort': 'Use {n} Loops: no fee',
   'loops.youHave': 'You have {n} Loops.', 'loops.needMore': 'You need {n} more Loops.', 'loops.notEnough': 'You don’t have enough Loops.',
   'loops.handoverDone': 'Handover done', 'loops.buyerPaid': 'You paid {amount}. Once you have the item from {name}, tap Handover done.',
