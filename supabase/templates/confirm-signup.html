@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#F6F1E7;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F1E7;padding:32px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
+            <tr>
+              <td style="padding:0 4px 18px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+                <span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:#1F4D3A;vertical-align:middle;"></span><span style="display:inline-block;width:22px;height:22px;border-radius:50%;background:#A14947;margin-left:-11px;vertical-align:middle;opacity:.92;"></span>
+                <span style="font-size:26px;font-weight:800;letter-spacing:-1px;color:#1E2A24;vertical-align:middle;margin-left:8px;">twice</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#FFFDF8;border:1px solid #E3DBC8;border-radius:22px;padding:36px 32px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;color:#1E2A24;">
+                <h1 style="margin:0 0 14px;font-size:30px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:#1E2A24;">Confirm your email address</h1>
+                <p style="margin:0 0 26px;font-family:Georgia,'Times New Roman',serif;font-size:16px;line-height:1.55;color:#636A61;">Follow the button below to confirm this email address and finish signing up.</p>
+                <table role="presentation" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td style="border-radius:999px;background:#1F4D3A;">
+                      <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:700;color:#FFFDF8;text-decoration:none;border-radius:999px;">Confirm email address</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:26px 0 0;font-size:13px;line-height:1.5;color:#636A61;">Button not working? Paste this link into your browser:<br><a href="{{ .ConfirmationURL }}" style="color:#8F3D3B;word-break:break-all;">{{ .ConfirmationURL }}</a></p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:18px 8px 0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;font-size:12.5px;line-height:1.5;color:#636A61;text-align:center;">
+                You're receiving this email because you signed up to twice. If that wasn't you, you can ignore it.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
