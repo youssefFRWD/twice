@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
 import { currencyName, locale } from './locale.js'
-import { currencyList, dealsOf, deriveOffers, formatMoney, offerBody, parseBody, replyBody, toEur } from './offers.js'
+import { currencyList, dealsOf, deriveOffers, formatMoney, offerBody, parseBody, previewOf, replyBody, toEur } from './offers.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -777,16 +777,27 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleItemId }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [] }) {
   const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
   const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
-  const demoConvs = useMemo(
-    () => SAMPLE_CONVS.map(c => ({ ...c, deals: dealsOf(demoMsgs[c.id], { convId: c.id, iAmBuyer: true, partner: c.partner, itemId: c.itemId, itemTitle: c.itemTitle }) })),
-    [demoMsgs],
-  )
+  const demoConvs = useMemo(() => {
+    // sample listings the buyer contacted from checkout get a conversation with their seller, unless one exists already
+    const started = sampleChats
+      .filter(it => !SAMPLE_CONVS.some(c => c.itemId === it.id))
+      .map(it => ({ id: `demo-item-${it.id}`, sample: true, iAmBuyer: true, partnerId: `demo-seller-${it.id}`, itemId: it.id, partner: it.s, itemTitle: it.t, last: null, unread: 0, at: it.at, theirAt: null }))
+    return [...started, ...SAMPLE_CONVS].map(c => {
+      const msgs = demoMsgs[c.id] || []
+      const last = msgs[msgs.length - 1]
+      return {
+        ...c,
+        ...(last && c.id.startsWith('demo-item-') ? { last: { body: previewOf(last.body), mine: true }, at: last.created_at } : {}),
+        deals: dealsOf(msgs, { convId: c.id, iAmBuyer: true, partner: c.partner, itemId: c.itemId, itemTitle: c.itemTitle }),
+      }
+    })
+  }, [demoMsgs, sampleChats])
   const convs = demo ? demoConvs : realConvs
   const [showCart, setShowCart] = useState(false)
   const [stars, setStars] = useStored(`twice.stars.${uid}`, [])
@@ -863,7 +874,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     )
   }
 
-  const open = convs.find(c => c.id === openId) ?? (demo && !openId && sampleItemId != null ? convs.find(c => c.itemId === sampleItemId) : undefined)
+  // checkout opens a sample listing's chat as demo-item-<id>; one of the built-in sample chats may cover that item
+  const open = convs.find(c => c.id === openId) ?? (demo ? convs.find(c => openId === `demo-item-${c.itemId}`) : undefined)
   const finding = filter === 'others'
   const visible = ordered.slice(0, VISIBLE)
   const rest = ordered.slice(VISIBLE)
@@ -952,7 +964,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
             {convs.length > 0 && ordered.length === 0 && <p className="note" style={{ padding: '8px 4px' }}>No conversation matches “{query}”.</p>}
             <div className="cv-stack">
               {visible.map(c => (
-                <ConvButton key={c.id} c={c} active={c.id === openId && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
+                <ConvButton key={c.id} c={c} active={c.id === open?.id && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
               ))}
             </div>
             {rest.length > 0 && (
@@ -965,7 +977,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
                 {moreOpen && (
                   <div className="more-menu" role="menu">
                     {rest.map(c => (
-                      <ConvButton key={c.id} c={c} active={c.id === openId} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
+                      <ConvButton key={c.id} c={c} active={c.id === open?.id} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
                     ))}
                   </div>
                 )}
