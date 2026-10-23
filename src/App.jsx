@@ -320,7 +320,7 @@ export default function App() {
   /* the checkout's message button opens a conversation with the seller; sample listings get a sample one */
   const contactOwner = it => {
     setBuyId(null)
-    if (it.sid) return messageSeller(it)
+    if (it.sid || !uid) return messageSeller(it) // messageSeller asks signed-out users to sign in
     setSampleChats(l => (l.some(x => x.id === it.id) ? l : [...l, { id: it.id, t: it.t, s: it.s, at: new Date().toISOString() }]))
     setChatId(`demo-item-${it.id}`)
     setTab('messages')

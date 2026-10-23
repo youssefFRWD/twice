@@ -758,7 +758,8 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
 
 export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [] }) {
   const { t } = useI18n()
-  const demo = SHOW_SAMPLES && realConvs.length === 0
+  // messaging is for signed-in users only, so signed-out visitors don't get the sample conversations either
+  const demo = SHOW_SAMPLES && !!realUid && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
   const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
@@ -840,8 +841,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
       <div className="empty">
         <Icon name="chat" size={40} />
         <h2>{t('msg.needAccount')}</h2>
-        <p>{backendOn ? 'Sign in to message sellers about their items.' : 'Messaging is only available once twice is connected online.'}</p>
-        {backendOn && onSignIn && <button className="btn primary" onClick={onSignIn}>Sign in / Sign up</button>}
+        <p>{backendOn ? t('msg.signInTo') : t('msg.offline')}</p>
+        {backendOn && onSignIn && <button className="btn primary" onClick={onSignIn}>{t('signInUp')}</button>}
       </div>
     )
   }
