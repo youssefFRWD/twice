@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ITEMS, LM, catOf } from './data.js'
 import { sendContact } from './api.js'
 import { useI18n } from './i18n.js'
@@ -262,6 +262,92 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
   const [info, setInfo] = useState(null)
   const rootRef = useRef(null)
 
+  // scroll-driven reveals and hero parallax
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (reducedMotion() || !('IntersectionObserver' in window)) return
+    root.classList.add('anim')
+    const io = new IntersectionObserver(
+      entries => entries.forEach(e => {
+        if (!e.isIntersecting) return
+        e.target.classList.add('in')
+        io.unobserve(e.target)
+      }),
+      { root, threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
+    )
+    root.querySelectorAll('[data-reveal]').forEach(el => io.observe(el))
+    // the background warms toward green once the closing section is in view
+    const end = root.querySelector('.lp-end')
+    const deep = new IntersectionObserver(([e]) => root.classList.toggle('deep', e.isIntersecting), { root, threshold: 0.35 })
+    if (end) deep.observe(end)
+
+    // the ticker races while you scroll, then eases back to its normal pace
+    const tick = root.querySelector('.tk')?.getAnimations?.()[0]
+    let speed = 1
+    let lastY = root.scrollTop
+    let raf = 0
+    const frame = () => {
+      const y = root.scrollTop
+      const h = root.clientHeight
+      root.style.setProperty('--p', Math.min(1, y / h).toFixed(3))
+      speed = Math.max(speed * 0.94, 1 + Math.min(Math.abs(y - lastY) * 0.35, 9))
+      lastY = y
+      if (tick) tick.playbackRate = speed
+      raf = speed > 1.02 ? requestAnimationFrame(frame) : 0
+    }
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(frame)
+    }
+    frame()
+    root.addEventListener('scroll', onScroll, { passive: true })
+    window.addEventListener('resize', onScroll)
+
+    // 3D tilt of the phone stage and magnetic buttons, for mouse and trackpad only
+    const fine = matchMedia('(hover:hover) and (pointer:fine)').matches
+    const stage = root.querySelector('.lp-stage')
+    const magnets = [...root.querySelectorAll('[data-magnet]')]
+    const onStage = e => {
+      const r = stage.getBoundingClientRect()
+      stage.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3))
+      stage.style.setProperty('--my', (((e.clientY - r.top) / r.height) * 2 - 1).toFixed(3))
+    }
+    const offStage = () => {
+      stage.style.setProperty('--mx', 0)
+      stage.style.setProperty('--my', 0)
+    }
+    const onMagnet = e => {
+      const b = e.currentTarget
+      const r = b.getBoundingClientRect()
+      b.style.translate = `${((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1)}px ${((e.clientY - r.top - r.height / 2) * 0.35).toFixed(1)}px`
+    }
+    const offMagnet = e => {
+      e.currentTarget.style.translate = ''
+    }
+    if (fine && stage) {
+      stage.addEventListener('pointermove', onStage)
+      stage.addEventListener('pointerleave', offStage)
+    }
+    if (fine) magnets.forEach(b => {
+      b.addEventListener('pointermove', onMagnet)
+      b.addEventListener('pointerleave', offMagnet)
+    })
+
+    return () => {
+      io.disconnect()
+      deep.disconnect()
+      cancelAnimationFrame(raf)
+      if (tick) tick.playbackRate = 1
+      root.removeEventListener('scroll', onScroll)
+      window.removeEventListener('resize', onScroll)
+      stage?.removeEventListener('pointermove', onStage)
+      stage?.removeEventListener('pointerleave', offStage)
+      magnets.forEach(b => {
+        b.removeEventListener('pointermove', onMagnet)
+        b.removeEventListener('pointerleave', offMagnet)
+      })
+    }
+  }, [])
+
   useEffect(() => {
     const t = setTimeout(() => goRef.current?.focus({ preventScroll: true }), 50)
     return () => clearTimeout(t)
@@ -318,11 +404,11 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
               <span><i className="m" style={{ fontStyle: 'normal' }}>{t('lp.h1c')}</i> {t('lp.h1d')}</span>
             </h1>
             <div className="lp-cta">
-              <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
-              <button className="btn big" onClick={how}>{t('lp.how')}</button>
+              <button className="btn primary big" data-magnet ref={goRef} onClick={onStart}>{t('lp.start')}</button>
+              <button className="btn big" data-magnet onClick={how}>{t('lp.how')}</button>
             </div>
           </div>
-          <div className="lp-stage">
+          <div className="lp-stage" data-reveal="zoom">
             <svg className="trk" viewBox="0 0 400 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
               <path d="M-20 120H140a40 40 0 0 1 40 40V420a40 40 0 0 0 40 40H420" fill="none" stroke="currentColor" strokeWidth="14" strokeLinecap="round" />
               <g fill="currentColor">
@@ -340,9 +426,9 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <div className="ticker"><div className="tk">{tk(false)}<span className="tk-dup" aria-hidden="true">{tk(true)}</span></div></div>
       <div className="gut">
         <section className="lp-in lp-how" ref={howRef}>
-          <h2 className="lp-h2">{t('lp.h2')}</h2>
+          <h2 className="lp-h2" data-reveal style={{ '--d': '.08s' }}>{t('lp.h2')}</h2>
           <ol className="stops">
-            <li className="stp">
+            <li className="stp" data-reveal style={{ '--d': '0s' }}>
               <span className="stn">1</span>
               <div className="vis v1">
                 <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">{t('pass').toUpperCase()}</span></div>
@@ -351,7 +437,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
               <h3><button className="stp-link" onClick={() => onNav('discover')}>{t('lp.s1h')}</button></h3>
               <p>{t('lp.s1p')}</p>
             </li>
-            <li className="stp">
+            <li className="stp" data-reveal style={{ '--d': '.12s' }}>
               <span className="stn">2</span>
               <div className="vis v2">
                 {[4, 18, 14, 10, 21, 7].map(id => (
@@ -363,7 +449,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
               <h3><button className="stp-link" onClick={() => onNav('saved')}>{t('lp.s2h')}</button></h3>
               <p>{t('lp.s2p')}</p>
             </li>
-            <li className="stp">
+            <li className="stp" data-reveal style={{ '--d': '.24s' }}>
               <span className="stn">3</span>
               <div className="vis v3"><RouteVisual /></div>
               <h3><button className="stp-link" onClick={() => onNav('map')}>{t('lp.s3h')}</button></h3>
@@ -375,15 +461,15 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <section className="lp-end">
         <div className="gut">
           <div className="lp-in">
-            <div className="le-copy">
+            <div className="le-copy" data-reveal="left">
               <h2>{t('lp.endH')}</h2>
               <p>
                 Your next find is probably a few stops away. Buyers and sellers use the same app, so tell us which one you
                 are and start with what is nearest.
               </p>
-              <button className="btn inv big" onClick={onStart}>{t('lp.start')}</button>
+              <button className="btn inv big" data-magnet onClick={onStart}>{t('lp.start')}</button>
             </div>
-            <div className="le-vis" aria-hidden="true">
+            <div className="le-vis" aria-hidden="true" data-reveal="zoom" style={{ '--d': '.1s' }}>
               <img src={secondHome} alt="" />
             </div>
           </div>
@@ -394,10 +480,10 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <footer className="lp-foot">
         <div className="gut">
           <div className="lp-in">
-            <h2>Everything at twice</h2>
+            <h2 data-reveal>Everything at twice</h2>
             <div className="lf-cols">
               {cols.map(([h, links]) => (
-                <nav key={h} aria-label={h}>
+                <nav key={h} aria-label={h} data-reveal style={{ '--d': cols.findIndex(c => c[0] === h) * 0.08 + 's' }}>
                   <h3>{h}</h3>
                   <ul>
                     {links.map(([label, act]) => (

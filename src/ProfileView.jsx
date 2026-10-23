@@ -4,7 +4,7 @@ import { useI18n } from './i18n.js'
 import { areaName } from './areas.js'
 import { locale } from './locale.js'
 import { ReviewList } from './ProfileReviews.jsx'
-import { Art, Avatar, Cover, Icon } from './ui.jsx'
+import { Art, Avatar, CountUp, Cover, Icon } from './ui.jsx'
 
 const joined = iso => new Date(iso).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
 const arrLabel = areaName
@@ -45,6 +45,12 @@ export default function ProfileView({ uid, userId, onBack, onToast, onShowMap, o
     setBusy(false)
   }
 
+  const messageThem = () => {
+    const it = items.find(canMessage)
+    if (it) onMessage(it)
+    else onToast(t('pv.noListingsMsg', { name: page.display_name }))
+  }
+
   const back = (
     <button className="btn small pv-back" onClick={onBack}>
       <Icon name="undo" size={16} />{t('back')}
@@ -80,6 +86,11 @@ export default function ProfileView({ uid, userId, onBack, onToast, onShowMap, o
             </p>
           </div>
           <div className="pf-actions">
+            {userId !== uid && (
+              <button className="btn small primary" onClick={messageThem}>
+                <Icon name="chat" size={16} />{t('pv.message')}
+              </button>
+            )}
             <button className={`btn small${following ? '' : ' primary'}`} disabled={busy} onClick={toggleFollow}>
               {following ? t('fr.unfollow') : t('fr.follow')}
             </button>
@@ -90,8 +101,8 @@ export default function ProfileView({ uid, userId, onBack, onToast, onShowMap, o
             <dt>{t('pf.statRating')}</dt>
             <dd>{avg == null ? '–' : <><span className="stars">★</span> {avg.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</>}</dd>
           </div>
-          <div><dt>{t('pf.statReceived')}</dt><dd>{received.length}</dd></div>
-          <div><dt>{t('pv.listings')}</dt><dd>{items.length}</dd></div>
+          <div><dt>{t('pf.statReceived')}</dt><dd><CountUp value={received.length} /></dd></div>
+          <div><dt>{t('pv.listings')}</dt><dd><CountUp value={items.length} /></dd></div>
         </dl>
       </section>
 

@@ -27,19 +27,37 @@ const rowToItem = r => ({
   img: sortedPhotos(r.item_images)[0] ? photoUrl(sortedPhotos(r.item_images)[0].storage_path) : null,
   imgs: sortedPhotos(r.item_images).map(i => photoUrl(i.storage_path)),
   reserved: r.status === 'reserved',
+  boostedUntil: r.boosted_until || null,
 })
 
-const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,item_images(storage_path,position)'
+const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,boosted_until,item_images(storage_path,position)'
+const OLD_ITEM_COLS = ITEM_COLS.replace(',boosted_until', '') // before the Loops migration
+
+// Codes Supabase returns when a column, table or relationship doesn't exist yet, i.e. a migration isn't applied.
+const SCHEMA_MISSING = new Set(['42703', '42P01', 'PGRST200', 'PGRST204', 'PGRST205'])
+/** Selects with the newest columns first, then older column sets while the latest migrations aren't applied yet. */
+const selectWithFallback = async (query, ...colSets) => {
+  let res
+  for (const cols of colSets) {
+    res = await query(cols)
+    if (!res.error || !SCHEMA_MISSING.has(res.error.code)) break
+  }
+  return ok(res)
+}
 
 /** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).in('status', ['active', 'reserved']).order('id'))
+  const rows = await selectWithFallback(cols => supabase.from('items').select(cols).in('status', ['active', 'reserved']).order('id'), ITEM_COLS, OLD_ITEM_COLS)
   return rows.map(rowToItem)
 }
 
 /** Someone's listings that are live right now, newest first (for their public profile). */
 export async function fetchSellerListings(sellerId) {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('seller_id', sellerId).eq('status', 'active').order('created_at', { ascending: false }))
+  const rows = await selectWithFallback(
+    cols => supabase.from('items').select(cols).eq('seller_id', sellerId).eq('status', 'active').order('created_at', { ascending: false }),
+    ITEM_COLS,
+    OLD_ITEM_COLS,
+  )
   return rows.map(rowToItem)
 }
 
@@ -101,7 +119,7 @@ export async function uploadAvatar(uid, blob, oldPath, kind = 'avatar') {
 }
 
 /* ---------- my listings ---------- */
-const LISTING_COLS = 'id,category_id,title,brand,description,price_cents,condition,address,lat,lon,status,created_at,item_images(id,storage_path,position)'
+const LISTING_COLS = 'id,category_id,title,brand,description,price_cents,condition,address,lat,lon,status,boosted_until,created_at,item_images(id,storage_path,position)'
 
 const rowToListing = r => ({
   id: r.id,
@@ -115,11 +133,16 @@ const rowToListing = r => ({
   lat: r.lat,
   lon: r.lon,
   status: r.status,
+  boostedUntil: r.boosted_until || null,
   photos: sortedPhotos(r.item_images).map(i => ({ path: i.storage_path, url: photoUrl(i.storage_path) })),
 })
 
 export async function fetchMyListings(uid) {
-  const rows = ok(await supabase.from('items').select(LISTING_COLS).eq('seller_id', uid).neq('status', 'removed').order('created_at', { ascending: false }))
+  const rows = await selectWithFallback(
+    cols => supabase.from('items').select(cols).eq('seller_id', uid).neq('status', 'removed').order('created_at', { ascending: false }),
+    LISTING_COLS,
+    LISTING_COLS.replace(',boosted_until', ''),
+  )
   return rows.map(rowToListing)
 }
 
@@ -236,10 +259,15 @@ const byTime = (x, y) => new Date(x.created_at) - new Date(y.created_at)
 
 /** One row per conversation the user is part of, newest activity first. */
 export async function fetchConversations(uid) {
-  const rows = ok(
-    await supabase
-      .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status)'),
+  const base = 'id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at)'
+  const sale = 'method,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded'
+  // approvals and sales come from the approval, Loops and Stripe migrations; conversations load with whatever exists
+  const rows = await selectWithFallback(
+    cols => supabase.from('conversations').select(cols),
+    `${base},sale_approvals(status),sales(${sale},paid_at,transfer_id)`,
+    `${base},sale_approvals(status),sales(${sale})`,
+    `${base},sale_approvals(status)`,
+    base,
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -254,6 +282,9 @@ export async function fetchConversations(uid) {
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
       const approval = [].concat(r.sale_approvals ?? [])[0]
+      const row = [].concat(r.sales ?? [])[0]
+      // an online payment that was started but not completed doesn't count yet (before the Stripe migration, every sale is paid)
+      const sale = row && (row.paid_at || !('paid_at' in row)) ? row : null
       return {
         id: r.id,
         iAmBuyer,
@@ -261,6 +292,7 @@ export async function fetchConversations(uid) {
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
         approval: approval?.status ?? null,
+        sale,
         itemTitle,
         partner,
         last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
@@ -311,6 +343,22 @@ export async function setSaleApproval(uid, conversationId, approved, note) {
   if (note) await sendMessage(uid, conversationId, note)
 }
 
+/* ---------- Loops ---------- */
+// Every change to Loops, fees and sales happens inside these database functions, never from the client.
+
+export const fetchLoops = async () => ok(await supabase.rpc('my_loops'))
+
+/** Cash only: the buyer reserves and pays in person. paidCents is the agreed offer price, or null for the listing price. */
+export const paySale = async (conversationId, method, paidCents, useLoops) =>
+  ok(await supabase.rpc('pay_sale', { conv: conversationId, pay_method: method, paid_cents: paidCents, use_loops: useLoops }))
+
+/** Buyer or seller confirms the handover; the seller can spend 500 Loops here to remove their fee. */
+export const confirmHandover = async (conversationId, useLoops) =>
+  ok(await supabase.rpc('confirm_handover', { conv: conversationId, use_loops: useLoops }))
+
+/** Spends 300 Loops to put a listing at the top of Discover for 24 hours. */
+export const boostListing = async itemId => ok(await supabase.rpc('boost_listing', { listing: itemId }))
+
 /* ---------- contact the twice team ---------- */
 const TEAM_EMAIL = 'youssef.elbosaty@forward-college.eu'
 
@@ -335,4 +383,41 @@ export async function sendContact(form) {
     : Promise.reject(new Error('offline'))
   const results = await Promise.allSettled([emailTeam(form), saved])
   if (results.every(r => r.status === 'rejected')) throw new Error('contact')
+}
+
+/* ---------- Stripe (online payments, through the Edge Functions in supabase/functions) ---------- */
+
+/** Calls an Edge Function and surfaces its { error } message when it fails. */
+async function callFunction(name, body) {
+  const { data, error } = await supabase.functions.invoke(name, { body })
+  if (error) {
+    let message = error.message
+    try {
+      message = (await error.context.json()).error || message
+    } catch {
+      /* no JSON body */
+    }
+    throw new Error(message)
+  }
+  return data
+}
+
+/** Whether the seller in this conversation has finished Stripe onboarding and can be paid online. */
+export const canPayOnline = async conversationId => ok(await supabase.rpc('can_pay_online', { conv: conversationId }))
+
+/** Starts an online payment; returns { client_secret, amount } for Stripe's payment form. */
+export const startOnlinePayment = (conversationId, paidCents, useLoops) =>
+  callFunction('stripe-checkout', { conversation_id: conversationId, paid_cents: paidCents, use_loops: useLoops })
+
+/** "Handover done" on a sale paid online: also pays the seller once both have confirmed. */
+export const confirmOnlineHandover = (conversationId, useLoops) =>
+  callFunction('stripe-handover', { conversation_id: conversationId, use_loops: useLoops })
+
+/** Seller payouts: 'link' returns { url } to Stripe's onboarding, 'status' returns { connected, payouts_enabled }. */
+export const stripeConnect = action => callFunction('stripe-connect', { action })
+
+/** A conversation as the list shows it, for one that was just started and hasn't come back from the server yet. */
+export const draftConversation = (id, item) => {
+  const at = new Date().toISOString()
+  return { id, iAmBuyer: true, partnerId: item.sid, itemId: item.id, itemTitle: item.t, partner: item.s, approval: null, sale: null, last: null, unread: 0, at, theirAt: null }
 }

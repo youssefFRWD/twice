@@ -3,7 +3,7 @@ import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import { useI18n } from './i18n.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
-import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, onSale, persist, replaceItems } from './lib.js'
+import { DEFAULT_ME, LOOPS, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, onSale, persist, replaceItems } from './lib.js'
 import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
@@ -138,6 +138,7 @@ export default function App() {
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
+  const [loops, setLoops] = useState(0) // the signed-in user's Loops balance
   const [chatId, setChatId] = useState(null)
   const [sampleChats, setSampleChats] = useState([]) // sample listings contacted from checkout, shown as sample conversations
   const [session, setSession] = useState(null)
@@ -244,6 +245,7 @@ export default function App() {
         setPassed([])
         setHist([])
         setConvs([])
+        setLoops(0)
         setChatId(null)
       }
     })
@@ -286,7 +288,11 @@ export default function App() {
     const id = uidRef.current
     if (!id) return
     try {
-      setConvs(await api.fetchConversations(id))
+      // the balance moves when the other person completes a sale, so it refreshes with the conversations
+      const [list, balance] = await Promise.all([api.fetchConversations(id), api.fetchLoops().catch(() => null)])
+      setConvs(list)
+      if (balance != null) setLoops(balance)
+      return list
     } catch {
       /* keep the last list; the next poll retries */
     }
@@ -308,7 +314,11 @@ export default function App() {
     if (!canMessage(it)) return showToast(it.sid ? t('toast.ownListing') : t('toast.sampleNoSeller'))
     try {
       const id = await api.startConversation(uid, it)
-      await reloadConvs()
+      const list = await reloadConvs()
+      if (!list?.some(c => c.id === id)) {
+        // the list didn't load (or doesn't have it yet): open the thread anyway, the next poll fills in the rest
+        setConvs(l => (l.some(c => c.id === id) ? l : [api.draftConversation(id, it), ...l]))
+      }
       setChatId(id)
       setTab('messages')
     } catch {
@@ -341,6 +351,33 @@ export default function App() {
     }
   }
   const openCheckout = id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))
+
+  /* ---------- Loops: paying, confirming the handover, boosting ---------- */
+  const buyerConvOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)
+  const agreedCents = it => (dealPay && dealPay.itemId === it.id ? Math.round(dealPay.eur * 100) : null)
+  /* The checkout's payment actions; each throws on failure so the checkout can show the error. */
+  const payment = {
+    start: (it, useLoops) => api.startOnlinePayment(buyerConvOf(it).id, agreedCents(it), useLoops),
+    // Stripe's webhook marks the sale paid a moment after the buyer's payment goes through
+    paidOnline: () => [1500, 5000].forEach(ms => setTimeout(reloadConvs, ms)),
+    cash: async it => {
+      await api.paySale(buyerConvOf(it).id, 'cash', agreedCents(it), false)
+      await reloadConvs()
+    },
+  }
+  const confirmHandover = async (conv, useLoops) => {
+    try {
+      const sale = conv.sale?.method === 'online' ? await api.confirmOnlineHandover(conv.id, useLoops) : await api.confirmHandover(conv.id, useLoops)
+      await Promise.all([reloadConvs(), reloadItems()])
+      if (sale?.completed_at) showToast(sale.loops_awarded ? t('loops.earnedToast', { n: LOOPS.perSale }) : t('loops.doneToast'))
+    } catch (e) {
+      showToast(/not enough Loops/.test(e?.message) ? t('loops.notEnough') : t('loops.handoverFail'))
+    }
+  }
+  const boostListing = async itemId => {
+    await api.boostListing(itemId)
+    await Promise.all([reloadConvs(), reloadItems()])
+  }
 
   useEffect(() => {
     if (synced && uid && me.src !== 'default') sync(id => api.setHome(id, me))
@@ -543,6 +580,13 @@ export default function App() {
               <span><span className="wide">{t('signInUp')}</span><span className="narrow">{t('auth.signIn')}</span></span>
             </button>
           )}
+          {session && (
+            <button className="loops-pill" onClick={() => setTab('profile')} aria-label={t('loops.balance', { n: loops })} title={t('loops.balance', { n: loops })}>
+              <Icon name="loop" size={16} />
+              <b className="mono">{loops.toLocaleString()}</b>
+              <span className="wide">{t('loops.name')}</span>
+            </button>
+          )}
           <ViewSwitch />
           <button
             className="loc"
@@ -640,7 +684,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} sampleChats={sampleChats} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} sampleChats={sampleChats} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} loops={loops} onHandover={confirmHandover} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -666,6 +710,8 @@ export default function App() {
                 onBuy={openCheckout}
                 canMessage={canMessage}
                 onMessage={messageSeller}
+                loops={loops}
+                onBoost={boostListing}
               />
             )}
           </section>
@@ -734,7 +780,11 @@ export default function App() {
           item={dealPay && dealPay.itemId === buyId ? { ...buyItem, p: dealPay.eur } : buyItem}
           me={me}
           uid={uid}
+          convId={buyerConvOf(buyItem)?.id}
           approval={approvalOf(buyItem)}
+          sale={buyerConvOf(buyItem)?.sale ?? null}
+          loops={loops}
+          payment={payment}
           canMessage={canMessage}
           onPaid={() => dealPay && markPaid(dealPay.id)}
           onMessage={contactOwner}

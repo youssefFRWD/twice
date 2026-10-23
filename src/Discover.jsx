@@ -1,7 +1,7 @@
 import { useEffect, useImperativeHandle, useRef } from 'react'
 import { clamp } from './data.js'
 import { useI18n } from './i18n.js'
-import { walkLabel } from './lib.js'
+import { isBoosted, walkLabel } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
 function SwipeCard({ item, depth, me, onDecide, onSeller, onOpen, ref }) {
@@ -115,6 +115,7 @@ function SwipeCard({ item, depth, me, onDecide, onSeller, onOpen, ref }) {
           {walkLabel(me, item, t)}
         </span>
         <span className="cond">{cond(item.cond)}</span>
+        {isBoosted(item) && <span className="boost-tag">{t('loops.boostedTag')}</span>}
       </Art>
       <div className="tag yes" ref={yesTag}>{t('save')}</div>
       <div className="tag no" ref={noTag}>{t('pass')}</div>

@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { COVER_STYLES, ICON, LM, catOf } from './data.js'
 import Gallery from './Gallery.jsx'
 import { useI18n } from './i18n.js'
+import { reducedMotion } from './lib.js'
 
 export function Icon({ name, size = 20, sw = 2 }) {
   return (
@@ -75,4 +77,23 @@ export function LineBadge({ id }) {
       {id}
     </span>
   )
+}
+
+/** A number that counts up from zero when it first appears. */
+export function CountUp({ value }) {
+  const [n, setN] = useState(0)
+  const still = reducedMotion() || !value
+  useEffect(() => {
+    if (still) return
+    let raf = 0
+    const t0 = performance.now()
+    const step = now => {
+      const k = Math.min(1, (now - t0) / 800)
+      setN(Math.round(value * (1 - Math.pow(1 - k, 3))))
+      if (k < 1) raf = requestAnimationFrame(step)
+    }
+    raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+  }, [value, still])
+  return still ? value : n
 }
