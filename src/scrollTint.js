@@ -1,6 +1,6 @@
 /**
  * Scroll-driven page colour. As you scroll down any tab, the page background blends from the paper beige (--bg)
- * to the soft blue-green (--accent-soft); scrolling back up blends it back. The landing page runs the same
+ * to the soft blue-green (--tint-end, a warm brown in the dark theme); scrolling back up blends it back. The landing page runs the same
  * blend over its own, earlier range so the closing blue gets more room.
  */
 import { onThemeChange } from './theme.js'
@@ -14,7 +14,7 @@ export function startScrollTint() {
   const readBase = () => {
     root.style.removeProperty('--bg')
     const cs = getComputedStyle(root)
-    base = { bg: cs.getPropertyValue('--bg').trim(), soft: cs.getPropertyValue('--accent-soft').trim() }
+    base = { bg: cs.getPropertyValue('--bg').trim(), soft: (cs.getPropertyValue('--tint-end') || cs.getPropertyValue('--accent-soft')).trim() }
   }
   const paint = p => {
     if (!base) readBase()

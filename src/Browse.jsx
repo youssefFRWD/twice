@@ -13,7 +13,7 @@ const fold = s =>
 const SORTS = ['nearest', 'low', 'high']
 
 /** Every listing in one searchable grid, so nothing has to be swiped to be found. */
-export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onShowMap, canMessage, onMessage, onSeller, onOpen }) {
+export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onShowMap, canMessage, onMessage, onSeller, onOpen, onNewListing }) {
   const { t, cat, cond, money } = useI18n()
   const [q, setQ] = useState('')
   const [cat_, setCat] = useState('all')
@@ -40,9 +40,14 @@ export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onSh
 
   return (
     <div id="browse-wrap" className="gut">
-      <div className="titlebar">
+      <div className="titlebar br-title">
         <h1>{t('tab.browse')}</h1>
-        <span>{t('br.count', { n: shown.length })}</span>
+        <div className="br-title-r">
+          <span>{t('br.count', { n: shown.length })}</span>
+          <button className="btn primary small" onClick={onNewListing}>
+            <Icon name="plus" size={16} />{t('ls.new')}
+          </button>
+        </div>
       </div>
 
       <div className="br-bar">

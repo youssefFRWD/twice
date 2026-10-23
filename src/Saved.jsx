@@ -63,6 +63,7 @@ function BoardPicker({ anchor, boards, isIn, onToggle, onCreate, onClose }) {
   const { t } = useI18n()
   const [name, setName] = useState('')
   const ref = useRef(null)
+  const [note, setNote] = useState('')
   const [pos, setPos] = useState(null)
   // drawn on <body> and placed from the button, so the card's rounded edge can never clip it
   useLayoutEffect(() => {
@@ -95,27 +96,44 @@ function BoardPicker({ anchor, boards, isIn, onToggle, onCreate, onClose }) {
   if (!pos) return null
   const add = e => {
     e.preventDefault()
-    if (onCreate(name)) setName('')
+    if (onCreate(name)) {
+      setNote(t('saved.addedTo', { name: name.trim() }))
+      setName('')
+    }
   }
   return createPortal(
     <div className="board-pop glass-pop" ref={ref} role="dialog" aria-label={t('saved.addToBoard')} style={pos}>
       <b>{t('saved.addToBoard')}</b>
       {boards.length === 0 && <small>{t('saved.noBoards')}</small>}
       <ul>
-        {boards.map(b => (
-          <li key={b.id}>
-            <label>
-              <input type="checkbox" checked={isIn(b)} onChange={() => onToggle(b.id)} />
-              <span>{b.name}</span>
-              <small>{b.ids.length}</small>
-            </label>
-          </li>
-        ))}
+        {boards.map(b => {
+          const on = isIn(b)
+          return (
+            <li key={b.id}>
+              <button
+                type="button"
+                role="menuitemcheckbox"
+                aria-checked={on}
+                className={`board-row${on ? ' on' : ''}`}
+                onClick={e => {
+                  e.stopPropagation()
+                  onToggle(b.id)
+                  setNote(on ? t('saved.removedFrom', { name: b.name }) : t('saved.addedTo', { name: b.name }))
+                }}
+              >
+                <i className="board-check" aria-hidden="true">{on && <Icon name="check" size={13} />}</i>
+                <span>{b.name}</span>
+                <small>{b.ids.length}</small>
+              </button>
+            </li>
+          )
+        })}
       </ul>
       <form onSubmit={add}>
         <input type="text" value={name} maxLength={40} onChange={e => setName(e.target.value)} placeholder={t('saved.newBoard')} aria-label={t('saved.newBoard')} />
         <button type="submit" className="btn small primary" disabled={!name.trim()}><Icon name="plus" size={14} />{t('saved.create')}</button>
       </form>
+      <small className="board-note" role="status">{note}</small>
     </div>,
     document.body,
   )

@@ -21,23 +21,25 @@ img{max-width:100%}
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#141A17; --surface:#1C2420; --surface-2:#262F2A; --ink:#EDE8DC; --muted:#9BA59D; --line:#2F3A34;
-  --accent:#5BAE88; --on-accent:#0F1713; --logo-green:#5BAE88; --accent-soft:#23392E;
+  --bg:#1B1310; --surface:#271C17; --surface-2:#33251E; --ink:#F0E6DA; --muted:#AE9E8F; --line:#3F2F27;
+  --accent:#5BAE88; --on-accent:#0F1713; --logo-green:#5BAE88; --accent-soft:#27382D; --tint-end:#4B3426;
   --coral:#B35553; --on-coral:#FFFDF8; --coral-ink:#E49A96;
   --nope:#E5714F; --on-nope:#1A0F0B; --nope-soft:#3A221B;
-  --me:#6AA4FF; --focus:#8FD0AE; --shadow:0 12px 30px rgba(0,0,0,.5); --hatch:rgba(237,232,220,.07);
-  --map-out:#1A211D; --map-land:#222B26; --map-paris:#27312B; --map-edge:#3A463F; --map-water:#2C4A4F; --map-green:#2E4030; --halo:#27312B;
-  --tile-1:#262F2A; --tile-2:#262F2A; --tile-3:#262F2A; --tile-4:#262F2A; --tile-5:#262F2A; --tile-6:#262F2A; --tile-7:#262F2A; --tile-8:#262F2A;
-  --glass:rgba(28,36,32,.9);
+  --me:#6AA4FF; --focus:#8FD0AE; --shadow:0 12px 30px rgba(0,0,0,.5); --hatch:rgba(240,230,218,.07);
+  --map-out:#1E1612; --map-land:#291E18; --map-paris:#30241D; --map-edge:#4A3A30; --map-water:#2C4A4F; --map-green:#2E4030; --halo:#30241D;
+  --tile-1:#33251E; --tile-2:#33251E; --tile-3:#33251E; --tile-4:#33251E; --tile-5:#33251E; --tile-6:#33251E; --tile-7:#33251E; --tile-8:#33251E;
+  --glass:rgba(39,28,23,.9);
   color-scheme:dark;
 }
-:root{--glass:rgba(255,253,248,.9)}
-:root[data-theme="dark"]{--glass:rgba(28,36,32,.9)}
+:root{--glass:rgba(255,253,248,.9);--tint-end:var(--accent-soft)}
+:root[data-theme="dark"]{--glass:rgba(39,28,23,.9)}
 /* the basemap is drawn on a canvas, so it is darkened here; pins, labels and controls are normal HTML */
 :root[data-theme="dark"] .maplibregl-canvas{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.9)}
-:root[data-theme="dark"] .lp-foot{background:#0C110F;color:#EDE8DC}
-:root[data-theme="dark"] .toast,:root[data-theme="dark"] .banner,:root[data-theme="dark"] .cond{background:#EDE8DC;color:#141A17}
-:root[data-theme="dark"] .toast button{color:#141A17}
+:root[data-theme="dark"] .lp-foot{background:linear-gradient(165deg,#3B281D 0%,#2C211A 46%,#1F3226 100%);color:#F0E6DA;border-top:1px solid rgba(228,154,150,.28)}
+:root[data-theme="dark"] .lf-cols h3{color:var(--coral-ink);border-bottom-color:rgba(240,230,218,.22)}
+:root[data-theme="dark"] .lf-base{border-top-color:rgba(240,230,218,.22)}
+:root[data-theme="dark"] .toast,:root[data-theme="dark"] .banner,:root[data-theme="dark"] .cond{background:#F0E6DA;color:#1B1310}
+:root[data-theme="dark"] .toast button{color:#1B1310}
 
 
 *{box-sizing:border-box}
@@ -141,6 +143,8 @@ main{flex:1;min-height:0;position:relative}
 .titlebar{width:100%;max-width:1180px;margin:0 auto 12px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
 .titlebar h1{margin:0;font:800 26px/1.1 var(--font-display);letter-spacing:-.02em}
 .titlebar span{color:var(--muted);font-size:13.5px}
+.br-title{align-items:center;flex-wrap:wrap}
+.br-title-r{display:flex;align-items:center;gap:12px}
 
 /* MAP */
 #v-map{display:none;flex-direction:row}
@@ -1458,3 +1462,26 @@ body::after{content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:
 .hs-tab.on .hs-tab-n{background:var(--coral);color:var(--on-coral)}
 .hs-prog{position:absolute;left:0;bottom:0;height:5px;width:100%;background:var(--coral);transform-origin:left;transform:scaleX(0)}
 @media (max-width:640px){.hs-tabs{gap:6px}.hs-tab{padding:10px 10px 13px;gap:6px}.hs-tab-n{width:22px;height:22px;font-size:12px}}
+
+/* saved cards: five actions don't fit one row in a narrow card, so the buy button gets its own row
+   and the icon buttons share the one below instead of squeezing out of the card */
+.saved-grid .sc .foot{flex-wrap:wrap}
+.saved-grid .sc .foot .btn.primary{flex:1 1 100%}
+.saved-grid .sc .foot .pop-anchor{flex:1 1 0;min-width:40px}
+.saved-grid .sc .foot .pop-anchor .btn,.saved-grid .sc .foot .msgb,.saved-grid .sc .foot .rm{flex:1 1 0;width:auto;min-width:40px}
+.saved-grid .sc .foot .pop-anchor .btn{width:100%}
+.saved-grid.lay-list .sc .foot .btn.primary{flex:1 1 auto}
+
+/* every button is rounded and follows the theme, even ones no component rule styles.
+   :where() keeps specificity at zero, so any button with its own rule is left exactly as it was. */
+:where(button,input[type=button],input[type=submit],input[type=reset]){border-radius:12px;border-color:var(--line);background-color:var(--surface);color:var(--ink)}
+:where(button:disabled){cursor:default}
+::file-selector-button{font:inherit;font-weight:600;padding:8px 14px;margin-right:10px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);cursor:pointer}
+:where(.linkbtn,button.brand){background-color:transparent}
+.board-row{display:flex;align-items:center;gap:10px;width:100%;padding:9px 8px;border:0;border-radius:10px;background:none;color:var(--ink);font:500 14px var(--font-body);text-align:left}
+.board-row:hover{background:var(--accent-soft)}
+.board-row span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.board-row small{color:var(--muted)}
+.board-check{display:grid;place-items:center;flex:none;width:20px;height:20px;border-radius:6px;border:1.5px solid var(--muted);color:var(--on-accent);font-style:normal;transition:background-color .15s,border-color .15s}
+.board-row.on .board-check{background:var(--accent);border-color:var(--accent)}
+.board-note{min-height:1.2em;color:var(--accent);font-weight:600}

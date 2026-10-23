@@ -158,7 +158,7 @@ export default {
   'av.unreadable': 'Impossible de lire cette image.', 'av.prepFail': 'Impossible de préparer la photo.',
 
   // annonces
-  'ls.new': 'Nouvelle annonce', 'ls.edit': 'Modifier l’annonce', 'ls.publish': 'Publier l’annonce',
+  'ls.new': 'Nouvelle annonce', 'ls.signInToSell': 'Connectez-vous pour vendre un objet.', 'ls.edit': 'Modifier l’annonce', 'ls.publish': 'Publier l’annonce',
   'ls.photos': 'Photos', 'ls.cover': 'la première est la couverture', 'ls.photoN': 'Photo {n}', 'ls.earlier': 'Avancer la photo {n}',
   'ls.later': 'Reculer la photo {n}', 'ls.removePhoto': 'Retirer la photo {n}', 'ls.add': 'Ajouter', 'ls.category': 'Catégorie',
   'ls.brand': 'Marque', 'ls.ifApplicable': 'le cas échéant', 'ls.price': 'Prix (€, euros)', 'ls.condition': 'État',
