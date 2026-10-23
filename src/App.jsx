@@ -538,7 +538,15 @@ export default function App() {
         <Tabs tab={tab} onTab={setTab} className="tabs-bottom gut" unread={unread} />
       </div>
 
-      {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
+      {landing && <Landing
+          onStart={startApp}
+          onSignIn={signedOut ? () => setAuthOpen(true) : undefined}
+          tabs={TABS}
+          onNav={t => {
+            startApp()
+            setTab(t)
+          }}
+        />}
       {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
       {buyId !== null && (
         <Checkout
