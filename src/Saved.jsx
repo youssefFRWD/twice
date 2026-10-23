@@ -1,10 +1,28 @@
+import { useMemo, useState } from 'react'
 import { fmtD } from './data.js'
 import { useI18n } from './i18n.js'
 import { distOf, meName } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
+const SORTS = ['date', 'name', 'price']
+
+/** AI-generated picture matching the listing text; the Art tile keeps its drawing if it fails to load. */
+const aiImage = it => `https://image.pollinations.ai/prompt/${encodeURIComponent(`product photo of ${it.t}. ${it.d || ''}`.slice(0, 300))}?width=640&height=400&nologo=true&seed=${it.id}`
+
 export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller }) {
   const { t, cond, money } = useI18n()
+  const [sort, setSort] = useState('date')
+  const [asc, setAsc] = useState(false)
+  const [open, setOpen] = useState(false)
+  const [q, setQ] = useState('')
+  const shown = useMemo(() => {
+    const needle = q.trim().toLowerCase()
+    const rows = list.map((it, i) => ({ it, i })).filter(({ it }) => !needle || `${it.t} ${it.d || ''} ${it.a || ''}`.toLowerCase().includes(needle))
+    const cmp = { date: (a, b) => a.i - b.i, name: (a, b) => a.it.t.localeCompare(b.it.t), price: (a, b) => a.it.p - b.it.p }[sort]
+    // list is in the order items were saved, so newest first is the default
+    rows.sort((a, b) => (sort === 'date' ? -cmp(a, b) : cmp(a, b)) * (asc ? -1 : 1))
+    return rows.map(r => r.it)
+  }, [list, q, sort, asc])
   if (!list.length) {
     return (
       <div className="empty">
@@ -19,12 +37,34 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
     <div id="saved-wrap" className="gut">
       <div className="titlebar">
         <h1>{t('tab.saved')}</h1>
-        <span>{t('saved.count', { n: list.length, total, name: meName(me, t) })}</span>
+        <div className="saved-tools">
+          <div className="sort-wrap">
+            <button type="button" className="btn small" aria-expanded={open} onClick={() => setOpen(o => !o)}>
+              <Icon name="filter" size={16} />{t('saved.sort')}: {t(`saved.by.${sort}`)}
+            </button>
+            {open && (
+              <div className="sort-menu" role="menu">
+                {SORTS.map(k => (
+                  <button key={k} type="button" role="menuitemradio" aria-checked={sort === k} className={sort === k ? 'on' : ''} onClick={() => { if (k === sort) setAsc(a => !a); else { setSort(k); setAsc(false) } setOpen(false) }}>
+                    {t(`saved.by.${k}`)}
+                  </button>
+                ))}
+                <button type="button" role="menuitemcheckbox" aria-checked={asc} onClick={() => { setAsc(a => !a); setOpen(false) }}>{asc ? t('saved.reverse.on') : t('saved.reverse.off')}</button>
+              </div>
+            )}
+          </div>
+          <label className="saved-search">
+            <Icon name="search" size={16} />
+            <input type="search" value={q} onChange={e => setQ(e.target.value)} placeholder={t('saved.search')} aria-label={t('saved.search')} />
+          </label>
+        </div>
       </div>
+      <p className="saved-count">{t('saved.count', { n: shown.length, total, name: meName(me, t) })}</p>
+      {!shown.length && <p className="saved-count">{t('saved.noMatch')}</p>}
       <div className="grid">
-        {list.map(it => (
+        {shown.map(it => (
           <article className="sc" key={it.id}>
-            <Art item={it}>
+            <Art item={it.img ? it : { ...it, img: aiImage(it) }}>
               <span className="dist-badge"><Icon name="pin" size={14} />{fmtD(distOf(me, it))}</span>
             </Art>
             <div className="body">

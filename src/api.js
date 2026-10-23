@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js'
-import { dealsOf, previewOf } from './offers.js'
+import { previewOf } from './offers.js'
 
 export const backendEnabled = !!supabase
 
@@ -181,7 +181,7 @@ export async function fetchReviewable(uid) {
     key: r.id,
     revieweeId: partnerOf(r),
     itemId: r.item_id,
-    label: `${names.get(partnerOf(r)) || 'Neighbour'} · ${r.items?.title || 'Listing no longer available'}`,
+    label: `${names.get(partnerOf(r)) || 'Unnamed user'} · ${r.items?.title || 'Listing no longer available'}`,
   }))
 }
 export const createReview = async (uid, { revieweeId, itemId, rating, body }) =>
@@ -237,7 +237,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -247,13 +247,13 @@ export async function fetchConversations(uid) {
     .map(r => {
       const msgs = (r.messages || []).slice().sort(byTime)
       const last = msgs[msgs.length - 1]
-      const partner = names.get(partnerOf(r)) || 'Neighbour'
+      // Profile name first; failing that, the seller name saved on the listing; never a generic label.
+      const partner = names.get(partnerOf(r)) || (partnerOf(r) === r.seller_id && r.items?.seller_name) || 'Unnamed user'
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
       return {
         id: r.id,
         iAmBuyer,
-        deals: dealsOf(msgs, { convId: r.id, iAmBuyer, partner, itemId: r.item_id, itemTitle }),
         partnerId: partnerOf(r),
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,

@@ -35,6 +35,7 @@ export default {
   'discover.hint': 'Swipe right to save, left to pass. Arrow keys work too. {n} left.',
   'saved.noneInCat': 'Nothing saved in this category', 'saved.none': 'No favorites yet', 'saved.pickOther': 'Pick another category above.',
   'saved.swipeHint': 'Swipe right on Discover and the items you like will collect here.',
+  'saved.sort': 'Sort', 'saved.by.date': 'Date', 'saved.by.name': 'Name', 'saved.by.price': 'Price', 'saved.reverse.on': 'Order: reversed', 'saved.reverse.off': 'Reverse order', 'saved.search': 'Search saved items', 'saved.noMatch': 'No saved items match your search.',
   'saved.count': '{n} of {total} items, distances from {name}',
   'saved.showOn': 'Show {title} on the map', 'saved.msgSeller': 'Message the seller of {title}', 'saved.remove': 'Remove {title} from favorites',
 
