@@ -239,6 +239,8 @@ export async function fetchConversations(uid) {
       const last = msgs[msgs.length - 1]
       return {
         id: r.id,
+        partnerId: partnerOf(r),
+        theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
         itemTitle: r.items?.title || 'Listing no longer available',
         partner: names.get(partnerOf(r)) || 'Neighbour',

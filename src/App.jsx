@@ -423,6 +423,7 @@ export default function App() {
   const discoverDeck = listFor('discover', cat.discover, data)
   const savedAll = listFor('saved', 'all', data)
   const savedList = listFor('saved', cat.saved, data)
+  const sellerSuggestions = [...new Map(savedAll.filter(canMessage).map(it => [it.sid, { sid: it.sid, name: it.s, title: it.t, item: it }])).values()]
   const mapList = listFor('map', cat.map, data)
   const hasUnseen = listFor('discover', 'all', data).length > 0
   const overlayOpen = landing || locOpen || authOpen || buyId !== null
@@ -509,7 +510,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label="Profile">
