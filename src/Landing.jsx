@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { ITEMS, LM, catOf } from './data.js'
+import { ITEMS, LM } from './data.js'
 import { sendContact } from './api.js'
 import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
@@ -7,7 +7,6 @@ import { Art, Icon } from './ui.jsx'
 import HeroScene from './HeroScene.jsx'
 import secondHome from './assets/second-home.png'
 
-const place = a => a.split(',')[0]
 const pick = id => itemById(id) || ITEMS[id % ITEMS.length]
 
 function RouteVisual() {
@@ -38,43 +37,6 @@ function RouteVisual() {
       </g>
       <circle cx="100" cy="166" r="70" className="radius-c" />
     </svg>
-  )
-}
-
-function ItemPage({ item, onBack, onStart }) {
-  const { money, cond } = useI18n()
-  const backRef = useRef(null)
-  useEffect(() => {
-    backRef.current?.focus({ preventScroll: true })
-    const onKey = e => e.key === 'Escape' && onBack()
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [onBack])
-
-  return (
-    <div className="item-page" role="dialog" aria-modal="true" aria-labelledby="ip-t">
-      <div className="gut">
-        <div className="lp-in ip-in">
-          <button className="btn small" ref={backRef} onClick={onBack}>&larr; Back</button>
-          <div className="ip-art"><Art item={item} /></div>
-          <div className="ip-body">
-            <span className="eyebrow">{catOf(item.c).label}</span>
-            <h1 id="ip-t">{item.t}</h1>
-            <div className="ip-price">{money(item.p)}</div>
-            <dl className="ip-facts">
-              <div><dt>Condition</dt><dd>{cond(item.cond)}</dd></div>
-              <div><dt>Seller</dt><dd>{item.s}</dd></div>
-              <div><dt>Location</dt><dd>{item.a}</dd></div>
-            </dl>
-            <p>{item.d}</p>
-            <div className="lp-cta">
-              <button className="btn primary big" onClick={onStart}>Log in to save or message</button>
-              <button className="btn big" onClick={onBack}>Keep browsing</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   )
 }
 
@@ -187,11 +149,10 @@ function InfoPage({ id, onBack }) {
   )
 }
 
-export default function Landing({ onStart, onSignIn, tabs, onNav }) {
-  const { t, money } = useI18n()
+export default function Landing({ onStart, onSignIn, tabs, onNav, onOpenItem }) {
+  const { t } = useI18n()
   const howRef = useRef(null)
   const goRef = useRef(null)
-  const [viewing, setViewing] = useState(null)
   const [info, setInfo] = useState(null)
   const rootRef = useRef(null)
 
@@ -210,8 +171,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
     )
     root.querySelectorAll('[data-reveal]').forEach(el => io.observe(el))
 
-    // the ticker races while you scroll, then eases back to its normal pace
-    const tick = root.querySelector('.tk')?.getAnimations?.()[0]
     let speed = 1
     let lastY = root.scrollTop
     let raf = 0
@@ -221,7 +180,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       root.style.setProperty('--p', Math.min(1, y / h).toFixed(3))
       speed = Math.max(speed * 0.94, 1 + Math.min(Math.abs(y - lastY) * 0.35, 9))
       lastY = y
-      if (tick) tick.playbackRate = speed
       raf = speed > 1.02 ? requestAnimationFrame(frame) : 0
     }
     const onScroll = () => {
@@ -251,7 +209,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
     return () => {
       io.disconnect()
       cancelAnimationFrame(raf)
-      if (tick) tick.playbackRate = 1
       root.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onScroll)
       stage?.removeEventListener('pointermove', onStage)
@@ -281,12 +238,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
   }
   const a = pick(13)
   const b = pick(9)
-  const tk = copy =>
-    ITEMS.slice(0, 14).map(it => (
-      <button key={it.id} className="tk-item" tabIndex={copy ? -1 : 0} onClick={() => setViewing(it)}>
-        <i />{t('it.' + it.id) || it.t} <span className="mono">{money(it.p)} · {place(it.a)}</span>
-      </button>
-    ))
 
   return (
     <div className="landing on" aria-label={t('lp.welcome')} ref={rootRef}>
@@ -315,7 +266,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
           </div>
         </section>
       </div>
-      <div className="ticker"><div className="tk">{tk(false)}<span className="tk-dup" aria-hidden="true">{tk(true)}</span></div></div>
       <div className="gut">
         <section className="lp-in lp-how" ref={howRef}>
           <h2 className="lp-h2" data-reveal style={{ '--d': '.08s' }}>{t('lp.h2')}</h2>
@@ -367,7 +317,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
           </div>
         </div>
       </section>
-      {viewing && <ItemPage item={viewing} onBack={() => setViewing(null)} onStart={onStart} />}
       {info && <InfoPage id={info} onBack={() => setInfo(null)} />}
       <footer className="lp-foot">
         <div className="gut">

@@ -6,7 +6,7 @@ import { walkLabel } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
 /** Everything about one listing: all its photos, the full description and the actions that matter. */
-export default function ItemDetail({ item, me, isSaved, canMessage, onClose, onSave, onUnsave, onBuy, onShowMap, onMessage, onSeller }) {
+export default function ItemDetail({ item, me, isSaved, canMessage, onClose, onBack, onSave, onUnsave, onBuy, onShowMap, onMessage, onSeller }) {
   const { t, cat, cond, money } = useI18n()
   const closeRef = useRef(null)
   const imgs = item.imgs?.length ? item.imgs : item.img ? [item.img] : []
@@ -26,6 +26,12 @@ export default function ItemDetail({ item, me, isSaved, canMessage, onClose, onS
         <button className="id-close" ref={closeRef} onClick={onClose} aria-label={t('close')}>
           <Icon name="x" size={20} />
         </button>
+
+        {onBack && (
+          <button className="id-back" onClick={onBack}>
+            <Icon name="arrow" size={16} />{t('item.backHome')}
+          </button>
+        )}
 
         <div className="id-media">
           {imgs.length ? (

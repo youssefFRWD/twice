@@ -136,6 +136,7 @@ export default function App() {
   }
   const [seller, setSeller] = useState(null)
   const [detail, setDetail] = useState(null)
+  const [detailFromHome, setDetailFromHome] = useState(false) // opened from the landing ticker: offer a way back to it
   const [showNearby, setShowNearby] = useState(false)
   const [arr, setArr] = useState(null)
   const [toast, setToast] = useState(null)
@@ -572,6 +573,15 @@ export default function App() {
       setTimeout(() => showToast(t('toast.sample')), 600)
     }
   }
+  const openFromLanding = id => {
+    setLanding(false)
+    setTab('browse')
+    setDetail(id)
+    setDetailFromHome(true)
+  }
+  useEffect(() => {
+    if (detail === null) setDetailFromHome(false)
+  }, [detail])
   const handleAuth = async (mode, email, password) => {
     if (mode === 'signin') return void (await api.signIn(email, password))
     const res = await api.signUp(email, password)
@@ -755,6 +765,7 @@ export default function App() {
 
       {landing && <Landing
           onStart={startApp}
+          onOpenItem={openFromLanding}
           onSignIn={signedOut ? () => setAuthOpen(true) : undefined}
           tabs={TABS.map(([id, ic]) => [id, t('tab.' + id), ic])}
           onNav={t => {
@@ -770,6 +781,11 @@ export default function App() {
           isSaved={saved.includes(detail)}
           canMessage={canMessage}
           onClose={() => setDetail(null)}
+          onBack={detailFromHome ? () => {
+            setDetail(null)
+            setLanding(true)
+            try { history.replaceState(null, '', '#landingpage') } catch {}
+          } : undefined}
           onSave={it => decide(it, 1)}
           onUnsave={unsave}
           onBuy={id => {

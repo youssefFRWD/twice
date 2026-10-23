@@ -35,7 +35,7 @@ img{max-width:100%}
 :root[data-theme="dark"]{--glass:rgba(28,36,32,.9)}
 /* the basemap is drawn on a canvas, so it is darkened here; pins, labels and controls are normal HTML */
 :root[data-theme="dark"] .maplibregl-canvas{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.9)}
-:root[data-theme="dark"] .ticker,:root[data-theme="dark"] .lp-foot{background:#0C110F;color:#EDE8DC}
+:root[data-theme="dark"] .lp-foot{background:#0C110F;color:#EDE8DC}
 :root[data-theme="dark"] .toast,:root[data-theme="dark"] .banner,:root[data-theme="dark"] .cond{background:#EDE8DC;color:#141A17}
 :root[data-theme="dark"] .toast button{color:#141A17}
 
@@ -280,16 +280,6 @@ select,input[type=email],input[type=password]{font:inherit;padding:10px 12px;bor
 .f1{top:9%;left:5%}.f2{bottom:12%;right:5%;animation-delay:-2s}.f3{top:46%;right:4%;animation-delay:-1s}
 .f1 svg{color:var(--accent)}
 @keyframes bob{50%{transform:translateY(-8px)}}
-.ticker{background:var(--ink);color:var(--bg);overflow:hidden;padding-block:16px}
-.tk{display:flex;gap:44px;width:max-content;animation:tick 55s linear infinite;font:600 15px var(--font-body);white-space:nowrap}
-.tk span,.tk-item{display:inline-flex;align-items:center;gap:10px}
-.tk .tk-dup{gap:44px}
-.tk-item{border:0;background:none;color:inherit;font:inherit;padding:0;cursor:pointer}
-.tk-item:hover,.tk-item:focus-visible{text-decoration:underline}
-.ticker:hover .tk{animation-play-state:paused}
-.tk i{width:10px;height:10px;border-radius:50%;background:var(--coral)}
-.tk .mono{opacity:.75}
-@keyframes tick{to{transform:translateX(-50%)}}
 .lp-how{padding-block:72px 64px}
 .lp-h2{font:800 clamp(36px,6.5vw,68px)/.95 var(--font-display);letter-spacing:-.035em;margin:12px 0 0;max-width:14ch;text-wrap:balance}
 .stops{position:relative;display:grid;gap:40px;margin-top:48px;list-style:none;padding:0}
@@ -1169,6 +1159,8 @@ html.embedded ::-webkit-scrollbar{display:none}
 .modal.item-detail{border-radius:var(--r-lg) var(--r-lg) 0 0;position:relative;width:min(100%,920px);max-height:92%;padding:0;gap:0;overflow-y:auto;display:grid;grid-template-columns:minmax(0,1fr)}
 .id-media{position:relative}
 .id-art{position:relative;aspect-ratio:4/3;width:100%;border-radius:0}
+.id-back{position:absolute;top:12px;left:64px;z-index:6;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px;border:0;border-radius:999px;background:rgba(255,253,248,.95);color:var(--ink);font-weight:700;font-size:13.5px;box-shadow:0 2px 10px rgba(0,0,0,.28);cursor:pointer}
+.id-back svg{transform:scaleX(-1)}
 .id-close{position:absolute;top:12px;left:12px;z-index:6;width:40px;height:40px;display:grid;place-items:center;padding:0;border:0;border-radius:50%;background:rgba(255,253,248,.95);color:var(--ink);box-shadow:0 2px 10px rgba(0,0,0,.28)}
 .id-info{padding:18px 20px max(24px,env(safe-area-inset-bottom,0px));display:grid;gap:14px;align-content:start;min-width:0}
 .id-head{display:flex;justify-content:space-between;align-items:baseline;gap:14px}
@@ -1269,7 +1261,7 @@ body::after{content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:
 @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
 /* ---- micro-interactions ---- */
-.btn,.chip,.rb,.tab,.mb,.filt,.pf-tabs button,.seg button,.auth-seg button,.tk-item{transition:scale .14s var(--ease-out),background-color .2s,border-color .2s,color .2s,box-shadow .25s}
+.btn,.chip,.rb,.tab,.mb,.filt,.pf-tabs button,.seg button,.auth-seg button{transition:scale .14s var(--ease-out),background-color .2s,border-color .2s,color .2s,box-shadow .25s}
 .btn:not(:disabled):active,.chip:active,.rb:not(:disabled):active,.tab:active,.mb:active,.filt:active,.pf-tabs button:active,.seg button:active,.auth-seg button:active{scale:.95}
 .tab .ti{transition:background-color .3s var(--ease-out),scale .3s var(--spring)}
 .tab[aria-current="page"] .ti{scale:1.06}
