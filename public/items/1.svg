@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9DFCB"/><stop offset="1" stop-color="#DCCFB5"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3C3A5"/><stop offset="1" stop-color="#C2B08F"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="470" rx="210" ry="18" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<path d="M254 408 L274 408 L264 466 L258 466 Z" fill="#7A5233" /><path d="M522 408 L542 408 L536 466 L530 466 Z" fill="#7A5233" />
+<rect x="218" y="296" width="364" height="114" rx="8" fill="#C0925B" />
+<rect x="206" y="284" width="388" height="18" rx="6" fill="#D4AE7B" />
+<rect x="232" y="316" width="108" height="84" rx="5" fill="#B8884F" stroke="#9A6E3E" stroke-width="2"/><rect x="346" y="316" width="108" height="84" rx="5" fill="#B8884F" stroke="#9A6E3E" stroke-width="2"/><rect x="460" y="316" width="108" height="84" rx="5" fill="#B8884F" stroke="#9A6E3E" stroke-width="2"/>
+<circle cx="336" cy="358" r="4.5" fill="#D8B25A" /><circle cx="354" cy="358" r="4.5" fill="#D8B25A" /><circle cx="450" cy="358" r="4.5" fill="#D8B25A" /><circle cx="468" cy="358" r="4.5" fill="#D8B25A" />
+<rect x="518" y="252" width="34" height="34" rx="6" fill="#E7DEC9" /><path d="M535 252 C 530 222 520 214 512 206 M535 252 C 536 226 548 214 556 204 M535 252 C 534 232 534 220 536 200" fill="none" stroke="#4E7A5E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M520 206 q-18 -6 -22 10 q16 6 22 -10 Z" fill="#5F8C70" /><path d="M558 204 q20 -4 22 12 q-18 4 -22 -12 Z" fill="#5F8C70" />
+<rect x="236" y="262" width="70" height="22" rx="3" fill="#7E97A8" /><rect x="240" y="244" width="62" height="18" rx="3" fill="#D2A94E" /><rect x="244" y="228" width="54" height="16" rx="3" fill="#C0654A" />
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

@@ -21,6 +21,16 @@ export function Icon({ name, size = 20, sw = 2 }) {
   )
 }
 
+/** Illustration used when a listing has no photo of its own, one per category. */
+const CATEGORY_PICTURE = { furniture: 2, fashion: 4, electronics: 7, books: 11, sports: 14, home: 18, kids: 24 }
+
+/** A listing picture that falls back to the next source, then to the drawn tile, if one fails to load. */
+function Photo({ srcs, fallback }) {
+  const [bad, setBad] = useState(0)
+  if (bad >= srcs.length) return fallback
+  return <img key={srcs[bad]} className="art-photo" src={srcs[bad]} alt="" loading="lazy" onError={() => setBad(b => b + 1)} />
+}
+
 /** Category tile. Children render inside the tile (badges etc). */
 export function Art({ item, extra = '', children, gallery = false, swipe = true }) {
   const { cat } = useI18n()
@@ -29,10 +39,12 @@ export function Art({ item, extra = '', children, gallery = false, swipe = true 
     <div className={`art t${item.id % 8} ${extra}`.trim()}>
       {gallery && item.imgs && item.imgs.length > 1 ? (
         <Gallery key={item.id} images={item.imgs} swipe={swipe} />
-      ) : item.img ? (
-        <img className="art-photo" src={item.img} alt="" loading="lazy" />
       ) : (
-        <svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />
+        <Photo
+          key={`${item.id}|${item.img}`}
+          srcs={[item.img, CATEGORY_PICTURE[item.c] && `/items/${CATEGORY_PICTURE[item.c]}.svg`].filter(Boolean)}
+          fallback={<svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />}
+        />
       )}
       <span className="cl">{cat(item.c)}</span>
       {children}

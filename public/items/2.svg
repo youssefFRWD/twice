@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9DFCB"/><stop offset="1" stop-color="#DCCFB5"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3C3A5"/><stop offset="1" stop-color="#C2B08F"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="470" rx="220" ry="16" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<path d="M252 430 L266 430 L262 466 L256 466 Z" fill="#7A5233" /><path d="M534 430 L548 430 L544 466 L538 466 Z" fill="#7A5233" />
+<rect x="212" y="330" width="376" height="108" rx="22" fill="#254D3B" />
+<rect x="236" y="282" width="328" height="120" rx="30" fill="#2F5E48" />
+<rect x="246" y="292" width="146" height="76" rx="24" fill="#3C7059" /><rect x="408" y="292" width="146" height="76" rx="24" fill="#3C7059" />
+<rect x="246" y="358" width="148" height="62" rx="18" fill="#35664F" /><rect x="406" y="358" width="148" height="62" rx="18" fill="#35664F" />
+<rect x="210" y="316" width="52" height="118" rx="26" fill="#2A5641" /><rect x="538" y="316" width="52" height="118" rx="26" fill="#2A5641" />
+<path d="M400 360 L400 420" fill="none" stroke="#244B39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+<g transform="rotate(-10 305 357)"><rect x="268" y="322" width="74" height="70" rx="14" fill="#D9704C" /></g>
+<g transform="rotate(8 498 361)"><rect x="462" y="328" width="72" height="66" rx="14" fill="#D2A94E" /></g>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

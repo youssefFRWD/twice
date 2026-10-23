@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E6DFCC"/><stop offset="1" stop-color="#DACFB4"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D0C3A4"/><stop offset="1" stop-color="#BFB08C"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="470" rx="190" ry="14" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<path d="M526 200 L544 208 L544 466 L526 458 Z" fill="#EFE6D0" />
+<line x1="528" y1="222" x2="543" y2="228" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="240" x2="543" y2="246" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="258" x2="543" y2="264" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="276" x2="543" y2="282" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="294" x2="543" y2="300" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="312" x2="543" y2="318" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="330" x2="543" y2="336" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="348" x2="543" y2="354" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="366" x2="543" y2="372" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="384" x2="543" y2="390" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="402" x2="543" y2="408" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="420" x2="543" y2="426" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" /><line x1="528" y1="438" x2="543" y2="444" stroke="#CFC3A4" stroke-width="1.5" stroke-linecap="round" />
+<rect x="264" y="196" width="264" height="266" rx="7" fill="#7A2E34" /><rect x="264" y="196" width="30" height="266" rx="7" fill="#5C2227" />
+<rect x="310" y="226" width="190" height="90" rx="0" fill="none" stroke="#C9A24A" stroke-width="3"/><rect x="318" y="234" width="174" height="74" rx="0" fill="none" stroke="#C9A24A" stroke-width="1.5"/>
+<line x1="344" y1="262" x2="466" y2="262" stroke="#C9A24A" stroke-width="6" stroke-linecap="round" /><line x1="364" y1="284" x2="446" y2="284" stroke="#C9A24A" stroke-width="3" stroke-linecap="round" />
+<circle cx="404" cy="384" r="46" fill="none" stroke="#C9A24A" stroke-width="3"/><circle cx="404" cy="384" r="30" fill="none" stroke="#C9A24A" stroke-width="1.5"/>
+<path d="M404 330 L412 378 L458 384 L412 390 L404 438 L396 390 L350 384 L396 378 Z" fill="#C9A24A" />
+<rect x="480" y="462" width="8" height="34" rx="2" fill="#D9704C" />
+<path d="M264 196 L528 196 L528 214 L264 214 Z" fill="#FFFFFF" opacity=".07"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

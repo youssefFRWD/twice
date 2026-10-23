@@ -58,10 +58,29 @@ export function parseBody(body) {
   return null
 }
 
+const QUOTE_TAG = '[[quote]]'
+
+/** A message that answers a specific earlier one: the quoted message travels in front of the text. */
+export const quoteBody = (q, text) => QUOTE_TAG + JSON.stringify({ id: String(q.id), who: String(q.who).slice(0, 60), text: String(q.text).slice(0, 160) }) + '\n' + text
+
+/** { quote, text } for a message body; quote is null for an ordinary message. */
+export function splitQuote(body) {
+  if (typeof body === 'string' && body.startsWith(QUOTE_TAG)) {
+    const nl = body.indexOf('\n')
+    try {
+      const q = JSON.parse(body.slice(QUOTE_TAG.length, nl < 0 ? undefined : nl))
+      if (q && typeof q.text === 'string') return { quote: { id: String(q.id), who: String(q.who || ''), text: q.text }, text: nl < 0 ? '' : body.slice(nl + 1) }
+    } catch {
+      /* not a valid quote: show it as plain text */
+    }
+  }
+  return { quote: null, text: body }
+}
+
 /** Short text for the conversation list. */
 export function previewOf(body) {
   const p = parseBody(body)
-  if (!p) return body
+  if (!p) return splitQuote(body).text
   if (p.kind === 'offer') return `${p.re ? 'Counter-offer' : 'Offer'}: ${formatMoney(p.price, p.cur)}`
   return p.action === 'accept' ? 'Offer accepted' : 'Offer refused'
 }

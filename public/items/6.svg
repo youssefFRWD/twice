@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EADFD4"/><stop offset="1" stop-color="#E0D1C4"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C5B6"/><stop offset="1" stop-color="#C5B2A2"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+<ellipse cx="410" cy="476" rx="220" ry="14" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/><g transform="translate(150 -16)">
+<path d="M304 292 L372 292 L376 350 C378 372 396 382 422 388 C460 398 488 412 492 434 L492 448 L300 448 L300 392 Z" fill="#8E5530" />
+<path d="M306 328 L374 324 L375 354 L306 358 Z" fill="#33261C" />
+<rect x="312" y="280" width="18" height="24" rx="4" fill="#704220" />
+<path d="M296 448 L496 448 L496 460 Q496 466 490 466 L304 466 Q296 466 296 458 Z" fill="#2A211A" />
+<rect x="296" y="458" width="58" height="18" rx="4" fill="#2A211A" />
+<path d="M300 296 L330 296 L330 444 L300 444 Z" fill="#FFFFFF" opacity=".07"/>
+<path d="M392 390 C430 394 466 408 486 430" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".18"/>
+</g><g transform="translate(-50 2)">
+<path d="M304 292 L372 292 L376 350 C378 372 396 382 422 388 C460 398 488 412 492 434 L492 448 L300 448 L300 392 Z" fill="#A8683A" />
+<path d="M306 328 L374 324 L375 354 L306 358 Z" fill="#33261C" />
+<rect x="312" y="280" width="18" height="24" rx="4" fill="#8B5530" />
+<path d="M296 448 L496 448 L496 460 Q496 466 490 466 L304 466 Q296 466 296 458 Z" fill="#2A211A" />
+<rect x="296" y="458" width="58" height="18" rx="4" fill="#2A211A" />
+<path d="M300 296 L330 296 L330 444 L300 444 Z" fill="#FFFFFF" opacity=".07"/>
+<path d="M392 390 C430 394 466 408 486 430" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" opacity=".18"/>
+</g>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>
