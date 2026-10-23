@@ -3,79 +3,12 @@ import { ITEMS, LM, catOf } from './data.js'
 import { sendContact } from './api.js'
 import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
-import { Art, Icon, LineBadge } from './ui.jsx'
+import { Art, Icon } from './ui.jsx'
+import HeroActs from './HeroActs.jsx'
 import secondHome from './assets/second-home.png'
 
-const DEMO = [1, 14, 8, 18, 5]
-const DIRS = [1, -1, 1, 1]
 const place = a => a.split(',')[0]
 const pick = id => itemById(id) || ITEMS[id % ITEMS.length]
-
-/** The phone mock-up: the top card flies off every few seconds, then goes to the back of the stack. */
-function PhoneDemo() {
-  const { t, money } = useI18n()
-  const [order, setOrder] = useState(DEMO)
-  const [leaving, setLeaving] = useState(null)
-  const [pop, setPop] = useState({ dir: 0, n: 0 })
-  const step = useRef(0)
-  const orderRef = useRef(DEMO)
-
-  useEffect(() => {
-    if (reducedMotion()) return
-    let t2
-    const t1 = setInterval(() => {
-      const dir = DIRS[step.current++ % 4]
-      const o = orderRef.current
-      setLeaving({ id: o[o.length - 1], dir })
-      setPop(p => ({ dir, n: p.n + 1 }))
-      t2 = setTimeout(() => {
-        setLeaving(null)
-        orderRef.current = [o[o.length - 1], ...o.slice(0, -1)]
-        setOrder(orderRef.current)
-      }, 700)
-    }, 2300)
-    return () => {
-      clearInterval(t1)
-      clearTimeout(t2)
-    }
-  }, [])
-
-  return (
-    <div className="phone" aria-hidden="true">
-      <div className="ph-top">
-        <span style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-          <span className="logo" style={{ transform: 'scale(.7)', transformOrigin: 'left', width: 26 }} />twice
-        </span>
-        <small>Châtelet</small>
-      </div>
-      <div className="ph-deck">
-        {order.map((id, i) => {
-          const it = pick(id)
-          const out = leaving && leaving.id === id
-          const d = Math.min(order.length - 1 - i, 2)
-          const style = out
-            ? { transform: `translateX(${leaving.dir * 135}%) rotate(${leaving.dir * 18}deg)`, opacity: 0 }
-            : { transform: `translateY(${d * 9}px) scale(${1 - d * 0.05})`, opacity: d > 1 ? 0 : 1 }
-          return (
-            <div className="dcard" key={id} style={style}>
-              <Art item={it} />
-              <div className="tag yes" style={{ opacity: out && leaving.dir > 0 ? 1 : 0 }}>{t('save')}</div>
-              <div className="tag no" style={{ opacity: out && leaving.dir < 0 ? 1 : 0 }}>{t('pass')}</div>
-              <div className="b">
-                <b>{it.t}</b>
-                <div className="pr"><em>{money(it.p)}</em><span>{place(it.a)}</span></div>
-              </div>
-            </div>
-          )
-        })}
-      </div>
-      <div className="ph-btns">
-        <i key={'n' + pop.n} className={pop.dir < 0 ? 'pop' : ''}><Icon name="x" size={22} sw={2.6} /></i>
-        <i key={'y' + pop.n} className={'y' + (pop.dir > 0 ? ' pop' : '')}><Icon name="heart" size={22} sw={2.4} /></i>
-      </div>
-    </div>
-  )
-}
 
 function RouteVisual() {
   return (
@@ -310,30 +243,11 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
         </div>
       </div>
       <div className="gut">
-        <section className="lp-in lp-hero">
-          <div>
-            <h1 className="lp-h1">
-              <span>{t('lp.h1a')}</span>
-              <span>{t('lp.h1b')}</span>
-              <span><i className="m" style={{ fontStyle: 'normal' }}>{t('lp.h1c')}</i> {t('lp.h1d')}</span>
-            </h1>
-            <div className="lp-cta">
-              <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
-              <button className="btn big" onClick={how}>{t('lp.how')}</button>
-            </div>
-          </div>
-          <div className="lp-stage">
-            <svg className="trk" viewBox="0 0 400 540" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-              <path d="M-20 120H140a40 40 0 0 1 40 40V420a40 40 0 0 0 40 40H420" fill="none" stroke="currentColor" strokeWidth="14" strokeLinecap="round" />
-              <g fill="currentColor">
-                <circle cx="40" cy="120" r="14" /><circle cx="180" cy="240" r="14" />
-                <circle cx="180" cy="340" r="14" /><circle cx="330" cy="460" r="14" />
-              </g>
-            </svg>
-            <PhoneDemo />
-            <div className="float f1" aria-hidden="true"><Icon name="heart" size={16} sw={2.4} /><span>{t('lp.savedFav')}</span></div>
-            <div className="float f2" aria-hidden="true"><LineBadge id="14" /><span>Châtelet → Saint-Ouen</span><span className="mono">17 min</span></div>
-            <div className="float f3" aria-hidden="true"><Icon name="pin" size={16} /><span className="mono">1.9 km</span></div>
+        <section className="lp-in lp-hero ha-hero">
+          <HeroActs />
+          <div className="lp-cta center">
+            <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
+            <button className="btn big" onClick={how}>{t('lp.how')}</button>
           </div>
         </section>
       </div>

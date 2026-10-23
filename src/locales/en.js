@@ -209,4 +209,7 @@ export default {
   'item.moreInfo': 'More info', 'item.details': 'Details', 'item.where': 'Where', 'item.distance': 'Distance', 'item.seller': 'Seller',
   'item.about': 'About this item', 'item.noDesc': 'The seller has not added a description.', 'item.saved': 'Saved',
   'prefs.appearance': 'Appearance', 'prefs.theme.auto': 'Automatic', 'prefs.theme.light': 'Light', 'prefs.theme.dark': 'Dark', 'prefs.themeNote': 'Automatic follows your device. This is saved on this device.',
+  // landing hero acts
+  'ha.count': '{n} saved', 'ha.saved': 'SAVED', 'ha.arrived': 'Arrived', 'ha.eta': '{n} min', 'ha.replay': 'Replay',
+  'ha.tryDrag': 'Your turn: drag the card.', 'ha.tryHeart': 'Tap the heart.', 'ha.tryMap': 'Tap the map to ride again.',
 }
