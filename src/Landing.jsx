@@ -231,10 +231,9 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
     root.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll)
 
-    // 3D tilt of the phone stage and magnetic buttons, for mouse and trackpad only
+    // 3D tilt of the phone stage, for mouse and trackpad only
     const fine = matchMedia('(hover:hover) and (pointer:fine)').matches
     const stage = root.querySelector('.lp-stage')
-    const magnets = [...root.querySelectorAll('[data-magnet]')]
     const onStage = e => {
       const r = stage.getBoundingClientRect()
       stage.style.setProperty('--mx', (((e.clientX - r.left) / r.width) * 2 - 1).toFixed(3))
@@ -244,22 +243,10 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       stage.style.setProperty('--mx', 0)
       stage.style.setProperty('--my', 0)
     }
-    const onMagnet = e => {
-      const b = e.currentTarget
-      const r = b.getBoundingClientRect()
-      b.style.translate = `${((e.clientX - r.left - r.width / 2) * 0.28).toFixed(1)}px ${((e.clientY - r.top - r.height / 2) * 0.35).toFixed(1)}px`
-    }
-    const offMagnet = e => {
-      e.currentTarget.style.translate = ''
-    }
     if (fine && stage) {
       stage.addEventListener('pointermove', onStage)
       stage.addEventListener('pointerleave', offStage)
     }
-    if (fine) magnets.forEach(b => {
-      b.addEventListener('pointermove', onMagnet)
-      b.addEventListener('pointerleave', offMagnet)
-    })
 
     return () => {
       io.disconnect()
@@ -269,10 +256,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       window.removeEventListener('resize', onScroll)
       stage?.removeEventListener('pointermove', onStage)
       stage?.removeEventListener('pointerleave', offStage)
-      magnets.forEach(b => {
-        b.removeEventListener('pointermove', onMagnet)
-        b.removeEventListener('pointerleave', offMagnet)
-      })
     }
   }, [])
 
@@ -327,8 +310,8 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
         <section className="lp-in lp-hero ha-hero">
           <HeroScene />
           <div className="lp-cta center">
-            <button className="btn primary big" data-magnet ref={goRef} onClick={onStart}>{t('lp.start')}</button>
-            <button className="btn big" data-magnet onClick={how}>{t('lp.how')}</button>
+            <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
+            <button className="btn big" onClick={how}>{t('lp.how')}</button>
           </div>
         </section>
       </div>
@@ -376,7 +359,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                 Your next find is probably a few stops away. Buyers and sellers use the same app, so tell us which one you
                 are and start with what is nearest.
               </p>
-              <button className="btn inv big" data-magnet onClick={onStart}>{t('lp.start')}</button>
+              <button className="btn inv big" onClick={onStart}>{t('lp.start')}</button>
             </div>
             <div className="le-vis" aria-hidden="true" data-reveal="zoom" style={{ '--d': '.1s' }}>
               <img src={secondHome} alt="" />

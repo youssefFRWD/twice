@@ -1255,8 +1255,6 @@ body::after{content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:
 .lp-stage .float{transition:translate .5s var(--ease-out)}
 .lp-stage::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(600px circle at calc(50% + var(--mx,0) * 40%) calc(50% + var(--my,0) * 40%),rgba(255,253,248,.14),transparent 45%);opacity:0;transition:opacity .4s}
 .lp-stage:hover::after{opacity:1}
-[data-magnet]{transition:translate .35s var(--spring),scale .12s,box-shadow .25s}
-[data-magnet]:hover{box-shadow:0 10px 26px -6px rgba(30,42,36,.35)}
 .lp-h1 .m::after{transform-origin:left;animation:underline .9s .55s var(--ease-out) both}
 @keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 
