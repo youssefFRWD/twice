@@ -30,7 +30,6 @@ function initState() {
     fresh: !seeded,
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
     passed: d?.passed || [],
-    reserved: d?.reserved || [],
     me: d?.me?.lat ? d.me : DEFAULT_ME,
     tab: TABS.some(x => x[0] === hash) ? hash : 'discover',
     firstRun: !seeded && !backendEnabled,
@@ -90,7 +89,6 @@ export default function App() {
   const [init] = useState(initState)
   const [saved, setSaved] = useState(init.saved)
   const [passed, setPassed] = useState(init.passed)
-  const [reserved, setReserved] = useState(init.reserved) // sample listings approved offline; real ones carry item.reserved
   const [me, setMeState] = useState(init.me)
   const [tab, setTabState] = useState(init.tab)
   const [cat, setCat] = useState({ discover: 'all', saved: 'all', map: 'all' })
@@ -131,6 +129,7 @@ export default function App() {
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
   const [chatId, setChatId] = useState(null)
+  const [sampleChatItem, setSampleChatItem] = useState(null)
   const [session, setSession] = useState(null)
   const [authOpen, setAuthOpen] = useState(false)
   const [syncedUid, setSyncedUid] = useState(null)
@@ -148,12 +147,12 @@ export default function App() {
   const synced = !backendEnabled || (uid !== null && syncedUid === uid)
   const signedOut = backendEnabled && !session
   const approvedForMe = convs.filter(c => c.iAmBuyer && c.approval === 'approved').map(c => c.itemId)
-  const data = { me, saved, passed, reserved: [...reserved, ...approvedForMe] }
+  const data = { me, saved, passed, reserved: approvedForMe }
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
   useEffect(() => {
-    persist({ saved, passed, reserved, seeded: true, me, tab })
-  }, [saved, passed, reserved, me, tab])
+    persist({ saved, passed, seeded: true, me, tab })
+  }, [saved, passed, me, tab])
 
   useEffect(() => {
     try {
@@ -309,9 +308,15 @@ export default function App() {
   const unread = convs.reduce((n, c) => n + c.unread, 0)
 
   /* ---------- sale approval: the seller approves in the conversation, then the buyer can pay ---------- */
-  const approvalOf = it =>
-    it.sid ? (convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null) : reserved.includes(it.id) ? 'approved' : null
-  const reserveSample = useCallback(it => setReserved(r => (r.includes(it.id) ? r : [...r, it.id])), [])
+  const approvalOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null
+  /* the checkout's message button only opens the chat; sample listings open their sample conversation, if any */
+  const contactOwner = it => {
+    setBuyId(null)
+    if (it.sid) return messageSeller(it)
+    setChatId(null)
+    setSampleChatItem(it.id)
+    setTab('messages')
+  }
   const approveSale = async (conv, approve) => {
     try {
       await api.setSaleApproval(
@@ -621,7 +626,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={id => { setSampleChatItem(null); setChatId(id) }} sampleItemId={sampleChatItem} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -689,13 +694,9 @@ export default function App() {
           me={me}
           uid={uid}
           approval={approvalOf(buyItem)}
-          onSampleApproved={reserveSample}
           canMessage={canMessage}
           onPaid={() => dealPay && markPaid(dealPay.id)}
-          onMessage={it => {
-            setBuyId(null)
-            messageSeller(it)
-          }}
+          onMessage={contactOwner}
           onShowMap={id => {
             setBuyId(null)
             showOnMap(id)

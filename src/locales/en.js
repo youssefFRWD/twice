@@ -109,7 +109,6 @@ export default {
   'co.pay': 'Pay {amount}', 'co.payApple': 'Pay {amount} with Apple Pay', 'co.toPaypal': 'Continue to PayPal · {amount}', 'co.reservePay': 'Reserve, pay {amount} in cash',
   'co.talkH': 'Message {seller} first', 'co.talkP': 'Talk it through with {seller} in Messages. Once you have both written, they can approve the sale, and payment opens here.',
   'co.withdrawnH': '{seller} withdrew their approval',
-  'co.waitH': 'Waiting for {seller} to approve', 'co.waitP': 'Payment opens here as soon as {seller} approves.',
   'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
   'co.approved': '{seller} approved your purchase.',
 

@@ -109,7 +109,6 @@ export default {
   'co.pay': 'Payer {amount}', 'co.payApple': 'Payer {amount} avec Apple Pay', 'co.toPaypal': 'Continuer vers PayPal · {amount}', 'co.reservePay': 'Réserver, payer {amount} en espèces',
   'co.talkH': 'Écrivez d’abord à {seller}', 'co.talkP': 'Discutez avec {seller} dans Messages. Une fois que vous avez échangé, {seller} peut valider la vente et le paiement s’ouvre ici.',
   'co.withdrawnH': '{seller} a retiré son accord',
-  'co.waitH': 'En attente de l’accord de {seller}', 'co.waitP': 'Le paiement s’ouvre ici dès que {seller} donne son accord.',
   'co.ownH': 'C’est votre annonce', 'co.ownP': 'Vous ne pouvez pas acheter un objet que vous vendez.',
   'co.approved': '{seller} a accepté votre achat.',
 

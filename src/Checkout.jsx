@@ -43,24 +43,16 @@ function cardErrors(card, t) {
 }
 
 /**
- * Every sale needs the seller's OK before payment opens. The buyer messages the owner, and the owner approves in
- * that conversation. Sample listings have no real owner to message, so their approval is simulated.
+ * Every sale needs the seller's OK before payment opens. The button here only opens the conversation with the owner;
+ * the owner approves in that conversation once both have written.
  */
-function Approval({ it, status, waiting, own, onContact }) {
+function Approval({ it, status, own, onContact }) {
   const { t } = useI18n()
   if (own) {
     return (
       <section className="co-card co-ask">
         <h2>{t('co.ownH')}</h2>
         <p>{t('co.ownP')}</p>
-      </section>
-    )
-  }
-  if (waiting) {
-    return (
-      <section className="co-card co-ask" aria-live="polite">
-        <h2>{t('co.waitH', { seller: it.s })}</h2>
-        <p>{t('co.waitP', { seller: it.s })}</p>
       </section>
     )
   }
@@ -77,21 +69,11 @@ function Approval({ it, status, waiting, own, onContact }) {
   )
 }
 
-export default function Checkout({ item: it, me, uid, approval, onSampleApproved, canMessage, onMessage, onShowMap, onClose, onPaid }) {
+export default function Checkout({ item: it, me, uid, approval, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
-  const sample = !it.sid
   const own = !!it.sid && it.sid === uid
-  const [sampleWaiting, setSampleWaiting] = useState(false)
   const approved = approval === 'approved' && !own
-
-  useEffect(() => {
-    if (!sampleWaiting) return
-    const t = setTimeout(() => onSampleApproved(it), 2500)
-    return () => clearTimeout(t)
-  }, [sampleWaiting, it, onSampleApproved])
-
-  const contact = () => (sample ? setSampleWaiting(true) : onMessage(it))
 
   const [method, setMethod] = useState('card')
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
@@ -181,7 +163,7 @@ export default function Checkout({ item: it, me, uid, approval, onSampleApproved
         <p className="co-test"><Icon name="walk" size={16} />{t('co.collect', { seller: it.s })}</p>
 
         {!approved ? (
-          <Approval it={it} status={approval} waiting={sample && sampleWaiting} own={own} onContact={contact} />
+          <Approval it={it} status={approval} own={own} onContact={() => onMessage(it)} />
         ) : (
           <>
             <p className="co-ok"><Icon name="check" size={16} sw={2.5} />{t('co.approved', { seller: it.s })}</p>

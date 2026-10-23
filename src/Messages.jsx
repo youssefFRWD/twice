@@ -777,7 +777,7 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleItemId }) {
   const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
@@ -863,7 +863,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     )
   }
 
-  const open = convs.find(c => c.id === openId)
+  const open = convs.find(c => c.id === openId) ?? (demo && !openId && sampleItemId != null ? convs.find(c => c.itemId === sampleItemId) : undefined)
   const finding = filter === 'others'
   const visible = ordered.slice(0, VISIBLE)
   const rest = ordered.slice(VISIBLE)
