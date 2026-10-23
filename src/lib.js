@@ -25,6 +25,13 @@ export function persist(data) {
 export const distOf = (me, it) => hav(me.lat, me.lon, it.lat, it.lon)
 export const itemById = id => ITEMS.find(i => i.id === id)
 
+/* ---------- Loops and the Twice fee (the database applies the same numbers; these are for display) ---------- */
+export const LOOPS = { perSale: 50, noFee: 500, boost: 300 }
+export const FEE_RATE = 0.05 // charged to the buyer and to the seller, on payments made in the app
+/** Fee in cents for one side of a sale. Cash handovers pay no fee. */
+export const feeCents = (priceCents, method) => (method === 'cash' ? 0 : Math.round(priceCents * FEE_RATE))
+export const isBoosted = it => !!it.boostedUntil && new Date(it.boostedUntil) > new Date()
+
 /** Listings still in the store: reserved ones leave it, but stay in the approved buyer's saved list and map. */
 export const onSale = (reserved = []) => ITEMS.filter(i => !i.reserved && !reserved.includes(i.id))
 
@@ -53,6 +60,7 @@ export function listFor(tab, cat, { me, saved, passed, reserved }) {
   let p = cat === 'all' ? pool : pool.filter(i => i.c === cat)
   if (tab === 'map') p = p.slice().sort(byDist)
   if (tab === 'saved') p = p.slice().reverse()
+  if (tab === 'discover') p = [...p.filter(isBoosted), ...p.filter(i => !isBoosted(i))] // boosted listings come first
   return p
 }
 

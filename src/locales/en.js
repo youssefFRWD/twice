@@ -112,6 +112,16 @@ export default {
   'co.withdrawnH': '{seller} withdrew their approval',
   'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
   'co.approved': '{seller} approved your purchase.',
+  'co.fee': 'Twice fee (5%)', 'co.noFeeCash': 'None on cash', 'co.feeRemoved': 'Removed with Loops', 'co.payFail': 'The payment did not go through. Try again.',
+  'co.paidH': 'Already paid', 'co.paidP': 'Meet {seller} to collect it, then both tap “Handover done” in your conversation.',
+  'loops.name': 'Loops', 'loops.useNoFee': 'Use {n} Loops: no fee on this sale', 'loops.useNoFeeShort': 'Use {n} Loops: no fee',
+  'loops.youHave': 'You have {n} Loops.', 'loops.needMore': 'You need {n} more Loops.', 'loops.notEnough': 'You don’t have enough Loops.',
+  'loops.handoverDone': 'Handover done', 'loops.buyerPaid': 'You paid {amount}. Once you have the item from {name}, confirm the handover.',
+  'loops.sellerPaid': '{name} paid {amount}. You receive {receive}. Confirm once you have handed it over.',
+  'loops.waitOther': 'Waiting for {name} to confirm the handover.', 'loops.saleDone': 'Sale completed.',
+  'loops.saleDoneEarned': 'Sale completed. You both earned {n} Loops.', 'loops.earnedToast': 'Sale completed: +{n} Loops!', 'loops.doneToast': 'Sale completed.',
+  'loops.handoverFail': 'Could not confirm the handover. Try again.', 'loops.boost': 'Boost · {n} Loops', 'loops.boosted': 'Listing boosted for 24 hours',
+  'loops.boostFail': 'Could not boost the listing.', 'loops.boostedUntil': 'Boosted until {time}', 'loops.boostedTag': 'Boosted',
 
   // profile
   'pf.sec.listings': 'My listings', 'pf.sec.reviews': 'Reviews', 'pf.sec.friends': 'Friends', 'pf.sec.settings': 'Settings',

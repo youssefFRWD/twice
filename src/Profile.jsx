@@ -295,7 +295,7 @@ function NeedsBackend() {
   return <p className="pf-empty">{t('pf.needsBackend')}</p>
 }
 
-export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged, onShowMap, onBuy, canMessage, onMessage }) {
+export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged, onShowMap, onBuy, canMessage, onMessage, loops = 0, onBoost }) {
   const { t } = useI18n()
   const [page, setPage] = useState(() => (backendOn ? null : loadLocal()))
   const [loadErr, setLoadErr] = useState(false)
@@ -452,6 +452,7 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
             </div>
             <div><dt>{t('pf.statReceived')}</dt><dd>{received.length}</dd></div>
             <div><dt>{t('pf.statWritten')}</dt><dd>{page.written ? written.length : '–'}</dd></div>
+            {!asVisitor && <div className="pf-loops"><dt>{t('loops.name')}</dt><dd>{loops.toLocaleString(locale())}</dd></div>}
           </dl>
         </section>
       )}
@@ -509,7 +510,7 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
                   section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
 
                 ) : section === 'listings' ? (
-                  <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} />
+                  <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} loops={loops} onBoost={onBoost} />
                 ) : section === 'reviews' ? (
                   <ProfileReviews uid={uid} received={received} written={written} onChanged={reload} onToast={onToast} />
                 ) : section === 'friends' ? (

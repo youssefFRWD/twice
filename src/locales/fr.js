@@ -111,6 +111,16 @@ export default {
   'co.withdrawnH': '{seller} a retiré son accord',
   'co.ownH': 'C’est votre annonce', 'co.ownP': 'Vous ne pouvez pas acheter un objet que vous vendez.',
   'co.approved': '{seller} a accepté votre achat.',
+  'co.fee': 'Frais Twice (5 %)', 'co.noFeeCash': 'Aucuns en espèces', 'co.feeRemoved': 'Retirés avec des Loops', 'co.payFail': 'Le paiement n’a pas abouti. Réessayez.',
+  'co.paidH': 'Déjà payé', 'co.paidP': 'Retrouvez {seller} pour récupérer l’objet, puis appuyez tous les deux sur « Remise faite » dans votre conversation.',
+  'loops.name': 'Loops', 'loops.useNoFee': 'Utiliser {n} Loops : aucuns frais sur cette vente', 'loops.useNoFeeShort': 'Utiliser {n} Loops : aucuns frais',
+  'loops.youHave': 'Vous avez {n} Loops.', 'loops.needMore': 'Il vous manque {n} Loops.', 'loops.notEnough': 'Vous n’avez pas assez de Loops.',
+  'loops.handoverDone': 'Remise faite', 'loops.buyerPaid': 'Vous avez payé {amount}. Une fois l’objet récupéré auprès de {name}, confirmez la remise.',
+  'loops.sellerPaid': '{name} a payé {amount}. Vous recevez {receive}. Confirmez une fois l’objet remis.',
+  'loops.waitOther': 'En attente de la confirmation de {name}.', 'loops.saleDone': 'Vente terminée.',
+  'loops.saleDoneEarned': 'Vente terminée. Vous gagnez chacun {n} Loops.', 'loops.earnedToast': 'Vente terminée : +{n} Loops !', 'loops.doneToast': 'Vente terminée.',
+  'loops.handoverFail': 'Impossible de confirmer la remise. Réessayez.', 'loops.boost': 'Booster · {n} Loops', 'loops.boosted': 'Annonce boostée pour 24 heures',
+  'loops.boostFail': 'Impossible de booster l’annonce.', 'loops.boostedUntil': 'Boostée jusqu’à {time}', 'loops.boostedTag': 'Boosté',
 
   // profil
   'pf.sec.listings': 'Mes annonces', 'pf.sec.reviews': 'Avis', 'pf.sec.friends': 'Amis', 'pf.sec.settings': 'Paramètres',

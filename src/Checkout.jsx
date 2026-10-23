@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { fmtD } from './data.js'
 import { useI18n } from './i18n.js'
-import { distOf } from './lib.js'
+import { LOOPS, distOf, feeCents } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
 const METHODS = [
@@ -46,13 +46,26 @@ function cardErrors(card, t) {
  * Every sale needs the seller's OK before payment opens. The button here only opens the conversation with the owner;
  * the owner approves in that conversation once both have written.
  */
-function Approval({ it, status, own, onContact }) {
+function Approval({ it, status, own, paid, onContact }) {
   const { t } = useI18n()
   if (own) {
     return (
       <section className="co-card co-ask">
         <h2>{t('co.ownH')}</h2>
         <p>{t('co.ownP')}</p>
+      </section>
+    )
+  }
+  if (paid) {
+    return (
+      <section className="co-card co-ask">
+        <h2>{t('co.paidH')}</h2>
+        <p>{t('co.paidP', { seller: it.s })}</p>
+        <div className="co-ask-btns">
+          <button type="button" className="btn primary" onClick={onContact}>
+            <Icon name="chat" size={18} />{t('co.messageName', { seller: it.s })}
+          </button>
+        </div>
       </section>
     )
   }
@@ -69,16 +82,18 @@ function Approval({ it, status, own, onContact }) {
   )
 }
 
-export default function Checkout({ item: it, me, uid, approval, canMessage, onMessage, onShowMap, onClose, onPaid }) {
+export default function Checkout({ item: it, me, uid, approval, sale, loops, onPay, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
   const own = !!it.sid && it.sid === uid
-  const approved = approval === 'approved' && !own
+  const approved = approval === 'approved' && !own && !sale
 
   const [method, setMethod] = useState('card')
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
   const [touched, setTouched] = useState(false)
+  const [useLoops, setUseLoops] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [payErr, setPayErr] = useState('')
   const [done, setDone] = useState(null)
   const headRef = useRef(null)
 
@@ -86,7 +101,11 @@ export default function Checkout({ item: it, me, uid, approval, canMessage, onMe
     headRef.current?.focus()
   }, [done])
 
-  const total = it.p
+  const priceCents = Math.round(it.p * 100)
+  const fee = feeCents(priceCents, method)
+  const canWaive = fee > 0 && loops >= LOOPS.noFee
+  const waived = useLoops && canWaive
+  const total = (priceCents + (waived ? 0 : fee)) / 100
   const errs = method === 'card' ? cardErrors(card, t) : {}
   const show = k => touched && errs[k]
 
@@ -101,17 +120,22 @@ export default function Checkout({ item: it, me, uid, approval, canMessage, onMe
     setCard(c => ({ ...c, [k]: v }))
   }
 
-  const submit = e => {
+  /* The card, Apple Pay and PayPal charge is still simulated; the sale, fee and Loops are recorded for real. */
+  const submit = async e => {
     e.preventDefault()
     if (!approved) return
     setTouched(true)
     if (Object.keys(errs).length || busy) return
     setBusy(true)
-    setTimeout(() => {
-      setBusy(false)
+    setPayErr('')
+    try {
+      await onPay(method, waived)
       onPaid?.()
       setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method })
-    }, 1200)
+    } catch (err) {
+      setPayErr(/not enough Loops/.test(err?.message) ? t('loops.notEnough') : t('co.payFail'))
+    }
+    setBusy(false)
   }
 
   if (done) {
@@ -163,7 +187,7 @@ export default function Checkout({ item: it, me, uid, approval, canMessage, onMe
         <p className="co-test"><Icon name="walk" size={16} />{t('co.collect', { seller: it.s })}</p>
 
         {!approved ? (
-          <Approval it={it} status={approval} own={own} onContact={() => onMessage(it)} />
+          <Approval it={it} status={approval} own={own} paid={!!sale} onContact={() => onMessage(it)} />
         ) : (
           <>
             <p className="co-ok"><Icon name="check" size={16} sw={2.5} />{t('co.approved', { seller: it.s })}</p>
@@ -213,11 +237,27 @@ export default function Checkout({ item: it, me, uid, approval, canMessage, onMe
               )}
             </fieldset>
 
+            {fee > 0 && (
+              <label className={`co-loops${canWaive ? '' : ' off'}`}>
+                <input type="checkbox" checked={waived} disabled={!canWaive} onChange={e => setUseLoops(e.target.checked)} />
+                <span>
+                  <b>{t('loops.useNoFee', { n: LOOPS.noFee })}</b>
+                  <small>{canWaive ? t('loops.youHave', { n: loops }) : t('loops.needMore', { n: LOOPS.noFee - loops })}</small>
+                </span>
+              </label>
+            )}
+
             <section className="co-sum" aria-label={t('co.summary')}>
               <div><span>{t('co.item')}</span><span className="mono">{eur(it.p)}</span></div>
+              <div>
+                <span>{t('co.fee')}</span>
+                <span className="mono">{fee === 0 ? t('co.noFeeCash') : waived ? t('co.feeRemoved') : eur(fee / 100)}</span>
+              </div>
               <div><span>{t('co.handover')}</span><span className="mono">{t('co.free')}</span></div>
               <div className="co-total"><span>{t('co.total')}</span><span className="mono">{eur(total)}</span></div>
             </section>
+
+            {payErr && <p className="co-err" role="alert">{payErr}</p>}
 
             <button className="btn primary big co-pay" type="submit" disabled={busy}>
               {busy

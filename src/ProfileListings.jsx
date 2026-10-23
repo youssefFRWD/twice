@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import * as api from './api.js'
 import { CATS } from './data.js'
 import { useI18n } from './i18n.js'
-import { toJpeg } from './lib.js'
+import { LOOPS, isBoosted, toJpeg } from './lib.js'
 import { EmptyCard, Icon } from './ui.jsx'
 
 const CONDITIONS = ['Like new', 'Very good', 'Good', 'Fair']
@@ -178,7 +178,7 @@ function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
   )
 }
 
-export default function ProfileListings({ uid, name, me, arrondissement, onChanged, onToast }) {
+export default function ProfileListings({ uid, name, me, arrondissement, onChanged, onToast, loops = 0, onBoost }) {
   const { t, cat, cond, money } = useI18n()
   const [list, setList] = useState(null)
   const [form, setForm] = useState(null) // null | 'new' | listing
@@ -216,6 +216,7 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
     run(() => api.setListingStatus(l.id, next), next === 'hidden' ? t('ls.hiddenToast') : t('ls.liveAgain'), t('ls.updateFail'))
   }
   const markSold = l => run(() => api.setListingStatus(l.id, l.status === 'sold' ? 'active' : 'sold'), l.status === 'sold' ? t('ls.liveAgain') : t('ls.soldToast'), t('ls.updateFail'))
+  const boost = l => run(() => onBoost(l.id), t('loops.boosted'), t('loops.boostFail'))
   const del = l => {
     setConfirmId(null)
     run(() => api.deleteListing(l), t('ls.deletedToast'), t('ls.deleteFail'))
@@ -248,6 +249,7 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
                 <div className="ml-top">
                   <h3>{l.title}</h3>
                   <span className={`pf-pill st-${l.status}`}>{t('ls.status.' + l.status)}</span>
+                  {isBoosted(l) && <span className="pf-pill st-boosted">{t('loops.boostedUntil', { time: new Date(l.boostedUntil).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) })}</span>}
                 </div>
                 <p>
                   <b>{money(l.price)}</b>
@@ -267,6 +269,11 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
                     <button className="btn small" disabled={busy} onClick={() => setForm(l)}>{t('edit')}</button>
                     <button className="btn small" disabled={busy || l.status === 'sold' || l.status === 'reserved'} onClick={() => toggleHidden(l)}>{l.status === 'hidden' ? t('ls.show') : t('ls.hide')}</button>
                     <button className="btn small" disabled={busy} onClick={() => markSold(l)}>{l.status === 'sold' ? t('ls.relist') : t('ls.markSold')}</button>
+                    {l.status === 'active' && !isBoosted(l) && onBoost && (
+                      <button className="btn small" disabled={busy || loops < LOOPS.boost} title={loops < LOOPS.boost ? t('loops.needMore', { n: LOOPS.boost - loops }) : ''} onClick={() => boost(l)}>
+                        {t('loops.boost', { n: LOOPS.boost })}
+                      </button>
+                    )}
                     <button className="btn small danger" disabled={busy} onClick={() => setConfirmId(l.id)}>{t('delete')}</button>
                   </div>
                 )}

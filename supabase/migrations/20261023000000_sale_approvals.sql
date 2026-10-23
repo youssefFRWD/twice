@@ -46,7 +46,7 @@ create policy "sellers update sale approvals" on public.sale_approvals for updat
       select 1 from public.conversations c
       join public.items i on i.id = c.item_id
       where c.id = conversation_id and c.seller_id = auth.uid()
-        and (status = 'withdrawn' or i.status = 'active')
+        and (sale_approvals.status = 'withdrawn' or i.status = 'active')
     )
   );
 
@@ -84,15 +84,19 @@ revoke execute on function public.sale_approval_effects() from public, anon, aut
 revoke execute on function public.sale_approval_stamp() from public, anon, authenticated;
 
 -- the approved buyer keeps seeing their reserved item (to pay and find the seller); nobody else does
+-- The check runs as the owner: approval policies look at items, so reading approvals under RLS from an items policy
+-- would loop forever ("infinite recursion detected in policy").
+create function public.is_approved_buyer(item bigint) returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.conversations c
+    join public.sale_approvals a on a.conversation_id = c.id
+    where c.item_id = item and c.buyer_id = auth.uid() and a.status = 'approved'
+  )
+$$;
+
 create policy "approved buyer sees reserved item" on public.items for select
-  using (
-    status = 'reserved'
-    and exists (
-      select 1 from public.conversations c
-      join public.sale_approvals a on a.conversation_id = c.id
-      where c.item_id = items.id and c.buyer_id = auth.uid() and a.status = 'approved'
-    )
-  );
+  using (status = 'reserved' and public.is_approved_buyer(id));
 
 -- clients may only write the status (the time is set by the database); nobody deletes approvals
 revoke all on public.sale_approvals from anon;

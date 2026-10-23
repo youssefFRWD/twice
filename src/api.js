@@ -26,9 +26,10 @@ const rowToItem = r => ({
   b: r.brand,
   img: sortedPhotos(r.item_images)[0] ? photoUrl(sortedPhotos(r.item_images)[0].storage_path) : null,
   reserved: r.status === 'reserved',
+  boostedUntil: r.boosted_until || null,
 })
 
-const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,item_images(storage_path,position)'
+const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,boosted_until,item_images(storage_path,position)'
 
 /** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
@@ -100,7 +101,7 @@ export async function uploadAvatar(uid, blob, oldPath, kind = 'avatar') {
 }
 
 /* ---------- my listings ---------- */
-const LISTING_COLS = 'id,category_id,title,brand,description,price_cents,condition,address,lat,lon,status,created_at,item_images(id,storage_path,position)'
+const LISTING_COLS = 'id,category_id,title,brand,description,price_cents,condition,address,lat,lon,status,boosted_until,created_at,item_images(id,storage_path,position)'
 
 const rowToListing = r => ({
   id: r.id,
@@ -114,6 +115,7 @@ const rowToListing = r => ({
   lat: r.lat,
   lon: r.lon,
   status: r.status,
+  boostedUntil: r.boosted_until || null,
   photos: sortedPhotos(r.item_images).map(i => ({ path: i.storage_path, url: photoUrl(i.storage_path) })),
 })
 
@@ -238,7 +240,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status),sales(method,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -253,6 +255,7 @@ export async function fetchConversations(uid) {
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
       const approval = [].concat(r.sale_approvals ?? [])[0]
+      const sale = [].concat(r.sales ?? [])[0] ?? null
       return {
         id: r.id,
         iAmBuyer,
@@ -260,6 +263,7 @@ export async function fetchConversations(uid) {
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
         approval: approval?.status ?? null,
+        sale,
         itemTitle,
         partner,
         last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
@@ -309,3 +313,19 @@ export async function setSaleApproval(uid, conversationId, approved, note) {
   else ok(await supabase.from('sale_approvals').insert({ conversation_id: conversationId, status }))
   if (note) await sendMessage(uid, conversationId, note)
 }
+
+/* ---------- Loops ---------- */
+// Every change to Loops, fees and sales happens inside these database functions, never from the client.
+
+export const fetchLoops = async () => ok(await supabase.rpc('my_loops'))
+
+/** The buyer pays (simulated in this prototype). paidCents is the agreed offer price, or null for the listing price. */
+export const paySale = async (conversationId, method, paidCents, useLoops) =>
+  ok(await supabase.rpc('pay_sale', { conv: conversationId, pay_method: method, paid_cents: paidCents, use_loops: useLoops }))
+
+/** Buyer or seller confirms the handover; the seller can spend 500 Loops here to remove their fee. */
+export const confirmHandover = async (conversationId, useLoops) =>
+  ok(await supabase.rpc('confirm_handover', { conv: conversationId, use_loops: useLoops }))
+
+/** Spends 300 Loops to put a listing at the top of Discover for 24 hours. */
+export const boostListing = async itemId => ok(await supabase.rpc('boost_listing', { listing: itemId }))

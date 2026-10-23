@@ -3,6 +3,7 @@ import * as api from './api.js'
 import { useI18n } from './i18n.js'
 import { currencyName, locale } from './locale.js'
 import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, previewOf, replyBody, toEur } from './offers.js'
+import { LOOPS } from './lib.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -421,19 +422,68 @@ function OfferComposer({ init, busy, onSend, onClose }) {
 }
 
 /**
+ * After the buyer has paid: what was paid, the "Handover done" button for each person, and the Loops it earns.
+ * The seller can spend 500 Loops here to remove their 5% fee.
+ */
+function SaleBar({ conv, loops, onHandover }) {
+  const { t, money } = useI18n()
+  const [busy, setBusy] = useState(false)
+  const [useLoops, setUseLoops] = useState(false)
+  const { sale: s, partner, iAmBuyer } = conv
+  const eur = cents => money(cents / 100, true)
+  if (s.completed_at) {
+    return (
+      <div className="th-req approved" role="status">
+        <Icon name="check" size={18} />
+        <span>{s.loops_awarded ? t('loops.saleDoneEarned', { n: LOOPS.perSale }) : t('loops.saleDone')}</span>
+      </div>
+    )
+  }
+  const mineDone = iAmBuyer ? s.buyer_done_at : s.seller_done_at
+  const canWaive = !iAmBuyer && s.seller_fee_cents > 0 && loops >= LOOPS.noFee
+  const confirm = async () => {
+    setBusy(true)
+    await onHandover(conv, useLoops && canWaive)
+    setBusy(false)
+  }
+  const paid = eur(s.price_cents + s.buyer_fee_cents)
+  const text = iAmBuyer
+    ? t('loops.buyerPaid', { amount: paid, name: partner })
+    : t('loops.sellerPaid', { name: partner, amount: paid, receive: eur(s.price_cents - (useLoops && canWaive ? 0 : s.seller_fee_cents)) })
+  return (
+    <div className="th-req sale" role="status">
+      <Icon name="bag" size={18} />
+      <span>{mineDone ? t('loops.waitOther', { name: partner }) : text}</span>
+      {!mineDone && (
+        <span className="th-req-btns">
+          {!iAmBuyer && s.seller_fee_cents > 0 && (
+            <label className={`th-loops${canWaive ? '' : ' off'}`} title={canWaive ? '' : t('loops.needMore', { n: LOOPS.noFee - loops })}>
+              <input type="checkbox" checked={useLoops && canWaive} disabled={!canWaive} onChange={e => setUseLoops(e.target.checked)} />
+              {t('loops.useNoFeeShort', { n: LOOPS.noFee })}
+            </label>
+          )}
+          <button className="btn small primary" disabled={busy} onClick={confirm}>{t('loops.handoverDone')}</button>
+        </span>
+      )}
+    </div>
+  )
+}
+
+/**
  * Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here.
  * Approving only opens once both people have written, so the sale is always agreed in conversation first.
  */
-function ApprovalBar({ conv, talked, onApprove, onBuy }) {
+function ApprovalBar({ conv, talked, loops, onApprove, onBuy, onHandover }) {
   const { t } = useI18n()
   const [busy, setBusy] = useState(false)
-  const { approval: st, partner, iAmBuyer } = conv
+  const { approval: st, partner, iAmBuyer, sale } = conv
   if (conv.sample || !conv.itemId || (iAmBuyer && !st)) return null
   const set = async approve => {
     setBusy(true)
     await onApprove(conv, approve)
     setBusy(false)
   }
+  if (sale) return <SaleBar conv={conv} loops={loops} onHandover={onHandover} />
   if (!iAmBuyer && !st && !talked) {
     return (
       <div className="th-req withdrawn" role="status">
@@ -463,7 +513,7 @@ function ApprovalBar({ conv, talked, onApprove, onBuy }) {
   )
 }
 
-function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy }) {
+function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy, loops, onHandover }) {
   const { t, currency } = useI18n()
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
@@ -661,7 +711,7 @@ function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, st
         </button>
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
-      <ApprovalBar conv={conv} talked={talked} onApprove={onApprove} onBuy={onBuy} />
+      <ApprovalBar conv={conv} talked={talked} loops={loops} onApprove={onApprove} onBuy={onBuy} onHandover={onHandover} />
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
@@ -756,7 +806,7 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [] }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [], loops = 0, onHandover }) {
   const { t } = useI18n()
   // messaging is for signed-in users only, so signed-out visitors don't get the sample conversations either
   const demo = SHOW_SAMPLES && !!realUid && realConvs.length === 0
@@ -1005,6 +1055,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           onChanged={onChanged}
           onOpenItem={onOpenItem}
           onApprove={onApprove}
+          loops={loops}
+          onHandover={onHandover}
           onBuy={onBuy}
         />
       ) : (
