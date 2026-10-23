@@ -14,6 +14,8 @@ import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import SellerListings from './SellerListings.jsx'
+import { ViewSwitch } from './PhoneView.jsx'
+import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
@@ -26,6 +28,11 @@ function initState() {
   const d = loadStored()
   const hash = (location.hash || '').slice(1)
   const seeded = !!d?.seeded
+  // sessionStorage survives refreshes but not new-tab opens, so we can tell them apart
+  const isRefresh = !!sessionStorage.getItem('twice.session')
+  try { sessionStorage.setItem('twice.session', '1') } catch { /* storage blocked */ }
+  // #landingpage always forces the landing page, even on refresh
+  const forceLanding = hash === 'landingpage'
   return {
     fresh: !seeded,
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
@@ -33,6 +40,7 @@ function initState() {
     me: d?.me?.lat ? d.me : DEFAULT_ME,
     tab: TABS.some(x => x[0] === hash) ? hash : 'discover',
     firstRun: !seeded && !backendEnabled,
+    skipLanding: isRefresh && !forceLanding,
   }
 }
 
@@ -99,8 +107,8 @@ export default function App() {
   const [mode, setMode] = useState('walk')
   const [placing, setPlacing] = useState(false)
   const [peek, setPeek] = useState(false)
-  // the welcome page is the front door: it opens on every load, not just the first visit
-  const [landing, setLanding] = useState(true)
+  // landing shows on fresh opens; refreshes skip it and restore the last tab; embedded mode always skips it
+  const [landing, setLanding] = useState(!embedded && !init.skipLanding)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
   const [dealPay, setDealPay] = useState(null)
@@ -156,11 +164,11 @@ export default function App() {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', '#' + tab)
+      history.replaceState(null, '', '#' + (landing ? 'landingpage' : tab))
     } catch {
       /* sandboxed frame */
     }
-  }, [tab])
+  }, [tab, landing])
 
   /* ---------- toast ---------- */
   const showToast = useCallback((msg, undo) => {
@@ -533,6 +541,7 @@ export default function App() {
               <span><span className="wide">{t('signInUp')}</span><span className="narrow">{t('auth.signIn')}</span></span>
             </button>
           )}
+          <ViewSwitch />
           <button
             className="loc"
             aria-label={t('loc.change')}

@@ -165,4 +165,6 @@ export default {
   soldByLabel: '판매자:', moreFrom: '{name}님의 다른 상품',
   'pf.complete': '프로필을 완성하세요', 'pf.completeOf': '{total}개 중 {done}개 완료', 'pf.todo.photo': '프로필 사진 추가', 'pf.todo.area': '파리 지역 선택', 'pf.todo.cover': '커버 고르기', 'pf.todo.listing': '첫 상품 올리기', 'pf.todo.friend': '이웃 팔로우하기', 'pf.allDone': '프로필이 완성됐어요. 좋아요!', 'ls.emptyH': '아직 판매 중인 물건이 없어요',
   'tab.browse': '둘러보기', 'br.search': '판매글 검색…', 'br.clear': '검색 지우기', 'br.sortLabel': '정렬', 'br.sort.nearest': '가까운 순', 'br.sort.low': '가격 낮은 순', 'br.sort.high': '가격 높은 순', 'br.none': '"{q}"와(과) 일치하는 판매글이 없어요', 'br.noneHint': '다른 단어를 입력하거나 필터를 지워 보세요.', 'br.reset': '필터 지우기', 'br.save': '{title} 저장', 'br.count_one': '판매글 {n}개', 'br.count_other': '판매글 {n}개',
+  // sample item titles for ticker
+  'it.1': '미드센추리 오크 사이드보드', 'it.2': '벨벳 2인용 소파', 'it.3': '화이트 사다리형 책장', 'it.4': '빈티지 가죽 재킷, M 사이즈', 'it.5': '울 트렌치코트, M 사이즈', 'it.6': '가죽 앵클 부츠, 39 사이즈', 'it.7': '13인치 울트라북, 16GB RAM', 'it.8': '50mm 렌즈가 달린 35mm 필름 카메라', 'it.9': '내장 프리앰프가 있는 턴테이블', 'it.10': '소음 차단 헤드폰', 'it.11': '프랑스어 페이퍼백 40권 박스', 'it.12': '1950년대 파리 일러스트 지도책', 'it.13': '재즈 LP 30장, 다양한 레이블', 'it.14': '로드 바이크, 54cm 프레임',
 }

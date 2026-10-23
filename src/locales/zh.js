@@ -165,4 +165,6 @@ export default {
   soldByLabel: '卖家：', moreFrom: '{name}的更多商品',
   'pf.complete': '完善你的主页', 'pf.completeOf': '已完成 {done}/{total}', 'pf.todo.photo': '添加头像', 'pf.todo.area': '选择你所在的巴黎区', 'pf.todo.cover': '选择封面', 'pf.todo.listing': '发布第一件商品', 'pf.todo.friend': '关注一位邻居', 'pf.allDone': '你的主页已完善，太棒了！', 'ls.emptyH': '还没有在售商品',
   'tab.browse': '浏览', 'br.search': '搜索商品…', 'br.clear': '清除搜索', 'br.sortLabel': '排序', 'br.sort.nearest': '离我最近', 'br.sort.low': '价格从低到高', 'br.sort.high': '价格从高到低', 'br.none': '没有找到“{q}”相关的商品', 'br.noneHint': '换个词试试，或清除筛选。', 'br.reset': '清除筛选', 'br.save': '收藏{title}', 'br.count_one': '{n} 件商品', 'br.count_other': '{n} 件商品',
+  // sample item titles for ticker
+  'it.1': '中世纪橡木餐柜', 'it.2': '天鹅绒双人沙发', 'it.3': '白色梯形书架', 'it.4': '复古皮夹克，M码', 'it.5': '羊毛风衣，M码', 'it.6': '皮革踝靴，39码', 'it.7': '13英寸超薄本，16GB内存', 'it.8': '35毫米胶片相机，配50毫米镜头', 'it.9': '带内置前置放大器的唱盘机', 'it.10': '降噪耳机', 'it.11': '40本法语平装书', 'it.12': '巴黎插图地图集，1950年代', 'it.13': '30张爵士乐LP，混合品牌', 'it.14': '公路自行车，54厘米车架',
 }
