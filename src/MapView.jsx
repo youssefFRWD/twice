@@ -27,7 +27,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
   const it = sel != null ? itemById(sel) : null
   let body
   if (it && plans) {
@@ -96,7 +96,10 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, sel, 
     body = (
       <>
         <div className="panel-head">
-          <h2>{list.length} saved{cat === 'all' ? '' : ' · ' + label}</h2>
+          <h2>
+            {list.length} saved{cat === 'all' ? '' : ' · ' + label}
+            {showNearby ? ` · ${nearby.length} nearby` : ''}
+          </h2>
           <span className="note">{inR} within {radius} km of {meName(me)}</span>
         </div>
         <div className="panel-body">
@@ -109,11 +112,28 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, sel, 
               </button>
             ))
           ) : (
-            <div className="empty" style={{ padding: '16px 4px' }}>
-              <Icon name="heart" size={32} />
-              <h2 style={{ fontSize: 18 }}>No pins here yet</h2>
-              <p>{savedCount ? 'Nothing saved in this category.' : 'Save items on Discover and they appear on the map.'}</p>
-            </div>
+            !showNearby && (
+              <div className="empty" style={{ padding: '16px 4px' }}>
+                <Icon name="heart" size={32} />
+                <h2 style={{ fontSize: 18 }}>No pins here yet</h2>
+                <p>{savedCount ? 'Nothing saved in this category.' : 'Save items on Discover and they appear here, or tap Show all listings to see what is around you.'}</p>
+              </div>
+            )
+          )}
+          {showNearby && nearby.length > 0 && (
+            <>
+              <h3 className="li-head">Listed near you</h3>
+              {nearby.map(i => (
+                <button className="li" key={i.id} onClick={() => onPick(i.id)}>
+                  <Art item={i} />
+                  <span><b>{i.t}</b><small>{i.a} · €{i.p}</small></span>
+                  <span className="d">{fmtD(distOf(me, i))}</span>
+                </button>
+              ))}
+            </>
+          )}
+          {showNearby && nearby.length === 0 && (
+            <p className="note" style={{ padding: '4px 2px' }}>No other listings within {radius} km. Try a larger radius.</p>
           )}
         </div>
       </>
@@ -130,7 +150,7 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, sel, 
 maplibregl.setWorkerUrl(workerUrl)
 
 export default function MapView(props) {
-  const { active, me, radius, list, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
+  const { active, me, radius, list, nearby, showNearby, nearbyCount, onToggleNearby, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
   const { canMessage, onMessage, onBuy, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
   const boxRef = useRef(null)
@@ -236,16 +256,17 @@ export default function MapView(props) {
     const map = mapRef.current
     if (!ready || !map) return
     markers.current.pins.forEach(m => m.remove())
-    markers.current.pins = list.filter(it => !navOn || it.id === sel).map(it => {
+    const all = [...(showNearby ? nearby : []).map(it => ({ it, other: true })), ...list.map(it => ({ it, other: false }))]
+    markers.current.pins = all.filter(({ it }) => !navOn || it.id === sel).map(({ it, other }) => {
       const isSel = sel === it.id
       const far = distOf(me, it) > radius && !isSel
       const label = `${it.t}, ${it.p} euros, ${fmtD(distOf(me, it))} away`
-      const el = pinElement(it, (isSel ? ' sel' : '') + (far ? ' far' : ''))
+      const el = pinElement(it, (isSel ? ' sel' : '') + (far ? ' far' : '') + (other && !isSel ? ' other' : ''))
       el.tabIndex = 0
       el.setAttribute('role', 'button')
       el.setAttribute('aria-label', label)
       el.title = label
-      el.style.zIndex = isSel ? 10 : Math.round(100 - it.lat)
+      el.style.zIndex = isSel ? 10 : other ? 1 : Math.round(100 - it.lat) + 2
       el.addEventListener('click', e => {
         e.stopPropagation()
         live.current.onSelect(it.id)
@@ -258,7 +279,7 @@ export default function MapView(props) {
       })
       return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, 7] }).setLngLat([it.lon, it.lat]).addTo(map)
     })
-  }, [list, sel, me, radius, ready, navOn])
+  }, [list, nearby, showNearby, sel, me, radius, ready, navOn])
 
   /* the chosen route */
   useEffect(() => {
@@ -350,6 +371,10 @@ export default function MapView(props) {
           />
         )}
         <div className="maptl" hidden={navOn}>
+          <button className={`all-btn${showNearby ? ' on' : ''}`} aria-pressed={showNearby} onClick={onToggleNearby}>
+            <Icon name="tag" size={16} />
+            {showNearby ? 'Showing all listings · Hide' : `Show all listings${nearbyCount ? ` (${nearbyCount})` : ''}`}
+          </button>
           <label className="radius" htmlFor="rad">
             <span>Within <b className="mono">{radius} km</b></span>
             <input type="range" id="rad" min="1" max="25" step="1" value={radius} onChange={e => onRadius(+e.target.value)} />
@@ -389,6 +414,8 @@ export default function MapView(props) {
       </div>
       {!navOn && (
       <Panel
+        nearby={nearby}
+        showNearby={showNearby}
         onStartNav={() => setNavOn(true)}
         canMessage={canMessage}
         onMessage={onMessage}
