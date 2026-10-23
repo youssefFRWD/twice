@@ -1,5 +1,5 @@
 -- Sale approvals: the seller approves a sale from the conversation with a buyer, and only then can that buyer pay.
--- The buyer does not request anything; they message the seller, and the seller decides in that thread.
+-- The buyer does not request anything; they message the seller, and once both have written, the seller can approve.
 -- A conversation is already one buyer + one item, so each conversation holds at most one approval.
 -- Approving reserves the item: it leaves the store for everyone but the approved buyer.
 -- If the seller withdraws the approval, the item goes back on sale.
@@ -25,7 +25,7 @@ alter table public.sale_approvals enable row level security;
 create policy "participants read sale approvals" on public.sale_approvals for select
   using (exists (select 1 from public.conversations c where c.id = conversation_id and auth.uid() in (c.buyer_id, c.seller_id)));
 
--- only the seller approves, and only while the item is still on sale
+-- only the seller approves, only once buyer and seller have both written in the thread, and only while the item is on sale
 create policy "sellers approve sales" on public.sale_approvals for insert
   with check (
     status = 'approved'
@@ -33,6 +33,8 @@ create policy "sellers approve sales" on public.sale_approvals for insert
       select 1 from public.conversations c
       join public.items i on i.id = c.item_id
       where c.id = conversation_id and c.seller_id = auth.uid() and i.status = 'active'
+        and exists (select 1 from public.messages m where m.conversation_id = c.id and m.sender_id = c.buyer_id)
+        and exists (select 1 from public.messages m where m.conversation_id = c.id and m.sender_id = c.seller_id)
     )
   );
 

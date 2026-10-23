@@ -445,8 +445,11 @@ function CartPanel({ deals, onPay, onGo, onClose }) {
   )
 }
 
-/** Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here. */
-function ApprovalBar({ conv, onApprove, onBuy }) {
+/**
+ * Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here.
+ * Approving only opens once both people have written, so the sale is always agreed in conversation first.
+ */
+function ApprovalBar({ conv, talked, onApprove, onBuy }) {
   const { t } = useI18n()
   const [busy, setBusy] = useState(false)
   const { approval: st, partner, iAmBuyer } = conv
@@ -455,6 +458,14 @@ function ApprovalBar({ conv, onApprove, onBuy }) {
     setBusy(true)
     await onApprove(conv, approve)
     setBusy(false)
+  }
+  if (!iAmBuyer && !st && !talked) {
+    return (
+      <div className="th-req withdrawn" role="status">
+        <Icon name="chat" size={18} />
+        <span>{t('appr.seller.talkFirst', { name: partner })}</span>
+      </div>
+    )
   }
   const state = st || 'none'
   return (
@@ -639,6 +650,7 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
   }
 
   const lastSeen = [...msgs].reverse().find(m => m.sender_id === uid && m.read_at)?.id
+  const talked = msgs.some(m => m.sender_id === uid) && msgs.some(m => m.sender_id !== uid)
   const st = presence(conv.theirAt)
 
   return (
@@ -672,7 +684,7 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
         </button>
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
-      <ApprovalBar conv={conv} onApprove={onApprove} onBuy={onBuy} />
+      <ApprovalBar conv={conv} talked={talked} onApprove={onApprove} onBuy={onBuy} />
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
