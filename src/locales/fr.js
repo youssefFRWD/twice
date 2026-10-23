@@ -131,6 +131,11 @@ export default {
   'loops.waitOther': 'En attente de la confirmation de {name}.', 'loops.saleDone': 'Vente terminée.',
   'loops.saleDoneEarned': 'Vente terminée. Vous gagnez chacun {n} Loops.', 'loops.earnedToast': 'Vente terminée : +{n} Loops !', 'loops.doneToast': 'Vente terminée.',
   'loops.handoverFail': 'Impossible de confirmer la remise. Réessayez.', 'loops.boost': 'Booster · {n} Loops', 'loops.boosted': 'Annonce boostée pour 24 heures',
+  'loops.howH': 'Comment fonctionnent les Loops', 'loops.howIntro': 'Les Loops sont les points de récompense de Twice pour les voisins qui échangent en personne.',
+  'loops.earnH': 'Gagner', 'loops.earnP': 'Vous et votre acheteur ou vendeur gagnez chacun {n} Loops quand vous confirmez tous les deux la remise. Les ventes de moins de 5 € ne rapportent rien, et les deux mêmes personnes gagnent ensemble au plus deux fois en 30 jours.',
+  'loops.spendH': 'Dépenser', 'loops.goal.boost': 'Booster une annonce · {n} Loops', 'loops.goal.boostSub': 'Votre annonce passe en tête de Découvrir pendant 24 heures.',
+  'loops.goal.noFee': 'Aucuns frais sur une vente · {n} Loops', 'loops.goal.noFeeSub': 'Retire vos 5 % de frais Twice sur une vente payée dans l’app.',
+  'loops.goalReady': 'Vous pouvez le faire maintenant.', 'loops.notMoney': 'Les Loops ne sont pas de l’argent : elles ne se versent ni ne s’envoient.',
   'loops.boostFail': 'Impossible de booster l’annonce.', 'loops.boostedUntil': 'Boostée jusqu’à {time}', 'loops.boostedTag': 'Boosté',
 
   // profil

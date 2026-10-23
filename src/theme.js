@@ -1,5 +1,5 @@
 const KEY = 'twice.theme'
-const COLORS = { light: '#F6F1E7', dark: '#141A17' }
+const COLORS = { light: '#F6F1E7', dark: '#1B1310' }
 const media = typeof matchMedia === 'function' ? matchMedia('(prefers-color-scheme: dark)') : null
 const listeners = new Set()
 

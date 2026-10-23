@@ -36,6 +36,12 @@ export default {
   'saved.noneInCat': 'Nothing saved in this category', 'saved.none': 'No favorites yet', 'saved.pickOther': 'Pick another category above.',
   'saved.swipeHint': 'Swipe right on Discover and the items you like will collect here.',
   'saved.sort': 'Sort', 'saved.by.date': 'Date', 'saved.by.name': 'Name', 'saved.by.price': 'Price', 'saved.reverse.on': 'Order: reversed', 'saved.reverse.off': 'Reverse order', 'saved.search': 'Search saved items', 'saved.noMatch': 'No saved items match your search.',
+  'saved.addedTo': 'Added to {name}', 'saved.removedFrom': 'Removed from {name}',
+  'saved.layout': 'Layout', 'saved.layout.grid': 'Grid', 'saved.layout.list': 'List', 'saved.layout.large': 'Large cards',
+  'saved.select': 'Select', 'saved.selected': '{n} selected', 'saved.selectAll': 'Select all', 'saved.done': 'Done', 'saved.removeN': 'Remove {n}', 'saved.bulk': 'Actions for selected items', 'saved.pick': 'Select {title}',
+  'saved.boards': 'Boards', 'saved.allBoard': 'All', 'saved.newBoard': 'New board', 'saved.create': 'Create', 'saved.addToBoard': 'Add to board', 'saved.noBoards': 'No boards yet. Create your first one below.', 'saved.deleteBoard': 'Delete board {name}', 'saved.boardEmpty': 'This board is empty. Use the tag button on an item to add it.',
+  'saved.filters': 'Quick filters', 'saved.clearFilters': 'Clear', 'saved.chip.u50': 'Under 50 €', 'saved.chip.near': 'Under 2 km', 'saved.chip.new': 'Like new', 'saved.chip.photo': 'With photo',
+  'saved.stat.items': 'saved items', 'saved.stat.value': 'total value', 'saved.stat.nearest': 'nearest: {title}', 'saved.stat.nearestNone': 'nearest',
   'saved.count': '{n} of {total} items, distances from {name}',
   'saved.showOn': 'Show {title} on the map', 'saved.msgSeller': 'Message the seller of {title}', 'saved.remove': 'Remove {title} from favorites',
 
@@ -132,6 +138,11 @@ export default {
   'loops.waitOther': 'Waiting for {name} to confirm the handover.', 'loops.saleDone': 'Sale completed.',
   'loops.saleDoneEarned': 'Sale completed. You both earned {n} Loops.', 'loops.earnedToast': 'Sale completed: +{n} Loops!', 'loops.doneToast': 'Sale completed.',
   'loops.handoverFail': 'Could not confirm the handover. Try again.', 'loops.boost': 'Boost · {n} Loops', 'loops.boosted': 'Listing boosted for 24 hours',
+  'loops.howH': 'How Loops work', 'loops.howIntro': 'Loops are Twice’s reward points for neighbours who trade in person.',
+  'loops.earnH': 'Earn', 'loops.earnP': 'You and your buyer or seller each get {n} Loops when you both tap “Handover done”. Sales under €5 earn nothing, and the same two people earn together at most twice in 30 days.',
+  'loops.spendH': 'Spend', 'loops.goal.boost': 'Boost a listing · {n} Loops', 'loops.goal.boostSub': 'Your listing goes to the top of Discover for 24 hours.',
+  'loops.goal.noFee': 'No fee on one sale · {n} Loops', 'loops.goal.noFeeSub': 'Removes your own 5% Twice fee on a sale paid in the app.',
+  'loops.goalReady': 'You can do this now.', 'loops.notMoney': 'Loops are not money: they can’t be paid out or sent to anyone.',
   'loops.boostFail': 'Could not boost the listing.', 'loops.boostedUntil': 'Boosted until {time}', 'loops.boostedTag': 'Boosted',
 
   // profile

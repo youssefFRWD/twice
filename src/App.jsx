@@ -20,7 +20,7 @@ import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
 import { startScrollReveal } from './scrollReveal.js'
 import { startScrollTint } from './scrollTint.js'
-import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
+import { AuthScreen, LocModal, LoopsModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
 
@@ -113,6 +113,7 @@ export default function App() {
   // landing shows on fresh opens; refreshes skip it and restore the last tab; embedded mode always skips it
   const [landing, setLanding] = useState(!embedded && !init.skipLanding)
   const [locOpen, setLocOpen] = useState(false)
+  const [loopsOpen, setLoopsOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
   const [dealPay, setDealPay] = useState(null)
   const [paidDeals, setPaidDeals] = useState(() => {
@@ -565,6 +566,7 @@ export default function App() {
     const onKey = e => {
       if (e.key !== 'Escape') return
       setLocOpen(false)
+      setLoopsOpen(false)
       setAuthOpen(false)
       setBuyId(null)
     }
@@ -606,7 +608,7 @@ export default function App() {
     else mapCmd('fitSaved')
   }
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller || detail !== null
+  const overlayOpen = landing || locOpen || loopsOpen || authOpen || buyId !== null || !!seller || detail !== null
 
   return (
     <>
@@ -623,7 +625,7 @@ export default function App() {
             </button>
           )}
           {session && (
-            <button className="loops-pill" onClick={() => setTab('profile')} aria-label={t('loops.balance', { n: loops })} title={t('loops.balance', { n: loops })}>
+            <button className="loops-pill" onClick={() => setLoopsOpen(true)} aria-label={t('loops.balance', { n: loops })} title={t('loops.balance', { n: loops })}>
               <Icon name="loop" size={16} />
               <b className="mono">{loops.toLocaleString()}</b>
               <span className="wide">{t('loops.name')}</span>
@@ -843,6 +845,7 @@ export default function App() {
           }}
         />
       )}
+      <LoopsModal open={loopsOpen} loops={loops} onClose={() => setLoopsOpen(false)} />
       <LocModal
         open={locOpen}
         me={me}
