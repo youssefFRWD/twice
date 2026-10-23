@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
@@ -7,12 +7,15 @@ import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
-import MapView from './MapView.jsx'
+import { buildPlans } from './routing.js'
+import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
-const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat']]
+const MapView = lazy(() => import('./MapView.jsx'))
+
+const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat'], ['profile', 'Profile', 'user']]
 const SAMPLE_TOAST = 'We saved six sample items so the map has something on it.'
 
 function initState() {
@@ -99,7 +102,7 @@ export default function App() {
   const [convs, setConvs] = useState([])
   const [chatId, setChatId] = useState(null)
   const [session, setSession] = useState(null)
-  const [authReady, setAuthReady] = useState(!backendEnabled)
+  const [authOpen, setAuthOpen] = useState(false)
   const [syncedUid, setSyncedUid] = useState(null)
   const [, setItemsVersion] = useState(0)
   const uidRef = useRef(null)
@@ -107,11 +110,12 @@ export default function App() {
   const buyRef = useRef(null)
   const toastTimer = useRef(0)
   const cmdN = useRef(0)
+  const routeKey = useRef(null)
   const firstRun = useRef(init.firstRun)
 
   const uid = session?.user?.id ?? null
   const synced = !backendEnabled || (uid !== null && syncedUid === uid)
-  const needsAuth = backendEnabled && authReady && !session
+  const signedOut = backendEnabled && !session
   const approvedForMe = convs.filter(c => c.buyer && c.request === 'approved').map(c => c.itemId)
   const data = { me, saved, passed, reserved: [...reserved, ...approvedForMe] }
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
@@ -154,41 +158,30 @@ export default function App() {
     [showToast],
   )
 
-  const reloadItems = useCallback(async () => {
-    if (!backendEnabled) return
-    try {
-      const rows = await api.fetchItems()
-      if (!rows.length) return
-      replaceItems(rows)
-      setItemsVersion(v => v + 1)
-      // reserved for someone else while checkout was open
-      if (buyRef.current !== null && !itemById(buyRef.current)) {
-        setBuyId(null)
-        showToast('This item is no longer available.')
-      }
-    } catch {
-      /* keep the last list; the next poll retries */
-    }
-  }, [showToast])
+  const reloadItems = useCallback(
+    () =>
+      api
+        .fetchItems()
+        .then(rows => {
+          replaceItems(rows)
+          setItemsVersion(v => v + 1)
+          // reserved for someone else while checkout was open
+          if (buyRef.current !== null && !itemById(buyRef.current)) {
+            setBuyId(null)
+            showToast('This item is no longer available.')
+          }
+        })
+        .catch(() => {}),
+    [uid, showToast],
+  )
 
-  /* refetch now and then, so items reserved for someone else leave the store */
+  /* load now, then refetch now and then, so items reserved for someone else leave the store */
   useEffect(() => {
     if (!backendEnabled) return
+    reloadItems()
     const t = setInterval(reloadItems, 30000)
     return () => clearInterval(t)
   }, [reloadItems])
-
-  useEffect(() => {
-    if (!backendEnabled) return
-    api
-      .fetchItems()
-      .then(rows => {
-        if (!rows.length) return
-        replaceItems(rows)
-        setItemsVersion(v => v + 1)
-      })
-      .catch(() => {})
-  }, [uid])
 
   useEffect(() => {
     if (!backendEnabled) return
@@ -197,9 +190,9 @@ export default function App() {
       .getSession()
       .then(s => live && setSession(s))
       .catch(() => {})
-      .finally(() => live && setAuthReady(true))
     const sub = api.onAuthChange(s => {
       setSession(s)
+      if (s) setAuthOpen(false)
       if (!s) {
         setSaved([])
         setPassed([])
@@ -260,7 +253,10 @@ export default function App() {
 
   const canMessage = it => !!uid && !!it.sid && it.sid !== uid
   const messageSeller = async it => {
-    if (!uid) return showToast('Sign in to message sellers.')
+    if (!uid) {
+      setAuthOpen(true)
+      return showToast('Sign in to message sellers.')
+    }
     if (!canMessage(it)) return showToast(it.sid ? 'This is your own listing.' : 'Sample listings have no seller to message.')
     try {
       const id = await api.startConversation(uid, it)
@@ -278,6 +274,10 @@ export default function App() {
     it.sid ? (convs.find(c => c.buyer && c.itemId === it.id)?.request ?? null) : reserved.includes(it.id) ? 'approved' : null
   const reserveSample = useCallback(it => setReserved(r => (r.includes(it.id) ? r : [...r, it.id])), [])
   const askToBuy = async it => {
+    if (!uid) {
+      setAuthOpen(true)
+      return showToast('Sign in to ask the seller.')
+    }
     try {
       await api.requestPurchase(uid, it)
       await reloadConvs()
@@ -339,6 +339,10 @@ export default function App() {
   }, [sync])
   const decide = useCallback(
     (it, dir) => {
+      if (backendEnabled && !uidRef.current) {
+        setAuthOpen(true)
+        return showToast('Sign in to save items and keep your swipes.')
+      }
       if (dir > 0) setSaved(s => (s.includes(it.id) ? s : [...s, it.id]))
       else setPassed(p => [...p, it.id])
       setHist(h => [...h, { id: it.id, dir }])
@@ -368,10 +372,19 @@ export default function App() {
     const m = planMetro(me, it)
     sync(uid2 => api.logView(uid2, id))
     setSel(id)
-    setPlans({ walk: w, metro: m })
+    const key = `${id}@${me.lat},${me.lon}`
+    routeKey.current = key
+    setPlans({ walk: w, metro: m, key })
     setMode(!m.none && m.min + 3 < w.min ? 'metro' : 'walk')
     setPeek(false)
     mapCmd('fitRoute')
+    // swap the estimate for real walking routes as soon as the router answers
+    buildPlans(me, it)
+      .then(real => {
+        setPlans(cur => (cur && cur.key === key ? { ...real, key } : cur))
+        if (routeKey.current === key) mapCmd('fitRoute')
+      })
+      .catch(() => {})
   }
   const showOnMap = id => {
     setTab('map', { keepView: true })
@@ -436,6 +449,7 @@ export default function App() {
     const onKey = e => {
       if (e.key !== 'Escape') return
       setLocOpen(false)
+      setAuthOpen(false)
       setBuyId(null)
     }
     window.addEventListener('keydown', onKey)
@@ -464,7 +478,7 @@ export default function App() {
   const savedList = listFor('saved', cat.saved, data)
   const mapList = listFor('map', cat.map, data)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || needsAuth || buyId !== null
+  const overlayOpen = landing || locOpen || authOpen || buyId !== null
 
   return (
     <>
@@ -474,6 +488,12 @@ export default function App() {
             <span className="logo" aria-hidden="true" />twice
           </button>
           <Tabs tab={tab} onTab={setTab} className="tabs-top" unread={unread} />
+          {signedOut && (
+            <button className="btn primary small signin" onClick={() => setAuthOpen(true)}>
+              <Icon name="user" size={16} />
+              <span><span className="wide">Sign in / Sign up</span><span className="narrow">Sign in</span></span>
+            </button>
+          )}
           <button
             className="loc"
             aria-label="Change your position"
@@ -484,7 +504,7 @@ export default function App() {
             <span>{me.src === 'gps' ? 'Your location' : me.label}</span>
           </button>
         </header>
-        {tab !== 'messages' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
+        {tab !== 'messages' && tab !== 'profile' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
         <main>
           <section className={`view${tab === 'discover' ? ' on' : ''}`} id="v-discover" aria-label="Discover">
             {tab === 'discover' && (
@@ -507,6 +527,7 @@ export default function App() {
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
+            <Suspense fallback={null}>
             <MapView
               active={tab === 'map'}
               me={me}
@@ -537,6 +558,7 @@ export default function App() {
               onCancelPlace={() => setPlacing(false)}
               onOpenLoc={() => setLocOpen(true)}
             />
+            </Suspense>
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
             {tab === 'messages' && (
@@ -552,12 +574,34 @@ export default function App() {
               />
             )}
           </section>
+          <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label="Profile">
+            {tab === 'profile' && signedOut && (
+              <div className="empty">
+                <Icon name="user" size={40} />
+                <h2>Your profile lives here</h2>
+                <p>Sign in to add a photo, list items, write reviews and follow neighbours.</p>
+                <button className="btn primary" onClick={() => setAuthOpen(true)}>Sign in / Sign up</button>
+              </div>
+            )}
+            {tab === 'profile' && !signedOut && (
+              <Profile
+                key={uid || 'local'}
+                uid={uid}
+                backendOn={backendEnabled}
+                email={session?.user?.email}
+                me={me}
+                onSignOut={() => api.signOut()}
+                onToast={showToast}
+                onItemsChanged={reloadItems}
+              />
+            )}
+          </section>
         </main>
         <Tabs tab={tab} onTab={setTab} className="tabs-bottom gut" unread={unread} />
       </div>
 
-      {landing && <Landing onStart={startApp} />}
-      {needsAuth && <AuthScreen onSubmit={handleAuth} />}
+      {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
+      {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
       {buyItem && (
         <Checkout
           key={buyId}
@@ -602,7 +646,7 @@ export default function App() {
           setLocOpen(false)
           setPlacing(true)
           setTab('map', { keepView: true })
-          mapCmd('goTo', { k: 10, cx: 0, cy: 0, animate: false })
+          mapCmd('overview')
         }}
         onStation={s => {
           setLocOpen(false)

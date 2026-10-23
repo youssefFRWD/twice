@@ -5,7 +5,13 @@
 -- and every other pending request for it is declined. If that buyer cancels, the item goes back on sale.
 
 alter table public.items drop constraint items_status_check;
-alter table public.items add constraint items_status_check check (status in ('active', 'reserved', 'sold', 'removed'));
+alter table public.items add constraint items_status_check check (status in ('active', 'hidden', 'reserved', 'sold', 'removed'));
+
+-- sellers may still edit a reserved listing (the edit form sends its current status back) or mark it sold
+drop policy "sellers update own" on public.items;
+create policy "sellers update own" on public.items for update
+  using (seller_id = auth.uid() and status <> 'removed')
+  with check (seller_id = auth.uid() and status in ('active', 'hidden', 'reserved', 'sold'));
 
 create table public.purchase_requests (
   conversation_id bigint primary key references public.conversations (id) on delete cascade,

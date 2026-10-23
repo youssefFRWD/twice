@@ -104,7 +104,7 @@ function RouteVisual() {
   )
 }
 
-export default function Landing({ onStart }) {
+export default function Landing({ onStart, onSignIn }) {
   const howRef = useRef(null)
   const goRef = useRef(null)
 
@@ -125,7 +125,10 @@ export default function Landing({ onStart }) {
       <div className="gut">
         <div className="lp-in lp-nav">
           <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
-          <button className="btn small primary" onClick={onStart}>Open the app</button>
+          <div className="lp-actions">
+            {onSignIn && <button className="btn small" onClick={onSignIn}>Sign in / Sign up</button>}
+            <button className="btn small primary" onClick={onStart}>Open the app</button>
+          </div>
         </div>
       </div>
       <div className="gut">
