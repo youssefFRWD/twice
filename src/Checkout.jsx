@@ -180,7 +180,7 @@ export default function Checkout({ item: it, me, uid, convId, approval, sale, lo
   }
 
   const methods = [
-    ['online', t('co.online'), 'card', onlineOk ? t('co.onlineSub') : stripeEnabled && online === null ? t('loading') : t('co.onlineOff')],
+    ['online', t('co.online'), 'card', onlineOk ? t('co.onlineSub') : !stripeEnabled ? t('co.onlineNotSetUp') : online === null ? t('loading') : t('co.onlineOff')],
     ['cash', t('co.cash'), 'bag', t('co.atHandover')],
   ]
 

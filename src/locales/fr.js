@@ -112,7 +112,7 @@ export default {
   'co.ownH': 'C’est votre annonce', 'co.ownP': 'Vous ne pouvez pas acheter un objet que vous vendez.',
   'co.approved': '{seller} a accepté votre achat.',
   'co.fee': 'Frais Twice (5 %)', 'co.noFeeCash': 'Aucuns en espèces', 'co.feeRemoved': 'Retirés avec des Loops', 'co.payFail': 'Le paiement n’a pas abouti. Réessayez.',
-  'co.online': 'En ligne', 'co.onlineSub': 'Carte, Apple Pay, Google Pay, PayPal', 'co.onlineOff': 'Pas encore disponible pour ce vendeur',
+  'co.online': 'En ligne', 'co.onlineSub': 'Carte, Apple Pay, Google Pay, PayPal', 'co.onlineOff': 'Ce vendeur n’a pas encore activé les paiements en ligne', 'co.onlineNotSetUp': 'Bientôt : les paiements en ligne ne sont pas encore activés',
   'co.heldNote': 'Twice garde votre paiement et ne paie {seller} qu’une fois la remise confirmée par vous deux. Pas de remise sous 14 jours ? Vous êtes remboursé.',
   'co.continuePay': 'Continuer vers le paiement · {amount}', 'co.changePay': 'Changer de moyen de paiement',
   'co.yoursHeld': '{title} est à vous. Twice garde l’argent jusqu’à ce que vous et {seller} appuyiez sur « Remise faite » dans votre conversation.',
