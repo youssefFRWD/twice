@@ -1,46 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import * as api from './api.js'
 import { fmtD } from './data.js'
 import { useI18n } from './i18n.js'
 import { LOOPS, distOf, feeCents } from './lib.js'
+import { getStripe, stripeEnabled } from './payments.js'
 import { Art, Icon } from './ui.jsx'
-
-const METHODS = [
-  ['card', 'co.card', 'card', 'co.payNow'],
-  ['apple', 'Apple Pay', 'phone', 'co.payNow'],
-  ['paypal', 'PayPal', 'wallet', 'co.payNow'],
-  ['cash', 'co.cash', 'bag', 'co.atHandover'],
-]
-const WALLET_NOTE = { apple: 'co.appleNote', paypal: 'co.paypalNote' }
-
-const digits = s => s.replace(/\D/g, '')
-
-/** Luhn check, so obvious typos are caught before "paying". */
-function luhn(num) {
-  let sum = 0
-  for (let i = 0; i < num.length; i++) {
-    let d = +num[num.length - 1 - i]
-    if (i % 2) d = d * 2 > 9 ? d * 2 - 9 : d * 2
-    sum += d
-  }
-  return num.length >= 13 && sum % 10 === 0
-}
-
-function expiryOk(v) {
-  const m = /^(\d{2})\/(\d{2})$/.exec(v)
-  if (!m || +m[1] < 1 || +m[1] > 12) return false
-  const now = new Date()
-  const y = 2000 + +m[2]
-  return y > now.getFullYear() || (y === now.getFullYear() && +m[1] >= now.getMonth() + 1)
-}
-
-function cardErrors(card, t) {
-  const e = {}
-  if (!card.name.trim()) e.name = t('co.errName')
-  if (!luhn(digits(card.number))) e.number = t('co.errNumber')
-  if (!expiryOk(card.exp)) e.exp = t('co.errExp')
-  if (!/^\d{3,4}$/.test(card.cvc)) e.cvc = t('co.errCvc')
-  return e
-}
 
 /**
  * Every sale needs the seller's OK before payment opens. The button here only opens the conversation with the owner;
@@ -82,58 +46,107 @@ function Approval({ it, status, own, paid, onContact }) {
   )
 }
 
-export default function Checkout({ item: it, me, uid, approval, sale, loops, onPay, canMessage, onMessage, onShowMap, onClose, onPaid }) {
+/** Stripe's own payment form (card, Apple Pay, Google Pay, PayPal...): card details never touch Twice. */
+function StripeForm({ clientSecret, onReady }) {
+  const box = useRef(null)
+  useEffect(() => {
+    let live = true
+    let element
+    getStripe().then(stripe => {
+      if (!live || !stripe) return
+      const dark = document.documentElement.dataset.theme === 'dark'
+      const elements = stripe.elements({
+        clientSecret,
+        appearance: { theme: dark ? 'night' : 'stripe', variables: { colorPrimary: dark ? '#7FB89A' : '#1F4D3A', borderRadius: '10px' } },
+      })
+      element = elements.create('payment', { layout: 'tabs' })
+      element.mount(box.current)
+      onReady({ stripe, elements })
+    })
+    return () => {
+      live = false
+      element?.destroy()
+    }
+  }, [clientSecret, onReady])
+  return <div className="co-stripe" ref={box} />
+}
+
+export default function Checkout({ item: it, me, uid, convId, approval, sale, loops, payment, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
   const own = !!it.sid && it.sid === uid
   const approved = approval === 'approved' && !own && !sale
 
-  const [method, setMethod] = useState('card')
-  const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
-  const [touched, setTouched] = useState(false)
+  const [online, setOnline] = useState(null) // null while checking whether the seller can be paid online
+  const [choice, setChoice] = useState('online')
   const [useLoops, setUseLoops] = useState(false)
+  const [clientSecret, setClientSecret] = useState(null)
   const [busy, setBusy] = useState(false)
   const [payErr, setPayErr] = useState('')
   const [done, setDone] = useState(null)
   const headRef = useRef(null)
+  const stripeRef = useRef(null)
+  const setStripeReady = useCallback(v => {
+    stripeRef.current = v
+  }, [])
 
   useEffect(() => {
     headRef.current?.focus()
   }, [done])
 
+  // online payment needs the seller to have finished Stripe onboarding
+  useEffect(() => {
+    if (!approved || !stripeEnabled || !convId) return
+    let live = true
+    api
+      .canPayOnline(convId)
+      .then(ok => live && setOnline(ok))
+      .catch(() => live && setOnline(false))
+    return () => {
+      live = false
+    }
+  }, [approved, convId])
+
+  const onlineOk = stripeEnabled && online === true
+  const method = onlineOk ? choice : 'cash'
   const priceCents = Math.round(it.p * 100)
   const fee = feeCents(priceCents, method)
   const canWaive = fee > 0 && loops >= LOOPS.noFee
   const waived = useLoops && canWaive
   const total = (priceCents + (waived ? 0 : fee)) / 100
-  const errs = method === 'card' ? cardErrors(card, t) : {}
-  const show = k => touched && errs[k]
 
-  const setField = k => e => {
-    let v = e.target.value
-    if (k === 'number') v = digits(v).slice(0, 19).replace(/(\d{4})(?=\d)/g, '$1 ')
-    if (k === 'exp') {
-      const d = digits(v).slice(0, 4)
-      v = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d
-    }
-    if (k === 'cvc') v = digits(v).slice(0, 4)
-    setCard(c => ({ ...c, [k]: v }))
+  const fail = err => setPayErr(/not enough Loops/.test(err?.message) ? t('loops.notEnough') : err?.message || t('co.payFail'))
+  const finish = () => {
+    onPaid?.()
+    setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method })
   }
 
-  /* The card, Apple Pay and PayPal charge is still simulated; the sale, fee and Loops are recorded for real. */
   const submit = async e => {
     e.preventDefault()
-    if (!approved) return
-    setTouched(true)
-    if (Object.keys(errs).length || busy) return
+    if (!approved || busy) return
     setBusy(true)
     setPayErr('')
     try {
-      await onPay(method, waived)
-      onPaid?.()
-      setDone({ ref: 'TW-' + Math.random().toString(36).slice(2, 8).toUpperCase(), total, method })
+      if (method === 'cash') {
+        await payment.cash(it)
+        finish()
+      } else if (!clientSecret) {
+        // step 1: Twice works out the amount (fee, Loops) and asks Stripe to prepare the payment
+        setClientSecret((await payment.start(it, waived)).client_secret)
+      } else {
+        // step 2: Stripe charges the buyer; PayPal and some banks redirect away and come back to Messages
+        const { stripe, elements } = stripeRef.current
+        const { error } = await stripe.confirmPayment({
+          elements,
+          confirmParams: { return_url: `${location.origin}${location.pathname}#messages` },
+          redirect: 'if_required',
+        })
+        if (error) throw error
+        payment.paidOnline()
+        finish()
+      }
     } catch (err) {
-      setPayErr(/not enough Loops/.test(err?.message) ? t('loops.notEnough') : t('co.payFail'))
+      fail(err)
     }
     setBusy(false)
   }
@@ -146,7 +159,7 @@ export default function Checkout({ item: it, me, uid, approval, sale, loops, onP
           <h1 id="co-h" tabIndex={-1} ref={headRef}>{done.method !== 'cash' ? t('co.paid', { amount: eur(done.total) }) : t('co.reserved')}</h1>
           <p>
             {done.method !== 'cash'
-              ? t('co.yours', { title: it.t, seller: it.s })
+              ? t('co.yoursHeld', { title: it.t, seller: it.s })
               : t('co.setAside', { title: it.t, amount: eur(done.total), seller: it.s })}
           </p>
           <p className="mono co-ref">{t('co.order', { ref: done.ref })}</p>
@@ -165,6 +178,11 @@ export default function Checkout({ item: it, me, uid, approval, sale, loops, onP
       </div>
     )
   }
+
+  const methods = [
+    ['online', t('co.online'), 'card', onlineOk ? t('co.onlineSub') : stripeEnabled && online === null ? t('loading') : t('co.onlineOff')],
+    ['cash', t('co.cash'), 'bag', t('co.atHandover')],
+  ]
 
   return (
     <div className="gate on co" role="dialog" aria-modal="true" aria-labelledby="co-h">
@@ -192,54 +210,22 @@ export default function Checkout({ item: it, me, uid, approval, sale, loops, onP
           <>
             <p className="co-ok"><Icon name="check" size={16} sw={2.5} />{t('co.approved', { seller: it.s })}</p>
 
-            <fieldset className="co-sec">
+            <fieldset className="co-sec" disabled={!!clientSecret}>
               <legend>{t('co.howPay')}</legend>
               <div className="seg" role="group" aria-label={t('co.method')}>
-                {METHODS.map(([id, label, ic, sub]) => (
-                  <button key={id} type="button" aria-pressed={method === id} onClick={() => setMethod(id)}>
-                    <span className="l"><Icon name={ic} size={16} />{label.startsWith('co.') ? t(label) : label}</span>
-                    <span className="f">{t(sub)}</span>
+                {methods.map(([id, label, ic, sub]) => (
+                  <button key={id} type="button" aria-pressed={method === id} disabled={id === 'online' && !onlineOk} onClick={() => setChoice(id)}>
+                    <span className="l"><Icon name={ic} size={16} />{label}</span>
+                    <span className="f">{sub}</span>
                   </button>
                 ))}
               </div>
-              {WALLET_NOTE[method] && (
-                <div className="co-card">
-                  <p className="co-test"><Icon name="lock" size={14} />{t('co.testWallet')}</p>
-                  <p className="co-wallet">{t(WALLET_NOTE[method])}</p>
-                </div>
-              )}
-              {method === 'card' && (
-                <div className="co-card">
-                  <p className="co-test"><Icon name="lock" size={14} />{t('co.testCard')}</p>
-                  <label className="field">
-                    {t('co.nameOnCard')}
-                    <input type="text" autoComplete="off" value={card.name} onChange={setField('name')} aria-invalid={!!show('name')} />
-                    {show('name') && <small className="co-err">{errs.name}</small>}
-                  </label>
-                  <label className="field">
-                    {t('co.cardNumber')}
-                    <input type="text" inputMode="numeric" autoComplete="off" placeholder="4242 4242 4242 4242" value={card.number} onChange={setField('number')} aria-invalid={!!show('number')} />
-                    {show('number') && <small className="co-err">{errs.number}</small>}
-                  </label>
-                  <div className="co-row">
-                    <label className="field">
-                      {t('co.expiry')}
-                      <input type="text" inputMode="numeric" autoComplete="off" placeholder="MM/YY" value={card.exp} onChange={setField('exp')} aria-invalid={!!show('exp')} />
-                      {show('exp') && <small className="co-err">{errs.exp}</small>}
-                    </label>
-                    <label className="field">
-                      CVC
-                      <input type="text" inputMode="numeric" autoComplete="off" placeholder="123" value={card.cvc} onChange={setField('cvc')} aria-invalid={!!show('cvc')} />
-                      {show('cvc') && <small className="co-err">{errs.cvc}</small>}
-                    </label>
-                  </div>
-                </div>
-              )}
+              {method === 'online' && <p className="co-test"><Icon name="lock" size={14} />{t('co.heldNote', { seller: it.s })}</p>}
             </fieldset>
 
             {fee > 0 && (
-              <label className={`co-loops${canWaive ? '' : ' off'}`}>
-                <input type="checkbox" checked={waived} disabled={!canWaive} onChange={e => setUseLoops(e.target.checked)} />
+              <label className={`co-loops${canWaive && !clientSecret ? '' : ' off'}`}>
+                <input type="checkbox" checked={waived} disabled={!canWaive || !!clientSecret} onChange={e => setUseLoops(e.target.checked)} />
                 <span>
                   <b>{t('loops.useNoFee', { n: LOOPS.noFee })}</b>
                   <small>{canWaive ? t('loops.youHave', { n: loops }) : t('loops.needMore', { n: LOOPS.noFee - loops })}</small>
@@ -257,15 +243,23 @@ export default function Checkout({ item: it, me, uid, approval, sale, loops, onP
               <div className="co-total"><span>{t('co.total')}</span><span className="mono">{eur(total)}</span></div>
             </section>
 
+            {clientSecret && (
+              <>
+                <StripeForm clientSecret={clientSecret} onReady={setStripeReady} />
+                <button type="button" className="btn small co-change" disabled={busy} onClick={() => setClientSecret(null)}>
+                  {t('co.changePay')}
+                </button>
+              </>
+            )}
+
             {payErr && <p className="co-err" role="alert">{payErr}</p>}
 
             <button className="btn primary big co-pay" type="submit" disabled={busy}>
               {busy
-                ? method === 'paypal' ? t('co.waitPaypal') : t('co.processing')
-                : method === 'card' ? <><Icon name="lock" size={18} />{t('co.pay', { amount: eur(total) })}</>
-                : method === 'apple' ? <><Icon name="phone" size={18} />{t('co.payApple', { amount: eur(total) })}</>
-                : method === 'paypal' ? <><Icon name="wallet" size={18} />{t('co.toPaypal', { amount: eur(total) })}</>
-                : t('co.reservePay', { amount: eur(total) })}
+                ? t('co.processing')
+                : method === 'cash' ? t('co.reservePay', { amount: eur(total) })
+                : clientSecret ? <><Icon name="lock" size={18} />{t('co.pay', { amount: eur(total) })}</>
+                : t('co.continuePay', { amount: eur(total) })}
             </button>
           </>
         )}

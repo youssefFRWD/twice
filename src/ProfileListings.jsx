@@ -4,6 +4,7 @@ import { CATS } from './data.js'
 import { useI18n } from './i18n.js'
 import { ARR_NUMBERS, SUBURB_NUMBERS, areaCenter, areaFromAddress, areaName } from './areas.js'
 import { LOOPS, isBoosted, toJpeg } from './lib.js'
+import Payouts from './Payouts.jsx'
 import { EmptyCard, Icon } from './ui.jsx'
 
 const CONDITIONS = ['Like new', 'Very good', 'Good', 'Fair']
@@ -223,6 +224,7 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
         <h2 id="ml-h">{t('pf.sec.listings')}</h2>
         <button className="btn primary small" onClick={() => setForm('new')}><Icon name="plus" size={16} />{t('ls.new')}</button>
       </div>
+      <Payouts />
       {list.length === 0 ? (
         <EmptyCard
           icon="tag"

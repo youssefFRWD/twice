@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^9.17.0",
     "@supabase/supabase-js": "^2.118.0",
     "maplibre-gl": "^6.15.0",
     "react": "^19.3.1",
