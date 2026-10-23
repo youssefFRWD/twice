@@ -248,8 +248,9 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
             ))}
           </nav>
           <div className="lp-actions">
-            {onSignIn && <button className="btn small" onClick={onSignIn}>Sign in / Sign up</button>}
-            <button className="btn small primary" onClick={onStart}>Open the app</button>
+            {onSignIn
+              ? <button className="btn small primary" onClick={onSignIn}>Sign in</button>
+              : <button className="btn small primary" onClick={onStart}>Open the app</button>}
           </div>
         </div>
       </div>
@@ -293,7 +294,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                 <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">PASS</span></div>
                 <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">SAVE</span></div>
               </div>
-              <h3>Swipe what is near you</h3>
+              <h3><button className="stp-link" onClick={() => onNav('discover')}>Swipe what is near you</button></h3>
               <p>Right to save, left to pass. Every card tells you how far the item is and how long the walk takes.</p>
             </li>
             <li className="stp">
@@ -305,13 +306,13 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                   </Art>
                 ))}
               </div>
-              <h3>Keep your favourites together</h3>
+              <h3><button className="stp-link" onClick={() => onNav('saved')}>Keep your favourites together</button></h3>
               <p>Everything you save lands in one place. Filter by category, or by what is closest to you.</p>
             </li>
             <li className="stp">
               <span className="stn">3</span>
               <div className="vis v3"><RouteVisual /></div>
-              <h3>Get there on foot or by métro</h3>
+              <h3><button className="stp-link" onClick={() => onNav('map')}>Get there on foot or by métro</button></h3>
               <p>Your saves become pins on a map of Île-de-France. Tap one to see which line to take, which way, and how many stops.</p>
             </li>
           </ol>

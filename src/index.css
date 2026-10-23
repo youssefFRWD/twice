@@ -75,8 +75,9 @@ main{flex:1;min-height:0;position:relative}
 
 /* DISCOVER */
 #v-discover{flex-direction:column;align-items:center;justify-content:center;padding:14px 16px 12px;gap:14px}
-.deck{position:relative;width:min(100%,400px);flex:1;min-height:0;max-height:620px;touch-action:pan-y}
-.card{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);user-select:none;-webkit-user-select:none;transform-origin:50% 100%;will-change:transform}
+.deck{position:relative;width:min(100%,400px);flex:1;min-height:0;max-height:620px;touch-action:pan-y;margin-bottom:26px}
+.card{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow);user-select:none;-webkit-user-select:none;transform-origin:50% 100%;will-change:transform;cursor:grab}
+.card:active{cursor:grabbing}
 .card .art{flex:1;min-height:120px}
 .card .art svg{width:48%;height:48%}
 .card .body{padding:14px 16px 16px;display:grid;gap:6px}
@@ -276,6 +277,11 @@ select,input[type=email],input[type=password]{font:inherit;padding:10px 12px;bor
 .stp{position:relative;display:grid;gap:14px;padding-left:72px;min-width:0}
 .stn{position:absolute;left:0;top:0;width:50px;height:50px;border-radius:50%;background:var(--coral);border:6px solid var(--bg);display:grid;place-items:center;font:800 19px var(--font-display);color:var(--on-coral)}
 .stp h3{margin:6px 0 0;font:800 clamp(22px,2.6vw,28px)/1.1 var(--font-display);letter-spacing:-.02em}
+.stp-link{all:unset;cursor:pointer}
+.stp-link::after{content:'';position:absolute;inset:0;border-radius:var(--r-lg)}
+.stp-link:focus-visible{outline:none}
+.stp-link:focus-visible::after{outline:2px solid var(--accent);outline-offset:6px}
+.stp:hover h3{text-decoration:underline;text-underline-offset:4px}
 .stp p{margin:0;color:var(--muted);max-width:42ch}
 .vis{position:relative;height:200px;border-radius:20px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
 .v1 .mc{position:absolute;top:22px;width:118px;height:156px;border-radius:14px;overflow:hidden;background:var(--surface);border:1px solid var(--line);box-shadow:0 8px 18px rgba(0,0,0,.12);display:flex;flex-direction:column}
@@ -346,7 +352,7 @@ button.brand{border:0;background:none;padding:0;color:inherit}
   .toast{bottom:28px}
   .panel{width:400px;flex:none;border-top:0;border-left:1px solid var(--line)}
   #v-saved{padding-block:24px}
-  .deck{max-height:640px}
+  .deck{max-height:640px;margin-bottom:34px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 

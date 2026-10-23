@@ -36,11 +36,13 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
   const move = e => {
     const d = drag.current
     if (!d.on) return
-    d.dx = e.clientX - d.sx
-    const dy = (e.clientY - d.sy) * 0.25
-    el.current.style.transform = `translate(${d.dx}px,${dy}px) rotate(${d.dx / 22}deg)`
-    yesTag.current.style.opacity = clamp(d.dx / 110, 0, 1)
-    noTag.current.style.opacity = clamp(-d.dx / 110, 0, 1)
+    place(e.clientX - d.sx, (e.clientY - d.sy) * 0.25)
+  }
+  const place = (dx, dy) => {
+    drag.current.dx = dx
+    el.current.style.transform = `translate(${dx}px,${dy}px) rotate(${dx / 22}deg)`
+    yesTag.current.style.opacity = clamp(dx / 110, 0, 1)
+    noTag.current.style.opacity = clamp(-dx / 110, 0, 1)
   }
   const end = () => {
     const d = drag.current
@@ -58,6 +60,38 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
   }
 
   const top = depth === 0
+
+  // Two-finger sideways scroll on a trackpad also swipes the card.
+  useEffect(() => {
+    const c = el.current
+    if (!top || !c) return
+    let timer
+    const onWheel = e => {
+      const d = drag.current
+      if (d.on || Math.abs(e.deltaX) <= Math.abs(e.deltaY)) return
+      e.preventDefault()
+      if (!d.wheel) {
+        d.wheel = true
+        d.t0 = performance.now()
+        d.wx = 0
+        c.style.transition = 'none'
+      }
+      d.wx -= e.deltaX
+      place(d.wx, 0)
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        d.wheel = false
+        d.on = true
+        end()
+      }, 120)
+    }
+    c.addEventListener('wheel', onWheel, { passive: false })
+    return () => {
+      c.removeEventListener('wheel', onWheel)
+      clearTimeout(timer)
+    }
+  }, [top])
+
   return (
     <article
       className="card"
