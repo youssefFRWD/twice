@@ -29,7 +29,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek , hidden, onHide}) {
   const { t, cat: catName, money } = useI18n()
   const it = sel != null ? itemById(sel) : null
   let body
@@ -166,7 +166,11 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
     )
   }
   return (
-    <aside className={`panel${peek ? ' peek' : ''}`} ref={panelRef} aria-label={t('map.panel')}>
+    <aside className={`panel${peek ? ' peek' : ''}${hidden ? ' collapsed' : ''}`} ref={panelRef} aria-label={t('map.panel')} inert={hidden}>
+      <button className="panel-hide" onClick={onHide} aria-label="Hide the panel">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M14 6l-6 6 6 6" /></svg>
+        Hide
+      </button>
       <button className="handle" aria-label={peek ? t('map.expand') : t('map.collapse')} onClick={onPeek}><i /></button>
       {body}
     </aside>
@@ -191,12 +195,36 @@ export default function MapView(props) {
   const [mapObj, setMapObj] = useState(null)
   const [metroOn, setMetroOn] = useState(false)
   const [navOn, setNavOn] = useState(false)
+  const [panelHidden, setPanelHidden] = useState(() => {
+    try {
+      return localStorage.getItem('twice:panel') === 'hidden'
+    } catch {
+      return false
+    }
+  })
+  const setHidden = v => {
+    setPanelHidden(v)
+    try {
+      localStorage.setItem('twice:panel', v ? 'hidden' : 'shown')
+    } catch {
+      /* storage blocked */
+    }
+  }
+  // picking an item or an arrondissement brings the panel back, so its list or directions are never hidden
+  const select = id => {
+    if (panelHidden) setHidden(false)
+    onSelect(id)
+  }
+  const pickArr = n => {
+    if (panelHidden) setHidden(false)
+    onArr(n)
+  }
   const counts = arrCounts()
   const [size, setSize] = useState({ W: 0, H: 0 })
 
   // latest callbacks for the long-lived map handlers
   useEffect(() => {
-    live.current = { placing, onSelect, onPlace, onArr, arr, nav: navOn, t }
+    live.current = { placing, onSelect: select, onPlace, onArr: pickArr, arr, nav: navOn, t }
   })
 
   /* create the map once */
@@ -419,7 +447,7 @@ export default function MapView(props) {
         <div className="maptl" hidden={navOn}>
           <label className="arr-pick" htmlFor="arr-select">
             <Icon name="pin" size={16} />
-            <select id="arr-select" value={arr || ''} onChange={e => onArr(e.target.value ? +e.target.value : null)}>
+            <select id="arr-select" value={arr || ''} onChange={e => pickArr(e.target.value ? +e.target.value : null)}>
               <option value="">All of Île-de-France</option>
               {ARR_LIST.map(a => (
                 <option key={a.n} value={a.n}>
@@ -452,6 +480,12 @@ export default function MapView(props) {
             ) : null}
           </div>
         </div>
+        {panelHidden && !navOn && (
+          <button className="panel-tab" onClick={() => setHidden(false)} aria-label="Show the panel">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M10 6l6 6-6 6" /></svg>
+            {sel != null ? 'Directions' : arr ? 'Paris ' + (ARR_LIST.find(a => a.n === arr)?.label || '') : 'Saved'}
+          </button>
+        )}
         <div className="mapui" hidden={navOn}>
           <button className="mb" aria-label={t('map.zoomIn')} onClick={() => zoomBtn('in')}><Icon name="plus" /></button>
           <button className="mb" aria-label={t('map.zoomOut')} onClick={() => zoomBtn('out')}><Icon name="minus" /></button>
@@ -492,7 +526,9 @@ export default function MapView(props) {
         me={me}
         radius={radius}
         savedCount={savedCount}
-        onPick={onSelect}
+        onPick={select}
+        hidden={panelHidden}
+        onHide={() => setHidden(true)}
         onClose={onClose}
         onMode={onMode}
         onPeek={onPeek}

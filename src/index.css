@@ -1056,3 +1056,30 @@ button,select,input{touch-action:manipulation}
 /* inside the laptop phone frame: no desktop scrollbars, like a real phone */
 html.embedded *{scrollbar-width:none}
 html.embedded ::-webkit-scrollbar{display:none}
+
+/* MAP CARD: the map and its panel float as rounded cards on a slightly darker backdrop */
+#v-map{background:var(--surface-2);padding:12px 16px 16px;gap:16px;box-sizing:border-box}
+.mapbox{border-radius:30px;border:1px solid rgba(30,42,36,.1);box-shadow:0 22px 44px rgba(30,42,36,.2),0 3px 8px rgba(30,42,36,.1);transform:translateZ(0)}
+.mapbox .maplibregl-map,.mapbox .mapgl{border-radius:inherit}
+@media (min-width:900px){
+  .panel{border:1px solid rgba(30,42,36,.1);border-radius:30px;box-shadow:0 22px 44px rgba(30,42,36,.14),0 3px 8px rgba(30,42,36,.08);overflow:hidden}
+}
+@media (max-width:899px){
+  #v-map{padding:0}
+  .mapbox{inset:10px;border-radius:26px}
+  .panel{left:10px;right:10px;bottom:10px;border-radius:24px;border:1px solid rgba(30,42,36,.1);box-shadow:0 14px 36px rgba(30,42,36,.28);overflow:hidden}
+  /* while navigating on a phone the map fills the whole screen */
+  #v-map:has(.mapbox.navigating) .mapbox{inset:0;border-radius:0;border:0;box-shadow:none}
+}
+
+/* HIDEABLE PANEL: on laptops the panel sits left of the map and slides away to the left */
+.panel-hide,.panel-tab{display:none}
+@media (min-width:900px){
+  .panel{order:-1;transition:width .32s cubic-bezier(.2,.8,.2,1),margin .32s cubic-bezier(.2,.8,.2,1),opacity .2s,border-width .3s,box-shadow .3s}
+  .panel>*{min-width:366px}
+  .panel.collapsed{width:0;margin-right:-16px;opacity:0;border-width:0;box-shadow:none;pointer-events:none}
+  .panel-hide{display:flex;align-items:center;gap:4px;align-self:flex-start;margin:12px 0 0 14px;padding:5px 12px 5px 8px;border:1px solid var(--line);border-radius:999px;background:var(--bg);color:var(--muted);font-weight:700;font-size:12.5px}
+  .panel-hide:hover{color:var(--accent);border-color:var(--accent)}
+  .panel-tab{display:flex;align-items:center;gap:6px;position:absolute;left:0;top:50%;transform:translateY(-50%);z-index:3;padding:12px 16px 12px 10px;border:1px solid var(--line);border-left:0;border-radius:0 18px 18px 0;background:var(--surface);color:var(--ink);font-weight:700;font-size:13.5px;box-shadow:0 6px 18px rgba(0,0,0,.18)}
+  .panel-tab:hover{color:var(--accent)}
+}
