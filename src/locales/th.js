@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'ประกาศ', 'pv.noListings': 'ตอนนี้ยังไม่มีประกาศที่กำลังขาย', 'pv.open': 'เปิดโปรไฟล์ของ {name}',
   'pf.cover': 'ภาพปก', 'pf.coverColor': 'รูปแบบภาพปก {n}', 'pf.coverUpload': 'อัปโหลดภาพปก', 'pf.coverRemove': 'ลบภาพปก', 'pf.coverChange': 'เปลี่ยนภาพปก',
+  soldByLabel: 'ผู้ขาย:', moreFrom: 'ของอื่นจาก {name}',
 }

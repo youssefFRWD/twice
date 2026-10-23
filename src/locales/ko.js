@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': '판매글', 'pv.noListings': '지금 판매 중인 글이 없어요.', 'pv.open': '{name}님의 프로필 열기',
   'pf.cover': '커버', 'pf.coverColor': '커버 스타일 {n}', 'pf.coverUpload': '커버 사진 올리기', 'pf.coverRemove': '커버 사진 삭제', 'pf.coverChange': '커버 변경',
+  soldByLabel: '판매자:', moreFrom: '{name}님의 다른 상품',
 }

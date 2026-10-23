@@ -4,7 +4,7 @@ import { useI18n } from './i18n.js'
 import { walkLabel } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-function SwipeCard({ item, depth, me, onDecide, ref }) {
+function SwipeCard({ item, depth, me, onDecide, onSeller, ref }) {
   const { t, cat, cond, money } = useI18n()
   const el = useRef(null)
   const yesTag = useRef(null)
@@ -87,7 +87,14 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
         <div className="meta">
           <span><Icon name="pin" size={14} />{item.a}</span>
           <span><Icon name="tag" size={14} />{cat(item.c)}</span>
-          <span>{t('soldBy', { name: item.s })}</span>
+          {item.sid ? (
+            <span>
+              {t('soldByLabel')}{' '}
+              <button type="button" className="linkbtn seller" onPointerDown={e => e.stopPropagation()} onClick={() => onSeller(item)}>{item.s}</button>
+            </span>
+          ) : (
+            <span>{t('soldBy', { name: item.s })}</span>
+          )}
         </div>
         <p className="desc">{item.d}</p>
       </div>
@@ -95,7 +102,7 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
   )
 }
 
-export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kbActive, onDecide, onUndo, onReset }) {
+export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kbActive, onDecide, onSeller, onUndo, onReset }) {
   const { t } = useI18n()
   const topRef = useRef(null)
   const swipe = dir => topRef.current?.fling(dir)
@@ -136,7 +143,7 @@ export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kb
           .map((it, i) => ({ it, depth: i }))
           .reverse()
           .map(({ it, depth }) => (
-            <SwipeCard key={it.id} item={it} depth={depth} me={me} onDecide={onDecide} ref={depth === 0 ? topRef : undefined} />
+            <SwipeCard key={it.id} item={it} depth={depth} me={me} onDecide={onDecide} onSeller={onSeller} ref={depth === 0 ? topRef : undefined} />
           ))}
       </div>
       <div className="actions">

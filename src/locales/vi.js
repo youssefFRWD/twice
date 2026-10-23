@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Tin đăng', 'pv.noListings': 'Hiện chưa có tin đang bán.', 'pv.open': 'Mở hồ sơ của {name}',
   'pf.cover': 'Ảnh bìa', 'pf.coverColor': 'Kiểu ảnh bìa {n}', 'pf.coverUpload': 'Tải ảnh bìa lên', 'pf.coverRemove': 'Xóa ảnh bìa', 'pf.coverChange': 'Đổi ảnh bìa',
+  soldByLabel: 'Người bán:', moreFrom: 'Thêm từ {name}',
 }

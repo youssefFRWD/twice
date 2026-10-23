@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'İlanlar', 'pv.noListings': 'Şu an yayında ilan yok.', 'pv.open': '{name} profilini aç',
   'pf.cover': 'Kapak', 'pf.coverColor': 'Kapak stili {n}', 'pf.coverUpload': 'Kapak fotoğrafı yükle', 'pf.coverRemove': 'Kapak fotoğrafını kaldır', 'pf.coverChange': 'Kapağı değiştir',
+  soldByLabel: 'Satıcı:', moreFrom: '{name} kişisinden daha fazlası',
 }

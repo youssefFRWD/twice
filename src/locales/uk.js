@@ -164,4 +164,5 @@ export default {
 
   'pv.listings': 'Оголошення', 'pv.noListings': 'Зараз немає активних оголошень.', 'pv.open': 'Відкрити профіль: {name}',
   'pf.cover': 'Обкладинка', 'pf.coverColor': 'Стиль обкладинки {n}', 'pf.coverUpload': 'Завантажити фото обкладинки', 'pf.coverRemove': 'Прибрати фото обкладинки', 'pf.coverChange': 'Змінити обкладинку',
+  soldByLabel: 'Продавець:', moreFrom: 'Ще від {name}',
 }

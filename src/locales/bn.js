@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'বিজ্ঞাপন', 'pv.noListings': 'এখন কোনো চালু বিজ্ঞাপন নেই।', 'pv.open': '{name}-এর প্রোফাইল খুলুন',
   'pf.cover': 'কভার', 'pf.coverColor': 'কভার স্টাইল {n}', 'pf.coverUpload': 'কভার ছবি আপলোড করুন', 'pf.coverRemove': 'কভার ছবি সরান', 'pf.coverChange': 'কভার বদলান',
+  soldByLabel: 'বিক্রেতা:', moreFrom: '{name}-এর আরও জিনিস',
 }

@@ -164,4 +164,5 @@ export default {
 
   'pv.listings': 'Ogłoszenia', 'pv.noListings': 'Brak aktywnych ogłoszeń.', 'pv.open': 'Otwórz profil: {name}',
   'pf.cover': 'Okładka', 'pf.coverColor': 'Styl okładki {n}', 'pf.coverUpload': 'Prześlij zdjęcie okładki', 'pf.coverRemove': 'Usuń zdjęcie okładki', 'pf.coverChange': 'Zmień okładkę',
+  soldByLabel: 'Sprzedawca:', moreFrom: 'Więcej od: {name}',
 }

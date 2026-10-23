@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'اشتہارات', 'pv.noListings': 'ابھی کوئی فعال اشتہار نہیں۔', 'pv.open': '{name} کا پروفائل کھولیں',
   'pf.cover': 'کور', 'pf.coverColor': 'کور انداز {n}', 'pf.coverUpload': 'کور تصویر اپ لوڈ کریں', 'pf.coverRemove': 'کور تصویر ہٹائیں', 'pf.coverChange': 'کور بدلیں',
+  soldByLabel: 'بیچنے والا:', moreFrom: '{name} کی مزید چیزیں',
 }

@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Matangazo', 'pv.noListings': 'Hakuna matangazo hai kwa sasa.', 'pv.open': 'Fungua wasifu wa {name}',
   'pf.cover': 'Jalada', 'pf.coverColor': 'Mtindo wa jalada {n}', 'pf.coverUpload': 'Pakia picha ya jalada', 'pf.coverRemove': 'Ondoa picha ya jalada', 'pf.coverChange': 'Badilisha jalada',
+  soldByLabel: 'Inauzwa na', moreFrom: 'Zaidi kutoka kwa {name}',
 }

@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Αγγελίες', 'pv.noListings': 'Δεν υπάρχουν ενεργές αγγελίες αυτή τη στιγμή.', 'pv.open': 'Άνοιγμα προφίλ: {name}',
   'pf.cover': 'Εξώφυλλο', 'pf.coverColor': 'Στυλ εξωφύλλου {n}', 'pf.coverUpload': 'Ανέβασμα φωτογραφίας εξωφύλλου', 'pf.coverRemove': 'Αφαίρεση φωτογραφίας εξωφύλλου', 'pf.coverChange': 'Αλλαγή εξωφύλλου',
+  soldByLabel: 'Πωλητής:', moreFrom: 'Περισσότερα από {name}',
 }

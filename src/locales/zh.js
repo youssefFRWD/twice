@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': '在售商品', 'pv.noListings': '目前没有在售商品。', 'pv.open': '打开{name}的主页',
   'pf.cover': '封面', 'pf.coverColor': '封面样式 {n}', 'pf.coverUpload': '上传封面照片', 'pf.coverRemove': '移除封面照片', 'pf.coverChange': '更换封面',
+  soldByLabel: '卖家：', moreFrom: '{name}的更多商品',
 }

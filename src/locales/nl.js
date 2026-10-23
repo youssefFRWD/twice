@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Advertenties', 'pv.noListings': 'Op dit moment geen actieve advertenties.', 'pv.open': 'Profiel van {name} openen',
   'pf.cover': 'Omslag', 'pf.coverColor': 'Omslagstijl {n}', 'pf.coverUpload': 'Omslagfoto uploaden', 'pf.coverRemove': 'Omslagfoto verwijderen', 'pf.coverChange': 'Omslag wijzigen',
+  soldByLabel: 'Verkocht door', moreFrom: 'Meer van {name}',
 }

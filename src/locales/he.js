@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'מודעות', 'pv.noListings': 'אין כרגע מודעות פעילות.', 'pv.open': 'פתיחת הפרופיל של {name}',
   'pf.cover': 'תמונת נושא', 'pf.coverColor': 'סגנון תמונת נושא {n}', 'pf.coverUpload': 'העלאת תמונת נושא', 'pf.coverRemove': 'הסרת תמונת הנושא', 'pf.coverChange': 'שינוי תמונת הנושא',
+  soldByLabel: 'נמכר על ידי', moreFrom: 'עוד מ{name}',
 }

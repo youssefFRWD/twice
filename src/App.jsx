@@ -1,16 +1,18 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import { useI18n } from './i18n.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
-import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, persist, replaceItems } from './lib.js'
+import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, persist, replaceItems } from './lib.js'
 import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
+import { buildPlans } from './routing.js'
 import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
+import SellerListings from './SellerListings.jsx'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -91,12 +93,15 @@ export default function App() {
   const [hist, setHist] = useState([])
   const [radius, setRadius] = useState(5)
   const [sel, setSel] = useState(null)
+  const [plans, setPlans] = useState(null)
   const [mode, setMode] = useState('walk')
   const [placing, setPlacing] = useState(false)
   const [peek, setPeek] = useState(false)
   const [landing, setLanding] = useState(init.fresh)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
+  const [seller, setSeller] = useState(null)
+  const [showNearby, setShowNearby] = useState(false)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -110,6 +115,7 @@ export default function App() {
   const histRef = useRef([])
   const toastTimer = useRef(0)
   const cmdN = useRef(0)
+  const routeKey = useRef(null)
   const firstRun = useRef(init.firstRun)
 
   const uid = session?.user?.id ?? null
@@ -169,6 +175,19 @@ export default function App() {
   useEffect(() => {
     if (backendEnabled) reloadItems()
   }, [reloadItems])
+
+  // pick up listings other people publish while the app is open
+  useEffect(() => {
+    if (!backendEnabled || (tab !== 'discover' && tab !== 'map')) return
+    reloadItems()
+    const t = setInterval(() => document.visibilityState === 'visible' && reloadItems(), 30000)
+    const onVisible = () => document.visibilityState === 'visible' && reloadItems()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [tab, reloadItems])
 
   useEffect(() => {
     if (!backendEnabled) return
@@ -269,13 +288,15 @@ export default function App() {
   }
   const clearSel = () => {
     setSel(null)
+    setPlans(null)
     mapCmd('fitSaved')
   }
   const pickCat = id => {
     setCat(c => ({ ...c, [tab]: id }))
     if (tab === 'map') {
       setSel(null)
-        mapCmd('fitSaved')
+      setPlans(null)
+      mapCmd('fitSaved')
     }
   }
 
@@ -323,9 +344,19 @@ export default function App() {
     const m = planMetro(me, it, t)
     sync(uid2 => api.logView(uid2, id))
     setSel(id)
+    const key = `${id}@${me.lat},${me.lon}`
+    routeKey.current = key
+    setPlans({ walk: w, metro: m, key })
     setMode(!m.none && m.min + 3 < w.min ? 'metro' : 'walk')
     setPeek(false)
     mapCmd('fitRoute')
+    // swap the estimate for real walking routes as soon as the router answers
+    buildPlans(me, it, t)
+      .then(real => {
+        setPlans(cur => (cur && cur.key === key ? { ...real, key } : cur))
+        if (routeKey.current === key) mapCmd('fitRoute')
+      })
+      .catch(() => {})
   }
   const showOnMap = id => {
     setTab('map', { keepView: true })
@@ -335,17 +366,13 @@ export default function App() {
     setMode(m)
     mapCmd('fitRoute')
   }
-  // route steps are text, so they are rebuilt when the language or position changes
-  const plans = useMemo(() => {
-    const it = sel == null ? null : itemById(sel)
-    return it ? { walk: planWalk(me, it, t), metro: planMetro(me, it, t) } : null
-  }, [sel, me, t])
   const plan = plans && (plans[mode].none ? plans.walk : plans[mode])
 
   /* ---------- location ---------- */
   const setMe = useCallback(m => {
     setMeState(m)
     setSel(null)
+    setPlans(null)
     mapCmd('fitSaved')
   }, [])
   const tryGPS = useCallback(
@@ -420,9 +447,13 @@ export default function App() {
   const discoverDeck = listFor('discover', cat.discover, data)
   const savedAll = listFor('saved', 'all', data)
   const savedList = listFor('saved', cat.saved, data)
+  const sellerSuggestions = [...new Map(savedAll.filter(canMessage).map(it => [it.sid, { sid: it.sid, name: it.s, title: it.t, item: it }])).values()]
   const mapList = listFor('map', cat.map, data)
+  const nearbyAll = nearbyFor(cat.map, data, radius, uid)
+  const nearbyList = showNearby ? nearbyAll : []
+  const toggleNearby = () => setShowNearby(v => !v)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || authOpen || buyId !== null
+  const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller
 
   return (
     <>
@@ -460,6 +491,7 @@ export default function App() {
                 me={me}
                 kbActive={!overlayOpen}
                 onDecide={decide}
+                onSeller={setSeller}
                 onUndo={undo}
                 onReset={resetPassed}
               />
@@ -467,7 +499,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label={t('tab.saved')}>
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label={t('tab.map')}>
@@ -477,6 +509,10 @@ export default function App() {
               me={me}
               radius={radius}
               list={mapList}
+              nearby={nearbyList}
+              showNearby={showNearby}
+              nearbyCount={nearbyAll.length}
+              onToggleNearby={toggleNearby}
               sel={sel}
               plans={plans}
               mode={mode}
@@ -506,7 +542,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -539,8 +575,34 @@ export default function App() {
         <Tabs tab={tab} onTab={setTab} className="tabs-bottom gut" unread={unread} />
       </div>
 
-      {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
+      {landing && <Landing
+          onStart={startApp}
+          onSignIn={signedOut ? () => setAuthOpen(true) : undefined}
+          tabs={TABS}
+          onNav={t => {
+            startApp()
+            setTab(t)
+          }}
+        />}
       {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
+      {seller && (
+        <SellerListings
+          sid={seller.sid}
+          name={seller.s}
+          me={me}
+          uid={uid}
+          canMessage={canMessage}
+          onMessage={it => {
+            setSeller(null)
+            messageSeller(it)
+          }}
+          onBuy={id => {
+            setSeller(null)
+            setBuyId(id)
+          }}
+          onClose={() => setSeller(null)}
+        />
+      )}
       {buyId !== null && (
         <Checkout
           key={buyId}

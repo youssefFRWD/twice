@@ -1,5 +1,9 @@
 /* Static data, transit graph and route planning, ported from the original single-file page. */
 import { locale } from './locale.js'
+import en from './locales/en.js'
+
+/** English fallback when a caller does not pass a translator to the route planners. */
+const enT=(k,v)=>{let s=en[k]??(v&&typeof v.n==='number'?en[`${k}_${v.n===1?'one':'other'}`]:undefined)??k;return v?s.replace(/\{(\w+)\}/g,(_,x)=>v[x]??''):s};
 const ICON={
   x:'<path d="M6 6l12 12M18 6L6 18"/>',
   heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
@@ -25,6 +29,13 @@ const ICON={
   card:'<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/>',
+  star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
+  down:'<path d="M6 9l6 6 6-6"/>',
+  checks:'<path d="M2.5 12.5l4.5 4.5L16 8M12 16.5l1 1L22 8"/>',
   phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   wallet:'<path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12"/><circle cx="16" cy="14.5" r="1"/>',
   car:'<path d="M4 16V12l2-5h12l2 5v4M4 16h16M4 16v2M20 16v2"/><circle cx="8" cy="13" r=".6"/><circle cx="16" cy="13" r=".6"/>'
@@ -144,7 +155,7 @@ const compass=(a,b,c,d)=>{const r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),
 const fmtD=km=>km<1?`${Math.max(10,Math.round(km*100)*10)} m`:`${km<10?km.toLocaleString(locale(),{minimumFractionDigits:1,maximumFractionDigits:1}):Math.round(km)} km`;
 const fmtT=m=>{m=Math.max(1,Math.round(m));return m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`${m} min`};
 
-function planWalk(from,to,t){
+function planWalk(from,to,t=enT){
   const km=hav(from.lat,from.lon,to.lat,to.lon),rk=km*1.25,min=rk/5*60;
   const ns=nearStations(to,1.5,1)[0];
   return {mode:'walk',min,km:rk,
@@ -152,7 +163,7 @@ function planWalk(from,to,t){
            {k:'flag',tx:t('plan.arrive',{place:to.a}),sub:ns?t('plan.nearestStation',{name:ns.s.name,d:fmtD(ns.d)}):t('plan.noStation'),mn:''}],
     geo:[{kind:'walk',pts:[[from.lat,from.lon],[to.lat,to.lon]]}]};
 }
-function planMetro(from,to,t){
+function planMetro(from,to,t=enT){
   const A=nearStations(from),B=nearStations(to);if(!A.length||!B.length)return {mode:'metro',none:true,why:!A.length?t('plan.noStationFrom'):t('plan.noStationTo')};
   const N=NODES.length,dist=new Float64Array(N).fill(Infinity),prev=new Int32Array(N).fill(-1),done=new Uint8Array(N);
   A.forEach(o=>STN_NODES.get(o.s.id).forEach(n=>{const w=walkMin(o.d)+2.5;if(w<dist[n]){dist[n]=w;prev[n]=-2}}));

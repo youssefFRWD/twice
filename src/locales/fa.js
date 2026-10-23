@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'آگهی‌ها', 'pv.noListings': 'در حال حاضر آگهی فعالی نیست.', 'pv.open': 'باز کردن نمایهٔ {name}',
   'pf.cover': 'تصویر جلد', 'pf.coverColor': 'سبک جلد {n}', 'pf.coverUpload': 'بارگذاری عکس جلد', 'pf.coverRemove': 'حذف عکس جلد', 'pf.coverChange': 'تغییر جلد',
+  soldByLabel: 'فروشنده:', moreFrom: 'موارد بیشتر از {name}',
 }

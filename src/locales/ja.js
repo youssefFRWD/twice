@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': '出品', 'pv.noListings': '現在公開中の出品はありません。', 'pv.open': '{name}のプロフィールを開く',
   'pf.cover': 'カバー', 'pf.coverColor': 'カバーのスタイル {n}', 'pf.coverUpload': 'カバー写真をアップロード', 'pf.coverRemove': 'カバー写真を削除', 'pf.coverChange': 'カバーを変更',
+  soldByLabel: '出品者：', moreFrom: '{name}のほかの出品',
 }

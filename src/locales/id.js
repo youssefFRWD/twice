@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Iklan', 'pv.noListings': 'Belum ada iklan aktif saat ini.', 'pv.open': 'Buka profil {name}',
   'pf.cover': 'Sampul', 'pf.coverColor': 'Gaya sampul {n}', 'pf.coverUpload': 'Unggah foto sampul', 'pf.coverRemove': 'Hapus foto sampul', 'pf.coverChange': 'Ganti sampul',
+  soldByLabel: 'Dijual oleh', moreFrom: 'Lainnya dari {name}',
 }

@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'लिस्टिंग', 'pv.noListings': 'अभी कोई सक्रिय लिस्टिंग नहीं।', 'pv.open': '{name} की प्रोफ़ाइल खोलें',
   'pf.cover': 'कवर', 'pf.coverColor': 'कवर शैली {n}', 'pf.coverUpload': 'कवर फ़ोटो अपलोड करें', 'pf.coverRemove': 'कवर फ़ोटो हटाएँ', 'pf.coverChange': 'कवर बदलें',
+  soldByLabel: 'विक्रेता:', moreFrom: '{name} की और चीज़ें',
 }

@@ -179,4 +179,5 @@ export default {
 
   'pv.listings': 'Listings', 'pv.noListings': 'No active listings right now.', 'pv.open': 'Open {name}’s profile',
   'pf.cover': 'Cover', 'pf.coverColor': 'Cover style {n}', 'pf.coverUpload': 'Upload a cover photo', 'pf.coverRemove': 'Remove cover photo', 'pf.coverChange': 'Change cover',
+  soldByLabel: 'Sold by', moreFrom: 'More from {name}',
 }

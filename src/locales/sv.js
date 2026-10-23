@@ -162,4 +162,5 @@ export default {
 
   'pv.listings': 'Annonser', 'pv.noListings': 'Inga aktiva annonser just nu.', 'pv.open': 'Öppna profilen för {name}',
   'pf.cover': 'Omslag', 'pf.coverColor': 'Omslagsstil {n}', 'pf.coverUpload': 'Ladda upp en omslagsbild', 'pf.coverRemove': 'Ta bort omslagsbilden', 'pf.coverChange': 'Byt omslag',
+  soldByLabel: 'Säljs av', moreFrom: 'Mer från {name}',
 }

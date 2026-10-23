@@ -3,7 +3,7 @@ import { useI18n } from './i18n.js'
 import { distOf, meName } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy }) {
+export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller }) {
   const { t, cond, money } = useI18n()
   if (!list.length) {
     return (
@@ -32,7 +32,7 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
                 <h3>{it.t}</h3>
                 <span className="price" style={{ fontSize: 17 }}>{money(it.p)}</span>
               </div>
-              <div className="meta"><span>{it.a}</span><span>{cond(it.cond)}</span></div>
+              <div className="meta"><span>{it.a}</span><span>{cond(it.cond)}</span>{it.sid && <button type="button" className="linkbtn seller" onClick={() => onSeller(it)}>{t('moreFrom', { name: it.s })}</button>}</div>
               <p className="desc">{it.d}</p>
               <div className="foot">
                 <button className="btn primary small" onClick={() => onBuy(it.id)}>

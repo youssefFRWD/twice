@@ -182,4 +182,5 @@ export default {
 
   'pv.listings': 'الإعلانات', 'pv.noListings': 'لا توجد إعلانات نشطة حاليًا.', 'pv.open': 'افتح ملف {name}',
   'pf.cover': 'صورة الغلاف', 'pf.coverColor': 'نمط الغلاف {n}', 'pf.coverUpload': 'ارفع صورة غلاف', 'pf.coverRemove': 'أزل صورة الغلاف', 'pf.coverChange': 'غيّر الغلاف',
+  soldByLabel: 'البائع:', moreFrom: 'المزيد من {name}',
 }

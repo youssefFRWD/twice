@@ -179,4 +179,5 @@ export default {
 
   'pv.listings': 'Anúncios', 'pv.noListings': 'Sem anúncios ativos de momento.', 'pv.open': 'Abrir o perfil de {name}',
   'pf.cover': 'Capa', 'pf.coverColor': 'Estilo de capa {n}', 'pf.coverUpload': 'Carregar uma foto de capa', 'pf.coverRemove': 'Remover a foto de capa', 'pf.coverChange': 'Alterar capa',
+  soldByLabel: 'Vendido por', moreFrom: 'Mais de {name}',
 }

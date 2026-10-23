@@ -179,4 +179,5 @@ export default {
 
   'pv.listings': 'Anzeigen', 'pv.noListings': 'Gerade keine aktiven Anzeigen.', 'pv.open': 'Profil von {name} öffnen',
   'pf.cover': 'Titelbild', 'pf.coverColor': 'Titelbild-Stil {n}', 'pf.coverUpload': 'Titelbild hochladen', 'pf.coverRemove': 'Titelbild entfernen', 'pf.coverChange': 'Titelbild ändern',
+  soldByLabel: 'Verkauft von', moreFrom: 'Mehr von {name}',
 }

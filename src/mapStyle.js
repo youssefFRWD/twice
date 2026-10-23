@@ -322,6 +322,47 @@ export function buildStyle() {
       layout: { 'line-cap': 'round', 'line-join': 'round' },
       paint: { 'line-color': C.ink, 'line-width': 3.5, 'line-dasharray': [0.1, 2] },
     },
+    // navigation: the covered part in grey, the part still ahead highlighted with a glow
+    {
+      id: 'nav-done-casing',
+      type: 'line',
+      source: 'nav-done',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': C.surface, 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 7, 18, 14] },
+    },
+    {
+      id: 'nav-done',
+      type: 'line',
+      source: 'nav-done',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': '#9AA0A6', 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 4.5, 18, 9] },
+    },
+    {
+      id: 'nav-left-glow',
+      type: 'line',
+      source: 'nav-left',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: {
+        'line-color': ['get', 'color'],
+        'line-width': ['interpolate', ['linear'], ['zoom'], 12, 16, 18, 30],
+        'line-opacity': 0.3,
+        'line-blur': 8,
+      },
+    },
+    {
+      id: 'nav-left-casing',
+      type: 'line',
+      source: 'nav-left',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': C.surface, 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 9, 18, 17] },
+    },
+    {
+      id: 'nav-left',
+      type: 'line',
+      source: 'nav-left',
+      layout: { 'line-cap': 'round', 'line-join': 'round' },
+      paint: { 'line-color': ['get', 'color'], 'line-width': ['interpolate', ['linear'], ['zoom'], 12, 5.5, 18, 11] },
+    },
   ]
 
   const ordered = [
@@ -350,6 +391,8 @@ export function buildStyle() {
       metro: { type: 'geojson', data: metroData },
       stations: { type: 'geojson', data: stationData },
       route: { type: 'geojson', data: empty() },
+      'nav-done': { type: 'geojson', data: empty() },
+      'nav-left': { type: 'geojson', data: empty() },
       radius: { type: 'geojson', data: empty() },
     },
     layers: ordered,
