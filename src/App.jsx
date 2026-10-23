@@ -328,7 +328,25 @@ export default function App() {
   const unread = convs.reduce((n, c) => n + c.unread, 0)
 
   /* ---------- sale approval: the seller approves in the conversation, then the buyer can pay ---------- */
-  const approvalOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null
+  // checking out an accepted offer is already approved: the seller agreed to that price in the chat
+  const approvalOf = it =>
+    dealPay?.itemId === it.id ? 'approved' : (convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null)
+  /** Records an accepted offer as the sale's approval (reserving the item), then refreshes. */
+  const approveFromOffer = async conv => {
+    try {
+      await api.approveByOffer(conv.id)
+      await Promise.all([reloadConvs(), reloadItems()])
+    } catch {
+      /* not applied yet, or the item went to someone else: the checkout shows what's possible */
+    }
+  }
+  const payOffer = deal => {
+    if (!itemById(deal.itemId)) return showToast('This listing is no longer available.')
+    setDealPay(deal)
+    setBuyId(deal.itemId)
+    const conv = convs.find(c => c.iAmBuyer && c.itemId === deal.itemId)
+    if (conv) approveFromOffer(conv)
+  }
   /* the checkout's message button opens a conversation with the seller; sample listings get a sample one */
   const contactOwner = it => {
     setBuyId(null)
@@ -684,7 +702,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} sampleChats={sampleChats} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} loops={loops} onHandover={confirmHandover} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} sampleChats={sampleChats} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={payOffer} onOfferAccepted={approveFromOffer} onApprove={approveSale} onBuy={openCheckout} loops={loops} onHandover={confirmHandover} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
