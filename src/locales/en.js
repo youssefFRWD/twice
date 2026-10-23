@@ -118,7 +118,7 @@ export default {
   'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
   'co.approved': '{seller} approved your purchase.',
   'co.fee': 'Twice fee (5%)', 'co.noFeeCash': 'None on cash', 'co.feeRemoved': 'Removed with Loops', 'co.payFail': 'The payment did not go through. Try again.',
-  'co.online': 'Online', 'co.onlineSub': 'Card, Apple Pay, Google Pay, PayPal', 'co.onlineOff': 'Not available for this seller yet',
+  'co.online': 'Online', 'co.onlineSub': 'Card, Apple Pay, Google Pay, PayPal', 'co.onlineOff': 'This seller hasn’t set up online payments yet', 'co.onlineNotSetUp': 'Coming soon: online payments aren’t switched on yet',
   'co.heldNote': 'Twice holds your payment and only pays {seller} once you both confirm the handover. Not handed over within 14 days? You get a full refund.',
   'co.continuePay': 'Continue to payment · {amount}', 'co.changePay': 'Change how you pay',
   'co.yoursHeld': '{title} is yours. Twice holds the money until you and {seller} both tap “Handover done” in your conversation.',
