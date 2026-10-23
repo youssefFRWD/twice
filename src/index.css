@@ -20,6 +20,24 @@ img{max-width:100%}
   --r-sm:8px; --r-md:14px; --r-lg:22px;
   color-scheme:light;
 }
+:root[data-theme="dark"]{
+  --bg:#141A17; --surface:#1C2420; --surface-2:#262F2A; --ink:#EDE8DC; --muted:#9BA59D; --line:#2F3A34;
+  --accent:#5BAE88; --on-accent:#0F1713; --logo-green:#5BAE88; --accent-soft:#23392E;
+  --coral:#F26B42; --on-coral:#1E2A24; --coral-ink:#FF8D68;
+  --nope:#E5714F; --on-nope:#1A0F0B; --nope-soft:#3A221B;
+  --me:#6AA4FF; --focus:#8FD0AE; --shadow:0 12px 30px rgba(0,0,0,.5); --hatch:rgba(237,232,220,.07);
+  --map-out:#1A211D; --map-land:#222B26; --map-paris:#27312B; --map-edge:#3A463F; --map-water:#2C4A4F; --map-green:#2E4030; --halo:#27312B;
+  --tile-1:#262F2A; --tile-2:#262F2A; --tile-3:#262F2A; --tile-4:#262F2A; --tile-5:#262F2A; --tile-6:#262F2A; --tile-7:#262F2A; --tile-8:#262F2A;
+  --glass:rgba(28,36,32,.9);
+  color-scheme:dark;
+}
+:root{--glass:rgba(255,253,248,.9)}
+:root[data-theme="dark"]{--glass:rgba(28,36,32,.9)}
+/* the basemap is drawn on a canvas, so it is darkened here; pins, labels and controls are normal HTML */
+:root[data-theme="dark"] .maplibregl-canvas{filter:invert(.92) hue-rotate(180deg) brightness(.92) contrast(.9)}
+:root[data-theme="dark"] .ticker,:root[data-theme="dark"] .lp-foot{background:#0C110F;color:#EDE8DC}
+:root[data-theme="dark"] .toast,:root[data-theme="dark"] .banner,:root[data-theme="dark"] .cond{background:#EDE8DC;color:#141A17}
+:root[data-theme="dark"] .toast button{color:#141A17}
 
 
 *{box-sizing:border-box}
@@ -611,8 +629,9 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 /* MAP (MapLibre) */
 .mapgl,.mapgl.maplibregl-map{position:absolute;inset:0;width:100%;height:100%}
 .maplibregl-map{font-family:var(--font-body)}
-.maplibregl-ctrl-attrib{font-size:10.5px;background:rgba(255,253,248,.85)!important}
-.maplibregl-ctrl-scale{background:rgba(255,253,248,.85);border-color:var(--ink);color:var(--ink);font:500 10.5px var(--font-mono)}
+.maplibregl-ctrl-attrib{font-size:10.5px;background:var(--glass)!important;color:var(--ink)}
+.maplibregl-ctrl-attrib a{color:inherit}
+.maplibregl-ctrl-scale{background:var(--glass);border-color:var(--ink);color:var(--ink);font:500 10.5px var(--font-mono)}
 .maplibregl-canvas:focus-visible{outline:none}
 .pin-icon{width:44px;height:56px;cursor:pointer;filter:drop-shadow(0 2px 3px rgba(0,0,0,.28))}
 .pin-icon .pin{width:44px;height:56px}
@@ -762,7 +781,7 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .cover-plum{background-image:linear-gradient(120deg,#4E2343 0%,#8E4A73 60%,#C795D6 120%)}
 .pf-cover.has-photo::after{display:none}
 .pf-hero .pf-cover{position:relative}
-.cover-edit{position:absolute;top:12px;inset-inline-end:12px;z-index:1;background:rgba(255,253,248,.92);border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.cover-edit{position:absolute;top:12px;inset-inline-end:12px;z-index:1;background:var(--glass);border-color:transparent;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 .pf-form .pf-cover{height:96px;border-radius:12px;overflow:hidden}
 .cover-swatches{display:flex;flex-wrap:wrap;gap:10px}
 .cover-swatch{width:38px;height:38px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--line);padding:0}
@@ -776,7 +795,7 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .nav-top.arrived{background:var(--coral);color:var(--on-coral)}
 .nav-main{display:grid;grid-template-columns:52px 1fr;gap:12px;align-items:center;padding:14px 16px}
 .nav-ico{display:grid;place-items:center;width:52px;height:52px}
-.nav-line .lb{min-width:40px;height:40px;font-size:18px;box-shadow:0 0 0 3px rgba(255,255,255,.85)}
+.nav-line .lb{min-width:40px;height:40px;font-size:18px;box-shadow:0 0 0 3px var(--surface)}
 .nav-dist{display:block;font:800 26px/1.05 var(--font-display);letter-spacing:-.02em}
 .nav-text{display:block;font:600 16px/1.3 var(--font-body);margin-top:3px}
 .nav-sub{display:block;font:500 12.5px/1.3 var(--font-body);opacity:.85;margin-top:2px}
@@ -1169,3 +1188,8 @@ html.embedded ::-webkit-scrollbar{display:none}
 .contact-sent{display:grid;gap:12px;padding:18px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
 .contact-sent h2{margin:0;font:800 22px var(--font-display)}
 .contact-sent p{margin:0;color:var(--muted)}
+
+/* appearance picker */
+.theme-seg{grid-template-columns:repeat(3,1fr)}
+.theme-seg button{align-items:center;text-align:center}
+.theme-seg .l{justify-content:center}

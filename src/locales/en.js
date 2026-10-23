@@ -198,4 +198,5 @@ export default {
   'item.photos': 'Photos', 'item.photoOf': 'Photo {i} of {n}', 'item.prev': 'Previous photo', 'item.next': 'Next photo',
   'item.moreInfo': 'More info', 'item.details': 'Details', 'item.where': 'Where', 'item.distance': 'Distance', 'item.seller': 'Seller',
   'item.about': 'About this item', 'item.noDesc': 'The seller has not added a description.', 'item.saved': 'Saved',
+  'prefs.appearance': 'Appearance', 'prefs.theme.auto': 'Automatic', 'prefs.theme.light': 'Light', 'prefs.theme.dark': 'Dark', 'prefs.themeNote': 'Automatic follows your device. This is saved on this device.',
 }
