@@ -397,7 +397,7 @@ export default function MapView(props) {
 
   return (
     <>
-      <div className={`mapbox${navOn ? ' navigating' : ''}`} ref={boxRef}>
+      <div className={`mapbox${navOn ? ' navigating' : ''}${sel != null ? ' has-sel' : ''}`} ref={boxRef}>
         <div
           ref={mapElRef}
           className="mapgl"
@@ -444,7 +444,7 @@ export default function MapView(props) {
                 <button onClick={onCancelPlace}>{t('cancel')}</button>
               </div>
             ) : me.src === 'default' ? (
-              <div className="banner">
+              <div className="banner info">
                 <Icon name="arrow" size={18} />
                 <span>{t('map.using', { place: me.label })}</span>
                 <button onClick={onOpenLoc}>{t('change')}</button>

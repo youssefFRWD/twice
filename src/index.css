@@ -883,3 +883,44 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .arr-pick svg{flex:none;color:var(--accent)}
 .arr-pick select{border:0;background:none;padding:9px 6px 9px 0;font-weight:700;font-size:13.5px;width:auto;max-width:210px;cursor:pointer}
 .mapbox.navigating .arr-pick{display:none}
+
+/* PHONES */
+/* the real visible height, so the bottom tabs are not hidden under the browser toolbar */
+@supports (height:100dvh){html,body,#root,#app{height:100dvh}}
+body{overscroll-behavior-y:none}
+button,select,input{touch-action:manipulation}
+/* people pinch to zoom on touch screens, so the +/- buttons only take up room */
+@media (hover:none) and (pointer:coarse){.mapui .mb:nth-child(1),.mapui .mb:nth-child(2){display:none}}
+@media (max-width:899px){
+  /* compact map controls: two small rows instead of four large pills */
+  .maptl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;top:8px}
+  .maptl .arr-pick{flex:0 1 auto;min-width:0}
+  .maptl .arr-pick select{padding:7px 4px 7px 0;font-size:12.5px;max-width:132px;text-overflow:ellipsis}
+  .maptl .all-btn{padding:7px 11px;font-size:12.5px}
+  .maptl .radius{padding:5px 12px;gap:8px;font-size:12.5px}
+  .maptl .radius input{width:80px}
+  .maptl>div:last-child{flex-basis:100%}
+  .banner{padding:7px 10px;font-size:12px;gap:8px;border-radius:10px;width:auto;max-width:100%}
+  /* while reading directions the map is small: show only the route */
+  .mapbox.has-sel .maptl{display:none}
+  /* navigation bar: keep it on one line */
+  .nav-bottom{padding:10px 12px;gap:8px}
+  .nav-eta b{font-size:21px}
+  .nav-eta .mono{font-size:11.5px}
+  .nav-bottom .btn.small{padding:8px 11px;white-space:nowrap}
+  .nav-main{padding:12px 14px}
+  .nav-dist{font-size:23px}
+  .nav-text{font-size:15px}
+}
+@media (max-width:899px){
+  /* the header already shows where you are on phones */
+  .banner.info{display:none}
+  .panel{max-height:56%}
+}
+@media (max-width:519px){
+  /* landing header on small phones: drop the icon links and let the buttons wrap under the logo */
+  .lp-links{display:none}
+  .lp-nav{flex-wrap:wrap}
+  .lp-nav .brand{font-size:23px}
+  .lp-actions{margin-left:auto}
+}
