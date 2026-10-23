@@ -421,3 +421,6 @@ export const draftConversation = (id, item) => {
   const at = new Date().toISOString()
   return { id, iAmBuyer: true, partnerId: item.sid, itemId: item.id, itemTitle: item.t, partner: item.s, approval: null, sale: null, last: null, unread: 0, at, theirAt: null }
 }
+
+/** An accepted offer (accepted by the other person) approves the sale; the database checks the messages. */
+export const approveByOffer = async conversationId => ok(await supabase.rpc('approve_by_offer', { conv: conversationId }))

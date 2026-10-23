@@ -521,7 +521,7 @@ function ApprovalBar({ conv, talked, loops, onApprove, onBuy, onHandover }) {
   )
 }
 
-function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy, loops, onHandover }) {
+function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy, loops, onHandover }) {
   const { t, currency } = useI18n()
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
@@ -639,6 +639,7 @@ function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, st
     setError('')
     try {
       await post(replyBody({ to: String(e.m.id), action }))
+      if (action === 'accept') onOfferAccepted?.(conv) // an accepted offer is the seller's approval
       if (action === 'refuse') say('Offer refused.')
       else if (conv.iAmBuyer) checkout(e)
       else say(`Offer accepted. ${conv.partner} can now check out.`)
@@ -814,7 +815,7 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [], loops = 0, onHandover }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onOfferAccepted, onApprove, onBuy, sampleChats = [], loops = 0, onHandover }) {
   const { t } = useI18n()
   // messaging is for signed-in users only, so signed-out visitors don't get the sample conversations either
   const demo = SHOW_SAMPLES && !!realUid && realConvs.length === 0
@@ -1048,6 +1049,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           key={open.id}
           paid={paid}
           onPay={onPay}
+          onOfferAccepted={onOfferAccepted}
           conv={open}
           demoList={demoMsgs[open.id] || []}
           onDemoAdd={m => setDemoMsgs(prev => ({ ...prev, [open.id]: [...(prev[open.id] || []), m] }))}
