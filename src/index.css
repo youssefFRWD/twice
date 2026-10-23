@@ -438,6 +438,16 @@ button.brand{border:0;background:none;padding:0;color:inherit}
 .co-loops b{font-size:14px}
 .co-loops small{color:var(--muted);font-size:12.5px}
 .co-loops.off{cursor:default;opacity:.7}
+.co-stripe{padding:14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.co-change{justify-self:start}
+.co-sec[disabled] .seg{opacity:.6}
+.seg button:disabled{opacity:.5;cursor:not-allowed}
+.payouts{display:flex;gap:12px;align-items:center;margin-bottom:12px;padding:14px;border:1px solid var(--line);border-radius:var(--r-md);background:var(--surface)}
+.payouts>svg{flex:none;color:var(--accent)}
+.payouts>div{flex:1;min-width:0;display:grid;gap:2px}
+.payouts p{margin:0;color:var(--muted);font-size:13px}
+.payouts.ready{background:var(--accent-soft)}
+@media (max-width:599px){.payouts{flex-wrap:wrap}}
 .co-ask h2{margin:0;font:700 18px/1.2 var(--font-display)}
 .co-ask p{margin:0}
 .co-ask-btns{display:flex;flex-wrap:wrap;gap:10px}

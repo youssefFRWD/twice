@@ -431,21 +431,29 @@ function SaleBar({ conv, loops, onHandover }) {
   const [useLoops, setUseLoops] = useState(false)
   const { sale: s, partner, iAmBuyer } = conv
   const eur = cents => money(cents / 100, true)
-  if (s.completed_at) {
-    return (
-      <div className="th-req approved" role="status">
-        <Icon name="check" size={18} />
-        <span>{s.loops_awarded ? t('loops.saleDoneEarned', { n: LOOPS.perSale }) : t('loops.saleDone')}</span>
-      </div>
-    )
-  }
-  const mineDone = iAmBuyer ? s.buyer_done_at : s.seller_done_at
   const canWaive = !iAmBuyer && s.seller_fee_cents > 0 && loops >= LOOPS.noFee
   const confirm = async () => {
     setBusy(true)
     await onHandover(conv, useLoops && canWaive)
     setBusy(false)
   }
+  if (s.completed_at) {
+    // online sales pay the seller when both confirm; if Stripe refused the payout, the seller can try again
+    const payoutPending = !iAmBuyer && s.method === 'online' && !s.transfer_id
+    return (
+      <div className={`th-req ${payoutPending ? 'sale' : 'approved'}`} role="status">
+        <Icon name="check" size={18} />
+        <span>
+          {s.loops_awarded ? t('loops.saleDoneEarned', { n: LOOPS.perSale }) : t('loops.saleDone')}
+          {payoutPending && ` ${t('pay.payoutPending')}`}
+        </span>
+        {payoutPending && (
+          <button className="btn small" disabled={busy} onClick={confirm}>{t('pay.retry')}</button>
+        )}
+      </div>
+    )
+  }
+  const mineDone = iAmBuyer ? s.buyer_done_at : s.seller_done_at
   const paid = eur(s.price_cents + s.buyer_fee_cents)
   const text = iAmBuyer
     ? t('loops.buyerPaid', { amount: paid, name: partner })

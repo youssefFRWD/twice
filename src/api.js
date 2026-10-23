@@ -241,7 +241,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status),sales(method,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status),sales(method,paid_at,transfer_id,price_cents,buyer_fee_cents,seller_fee_cents,seller_fee_waived,buyer_done_at,seller_done_at,completed_at,loops_awarded)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -256,7 +256,8 @@ export async function fetchConversations(uid) {
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
       const approval = [].concat(r.sale_approvals ?? [])[0]
-      const sale = [].concat(r.sales ?? [])[0] ?? null
+      const row = [].concat(r.sales ?? [])[0]
+      const sale = row?.paid_at ? row : null // an online payment that was started but not completed doesn't count yet
       return {
         id: r.id,
         iAmBuyer,
@@ -320,7 +321,7 @@ export async function setSaleApproval(uid, conversationId, approved, note) {
 
 export const fetchLoops = async () => ok(await supabase.rpc('my_loops'))
 
-/** The buyer pays (simulated in this prototype). paidCents is the agreed offer price, or null for the listing price. */
+/** Cash only: the buyer reserves and pays in person. paidCents is the agreed offer price, or null for the listing price. */
 export const paySale = async (conversationId, method, paidCents, useLoops) =>
   ok(await supabase.rpc('pay_sale', { conv: conversationId, pay_method: method, paid_cents: paidCents, use_loops: useLoops }))
 
@@ -356,3 +357,34 @@ export async function sendContact(form) {
   const results = await Promise.allSettled([emailTeam(form), saved])
   if (results.every(r => r.status === 'rejected')) throw new Error('contact')
 }
+
+/* ---------- Stripe (online payments, through the Edge Functions in supabase/functions) ---------- */
+
+/** Calls an Edge Function and surfaces its { error } message when it fails. */
+async function callFunction(name, body) {
+  const { data, error } = await supabase.functions.invoke(name, { body })
+  if (error) {
+    let message = error.message
+    try {
+      message = (await error.context.json()).error || message
+    } catch {
+      /* no JSON body */
+    }
+    throw new Error(message)
+  }
+  return data
+}
+
+/** Whether the seller in this conversation has finished Stripe onboarding and can be paid online. */
+export const canPayOnline = async conversationId => ok(await supabase.rpc('can_pay_online', { conv: conversationId }))
+
+/** Starts an online payment; returns { client_secret, amount } for Stripe's payment form. */
+export const startOnlinePayment = (conversationId, paidCents, useLoops) =>
+  callFunction('stripe-checkout', { conversation_id: conversationId, paid_cents: paidCents, use_loops: useLoops })
+
+/** "Handover done" on a sale paid online: also pays the seller once both have confirmed. */
+export const confirmOnlineHandover = (conversationId, useLoops) =>
+  callFunction('stripe-handover', { conversation_id: conversationId, use_loops: useLoops })
+
+/** Seller payouts: 'link' returns { url } to Stripe's onboarding, 'status' returns { connected, payouts_enabled }. */
+export const stripeConnect = action => callFunction('stripe-connect', { action })

@@ -349,15 +349,20 @@ export default function App() {
 
   /* ---------- Loops: paying, confirming the handover, boosting ---------- */
   const buyerConvOf = it => convs.find(c => c.iAmBuyer && c.itemId === it.id)
-  /** Throws on failure so the checkout can show the error. */
-  const paySale = async (it, method, useLoops) => {
-    const paidCents = dealPay && dealPay.itemId === it.id ? Math.round(dealPay.eur * 100) : null
-    await api.paySale(buyerConvOf(it).id, method, paidCents, useLoops)
-    await reloadConvs()
+  const agreedCents = it => (dealPay && dealPay.itemId === it.id ? Math.round(dealPay.eur * 100) : null)
+  /* The checkout's payment actions; each throws on failure so the checkout can show the error. */
+  const payment = {
+    start: (it, useLoops) => api.startOnlinePayment(buyerConvOf(it).id, agreedCents(it), useLoops),
+    // Stripe's webhook marks the sale paid a moment after the buyer's payment goes through
+    paidOnline: () => [1500, 5000].forEach(ms => setTimeout(reloadConvs, ms)),
+    cash: async it => {
+      await api.paySale(buyerConvOf(it).id, 'cash', agreedCents(it), false)
+      await reloadConvs()
+    },
   }
   const confirmHandover = async (conv, useLoops) => {
     try {
-      const sale = await api.confirmHandover(conv.id, useLoops)
+      const sale = conv.sale?.method === 'online' ? await api.confirmOnlineHandover(conv.id, useLoops) : await api.confirmHandover(conv.id, useLoops)
       await Promise.all([reloadConvs(), reloadItems()])
       if (sale?.completed_at) showToast(sale.loops_awarded ? t('loops.earnedToast', { n: LOOPS.perSale }) : t('loops.doneToast'))
     } catch (e) {
@@ -770,10 +775,11 @@ export default function App() {
           item={dealPay && dealPay.itemId === buyId ? { ...buyItem, p: dealPay.eur } : buyItem}
           me={me}
           uid={uid}
+          convId={buyerConvOf(buyItem)?.id}
           approval={approvalOf(buyItem)}
           sale={buyerConvOf(buyItem)?.sale ?? null}
           loops={loops}
-          onPay={(method, useLoops) => paySale(buyItem, method, useLoops)}
+          payment={payment}
           canMessage={canMessage}
           onPaid={() => dealPay && markPaid(dealPay.id)}
           onMessage={contactOwner}
