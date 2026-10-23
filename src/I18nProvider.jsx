@@ -1,26 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { I18nContext, hasDict, loadDict } from './i18n.js'
+import { I18nContext, hasDict, initialPrefs, loadDict, savePrefs } from './i18n.js'
 import { LANGS, RATES, refreshRates, setActive } from './locale.js'
 
-const KEY = 'twice:prefs'
-
-function load() {
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY) || 'null')
-    if (d && hasDict(d.lang) && RATES[d.currency]) return d
-  } catch {
-    /* storage blocked or corrupt */
-  }
-  const nav = (navigator.language || 'en').slice(0, 2)
-  return { lang: hasDict(nav) ? nav : 'en', currency: 'EUR' }
-}
-
 export default function I18nProvider({ children }) {
-  const [prefs, setPrefs] = useState(load)
+  const [prefs, setPrefs] = useState(initialPrefs)
   const [ratesVersion, setRatesVersion] = useState(0)
   const [loaded, setLoaded] = useState(prefs.lang) // language whose dictionary is ready
   setActive(prefs.lang, prefs.currency) // before children render, so helpers like money() see it
-  // the saved language's dictionary loads in the background; English shows until it arrives
+  // main.jsx loads the first language before drawing; this covers later changes
   useEffect(() => {
     loadDict(prefs.lang).then(() => setLoaded(prefs.lang), () => {})
   }, [prefs.lang])
@@ -35,11 +22,7 @@ export default function I18nProvider({ children }) {
   const update = useCallback(patch => {
     setPrefs(p => {
       const next = { ...p, ...patch }
-      try {
-        localStorage.setItem(KEY, JSON.stringify(next))
-      } catch {
-        /* storage blocked */
-      }
+      savePrefs(next)
       return next
     })
   }, [])
