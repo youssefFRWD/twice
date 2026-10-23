@@ -1,9 +1,11 @@
 import { useEffect, useImperativeHandle, useRef } from 'react'
-import { catOf, clamp } from './data.js'
+import { clamp } from './data.js'
+import { useI18n } from './i18n.js'
 import { walkLabel } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
 function SwipeCard({ item, depth, me, onDecide, ref }) {
+  const { t, cat, cond, money } = useI18n()
   const el = useRef(null)
   const yesTag = useRef(null)
   const noTag = useRef(null)
@@ -71,21 +73,21 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
       <Art item={item}>
         <span className="dist-badge">
           <Icon name="pin" size={14} />
-          {walkLabel(me, item)}
+          {walkLabel(me, item, t)}
         </span>
-        <span className="cond">{item.cond}</span>
+        <span className="cond">{cond(item.cond)}</span>
       </Art>
-      <div className="tag yes" ref={yesTag}>Save</div>
-      <div className="tag no" ref={noTag}>Pass</div>
+      <div className="tag yes" ref={yesTag}>{t('save')}</div>
+      <div className="tag no" ref={noTag}>{t('pass')}</div>
       <div className="body">
         <div className="row">
           <h2>{item.t}</h2>
-          <span className="price">€{item.p}</span>
+          <span className="price">{money(item.p)}</span>
         </div>
         <div className="meta">
           <span><Icon name="pin" size={14} />{item.a}</span>
-          <span><Icon name="tag" size={14} />{catOf(item.c).label}</span>
-          <span>Sold by {item.s}</span>
+          <span><Icon name="tag" size={14} />{cat(item.c)}</span>
+          <span>{t('soldBy', { name: item.s })}</span>
         </div>
         <p className="desc">{item.d}</p>
       </div>
@@ -94,6 +96,7 @@ function SwipeCard({ item, depth, me, onDecide, ref }) {
 }
 
 export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kbActive, onDecide, onUndo, onReset }) {
+  const { t } = useI18n()
   const topRef = useRef(null)
   const swipe = dir => topRef.current?.fling(dir)
 
@@ -112,15 +115,13 @@ export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kb
     return (
       <div className="empty">
         <Icon name="disc" size={40} />
-        <h2>{hasUnseen ? 'Nothing left in this category' : 'You have seen everything nearby'}</h2>
+        <h2>{hasUnseen ? t('discover.noneInCat') : t('discover.seenAll')}</h2>
         <p>
-          {hasUnseen
-            ? 'Try another category, or bring back the items you passed.'
-            : 'New listings appear as neighbours post them. Meanwhile you can bring back the items you passed.'}
+          {hasUnseen ? t('discover.tryOther') : t('discover.newListings')}
         </p>
         {passedCount > 0 && (
           <button className="btn primary" onClick={onReset}>
-            Show {passedCount} passed {passedCount > 1 ? 'items' : 'item'} again
+            {t('discover.showPassed', { n: passedCount })}
           </button>
         )}
       </div>
@@ -139,17 +140,17 @@ export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kb
           ))}
       </div>
       <div className="actions">
-        <button className="rb sm" aria-label="Undo last swipe" disabled={!canUndo} onClick={onUndo}>
+        <button className="rb sm" aria-label={t('discover.undo')} disabled={!canUndo} onClick={onUndo}>
           <Icon name="undo" size={22} />
         </button>
-        <button className="rb no" aria-label="Pass" onClick={() => swipe(-1)}>
+        <button className="rb no" aria-label={t('pass')} onClick={() => swipe(-1)}>
           <Icon name="x" size={30} sw={2.6} />
         </button>
-        <button className="rb yes" aria-label="Save to favorites" onClick={() => swipe(1)}>
+        <button className="rb yes" aria-label={t('discover.saveFav')} onClick={() => swipe(1)}>
           <Icon name="heart" size={30} sw={2.4} />
         </button>
       </div>
-      <p className="hint">Swipe right to save, left to pass. Arrow keys work too. {deck.length} left.</p>
+      <p className="hint">{t('discover.hint', { n: deck.length })}</p>
     </>
   )
 }

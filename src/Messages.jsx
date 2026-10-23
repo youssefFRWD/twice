@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as api from './api.js'
+import { useI18n } from './i18n.js'
+import { locale } from './locale.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -7,11 +9,12 @@ const POLL_MS = 4000
 function when(iso) {
   const d = new Date(iso)
   const now = new Date()
-  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short' })
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 function Thread({ conv, uid, onBack, onChanged }) {
+  const { t } = useI18n()
   const [msgs, setMsgs] = useState([])
   const [text, setText] = useState('')
   const [error, setError] = useState('')
@@ -31,7 +34,7 @@ function Thread({ conv, uid, onBack, onChanged }) {
           if (live) onChanged()
         }
       } catch {
-        if (live) setError('Could not load this conversation.')
+        if (live) setError(t('msg.loadFail'))
       }
     }
     load()
@@ -58,24 +61,24 @@ function Thread({ conv, uid, onBack, onChanged }) {
       setText('')
       onChanged()
     } catch {
-      setError('Message not sent. Check your connection and try again.')
+      setError(t('msg.sendFail'))
     }
     setBusy(false)
   }
 
   return (
-    <section className="msg-thread" aria-label={`Conversation with ${conv.partner}`}>
+    <section className="msg-thread" aria-label={t('msg.with', { name: conv.partner })}>
       <header className="th-head">
-        <button className="th-back btn small" onClick={onBack} aria-label="Back to conversations">
-          <Icon name="undo" size={16} />Back
+        <button className="th-back btn small" onClick={onBack} aria-label={t('msg.back')}>
+          <Icon name="undo" size={16} />{t('back')}
         </button>
         <div>
           <b>{conv.partner}</b>
-          <small>About: {conv.itemTitle}</small>
+          <small>{t('msg.about', { title: conv.itemTitle })}</small>
         </div>
       </header>
       <div className="th-body" aria-live="polite">
-        {msgs.length === 0 && !error && <p className="note th-empty">No messages yet. Say hello and ask about the item.</p>}
+        {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {msgs.map(m => (
           <div key={m.id} className={`bub${m.sender_id === uid ? ' mine' : ''}`}>
             <span>{m.body}</span>
@@ -88,25 +91,26 @@ function Thread({ conv, uid, onBack, onChanged }) {
       <form className="th-send" onSubmit={send}>
         <input
           type="text"
-          aria-label="Write a message"
-          placeholder="Write a message"
+          aria-label={t('msg.write')}
+          placeholder={t('msg.write')}
           maxLength={4000}
           value={text}
           onChange={e => setText(e.target.value)}
         />
-        <button className="btn primary" type="submit" disabled={busy || !text.trim()}>Send</button>
+        <button className="btn primary" type="submit" disabled={busy || !text.trim()}>{t('msg.send')}</button>
       </form>
     </section>
   )
 }
 
 export default function Messages({ uid, backendOn, convs, openId, onOpen, onChanged }) {
+  const { t } = useI18n()
   if (!backendOn || !uid) {
     return (
       <div className="empty">
         <Icon name="chat" size={40} />
-        <h2>Messages need an account</h2>
-        <p>{backendOn ? 'Sign in to message sellers about their items.' : 'Messaging is only available once twice is connected online.'}</p>
+        <h2>{t('msg.needAccount')}</h2>
+        <p>{backendOn ? t('msg.signInTo') : t('msg.offline')}</p>
       </div>
     )
   }
@@ -115,12 +119,12 @@ export default function Messages({ uid, backendOn, convs, openId, onOpen, onChan
   return (
     <div className={`msgs${open ? ' has-thread' : ''}`}>
       <div className="msg-list">
-        <h1 className="msg-title">Messages</h1>
+        <h1 className="msg-title">{t('tab.messages')}</h1>
         {convs.length === 0 && (
           <div className="empty" style={{ padding: '24px 4px' }}>
             <Icon name="chat" size={40} />
-            <h2>No conversations yet</h2>
-            <p>Open a saved item and tap the message button to ask the seller a question.</p>
+            <h2>{t('msg.noConvs')}</h2>
+            <p>{t('msg.noConvsHint')}</p>
           </div>
         )}
         {convs.map(c => (
@@ -129,11 +133,11 @@ export default function Messages({ uid, backendOn, convs, openId, onOpen, onChan
             <span className="cv-tx">
               <b>{c.partner}</b>
               <small>{c.itemTitle}</small>
-              <span className="cv-last">{c.last ? `${c.last.mine ? 'You: ' : ''}${c.last.body}` : 'No messages yet'}</span>
+              <span className="cv-last">{c.last ? `${c.last.mine ? t('msg.you') : ''}${c.last.body}` : t('msg.none')}</span>
             </span>
             <span className="cv-meta">
               <time dateTime={c.at}>{when(c.at)}</time>
-              {c.unread > 0 && <i className="dot" aria-label={`${c.unread} unread`}>{c.unread}</i>}
+              {c.unread > 0 && <i className="dot" aria-label={t('unread', { n: c.unread })}>{c.unread}</i>}
             </span>
           </button>
         ))}
@@ -141,7 +145,7 @@ export default function Messages({ uid, backendOn, convs, openId, onOpen, onChan
       {open ? (
         <Thread key={open.id} conv={open} uid={uid} onBack={() => onOpen(null)} onChanged={onChanged} />
       ) : (
-        <div className="msg-thread th-none"><p className="note">Select a conversation to read it.</p></div>
+        <div className="msg-thread th-none"><p className="note">{t('msg.select')}</p></div>
       )}
     </div>
   )
