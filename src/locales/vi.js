@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'Tin đăng', 'pv.noListings': 'Hiện chưa có tin đang bán.', 'pv.open': 'Mở hồ sơ của {name}',
   'pf.cover': 'Ảnh bìa', 'pf.coverColor': 'Kiểu ảnh bìa {n}', 'pf.coverUpload': 'Tải ảnh bìa lên', 'pf.coverRemove': 'Xóa ảnh bìa', 'pf.coverChange': 'Đổi ảnh bìa',
   soldByLabel: 'Người bán:', moreFrom: 'Thêm từ {name}',
+  'pf.complete': 'Hoàn thiện hồ sơ', 'pf.completeOf': 'Xong {done}/{total}', 'pf.todo.photo': 'Thêm ảnh hồ sơ', 'pf.todo.area': 'Chọn quận ở Paris', 'pf.todo.cover': 'Chọn ảnh bìa', 'pf.todo.listing': 'Đăng món đồ đầu tiên', 'pf.todo.friend': 'Theo dõi một người hàng xóm', 'pf.allDone': 'Hồ sơ của bạn đã hoàn thiện. Tuyệt!', 'ls.emptyH': 'Chưa có gì để bán',
+  'tab.browse': 'Duyệt tất cả', 'br.search': 'Tìm tin đăng…', 'br.clear': 'Xóa tìm kiếm', 'br.sortLabel': 'Sắp xếp', 'br.sort.nearest': 'Gần nhất trước', 'br.sort.low': 'Giá: thấp đến cao', 'br.sort.high': 'Giá: cao đến thấp', 'br.none': 'Không có tin nào khớp với "{q}"', 'br.noneHint': 'Thử từ khác hoặc xóa bộ lọc.', 'br.reset': 'Xóa bộ lọc', 'br.save': 'Lưu {title}', 'br.count_one': '{n} tin', 'br.count_other': '{n} tin',
 }

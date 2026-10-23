@@ -163,4 +163,6 @@ export default {
   'pv.listings': '出品', 'pv.noListings': '現在公開中の出品はありません。', 'pv.open': '{name}のプロフィールを開く',
   'pf.cover': 'カバー', 'pf.coverColor': 'カバーのスタイル {n}', 'pf.coverUpload': 'カバー写真をアップロード', 'pf.coverRemove': 'カバー写真を削除', 'pf.coverChange': 'カバーを変更',
   soldByLabel: '出品者：', moreFrom: '{name}のほかの出品',
+  'pf.complete': 'プロフィールを充実させよう', 'pf.completeOf': '{total} 件中 {done} 件完了', 'pf.todo.photo': 'プロフィール写真を追加', 'pf.todo.area': 'パリのエリアを選ぶ', 'pf.todo.cover': 'カバーを選ぶ', 'pf.todo.listing': '最初の出品をする', 'pf.todo.friend': 'ご近所さんをフォロー', 'pf.allDone': 'プロフィールが完成しました！', 'ls.emptyH': 'まだ出品がありません',
+  'tab.browse': 'さがす一覧', 'br.search': '出品を検索…', 'br.clear': '検索をクリア', 'br.sortLabel': '並べ替え', 'br.sort.nearest': '近い順', 'br.sort.low': '価格の安い順', 'br.sort.high': '価格の高い順', 'br.none': '「{q}」に一致する出品はありません', 'br.noneHint': '別の言葉を試すか、絞り込みを解除してください。', 'br.reset': '絞り込みを解除', 'br.save': '{title}を保存', 'br.count_one': '{n} 件の出品', 'br.count_other': '{n} 件の出品',
 }

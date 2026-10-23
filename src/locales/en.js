@@ -180,4 +180,6 @@ export default {
   'pv.listings': 'Listings', 'pv.noListings': 'No active listings right now.', 'pv.open': 'Open {name}’s profile',
   'pf.cover': 'Cover', 'pf.coverColor': 'Cover style {n}', 'pf.coverUpload': 'Upload a cover photo', 'pf.coverRemove': 'Remove cover photo', 'pf.coverChange': 'Change cover',
   soldByLabel: 'Sold by', moreFrom: 'More from {name}',
+  'pf.complete': 'Complete your profile', 'pf.completeOf': '{done} of {total} done', 'pf.todo.photo': 'Add a profile photo', 'pf.todo.area': 'Choose your Paris area', 'pf.todo.cover': 'Pick a cover', 'pf.todo.listing': 'List your first item', 'pf.todo.friend': 'Follow a neighbour', 'pf.allDone': 'Your profile is complete. Nice!', 'ls.emptyH': 'Nothing for sale yet',
+  'tab.browse': 'Browse', 'br.search': 'Search listings…', 'br.clear': 'Clear search', 'br.sortLabel': 'Sort', 'br.sort.nearest': 'Nearest first', 'br.sort.low': 'Price: low to high', 'br.sort.high': 'Price: high to low', 'br.none': 'No listings match “{q}”', 'br.noneHint': 'Try another word, or clear the filters.', 'br.reset': 'Clear filters', 'br.save': 'Save {title}', 'br.count_one': '{n} listing', 'br.count_other': '{n} listings',
 }

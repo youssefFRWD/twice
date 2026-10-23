@@ -180,4 +180,6 @@ export default {
   'pv.listings': 'Annonces', 'pv.noListings': 'Aucune annonce en ligne pour le moment.', 'pv.open': 'Ouvrir le profil de {name}',
   'pf.cover': 'Couverture', 'pf.coverColor': 'Style de couverture {n}', 'pf.coverUpload': 'Importer une photo de couverture', 'pf.coverRemove': 'Retirer la photo de couverture', 'pf.coverChange': 'Changer la couverture',
   soldByLabel: 'Vendu par', moreFrom: 'Plus de {name}',
+  'pf.complete': 'Complétez votre profil', 'pf.completeOf': '{done} sur {total} faits', 'pf.todo.photo': 'Ajouter une photo de profil', 'pf.todo.area': 'Choisir votre arrondissement', 'pf.todo.cover': 'Choisir une couverture', 'pf.todo.listing': 'Mettre un premier objet en vente', 'pf.todo.friend': 'Suivre un voisin', 'pf.allDone': 'Votre profil est complet. Bravo !', 'ls.emptyH': 'Rien en vente pour l’instant',
+  'tab.browse': 'Parcourir', 'br.search': 'Rechercher une annonce…', 'br.clear': 'Effacer la recherche', 'br.sortLabel': 'Trier', 'br.sort.nearest': 'Les plus proches', 'br.sort.low': 'Prix croissant', 'br.sort.high': 'Prix décroissant', 'br.none': 'Aucune annonce pour « {q} »', 'br.noneHint': 'Essayez un autre mot ou effacez les filtres.', 'br.reset': 'Effacer les filtres', 'br.save': 'Ajouter {title} aux favoris', 'br.count_one': '{n} annonce', 'br.count_other': '{n} annonces',
 }

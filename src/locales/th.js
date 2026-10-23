@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'ประกาศ', 'pv.noListings': 'ตอนนี้ยังไม่มีประกาศที่กำลังขาย', 'pv.open': 'เปิดโปรไฟล์ของ {name}',
   'pf.cover': 'ภาพปก', 'pf.coverColor': 'รูปแบบภาพปก {n}', 'pf.coverUpload': 'อัปโหลดภาพปก', 'pf.coverRemove': 'ลบภาพปก', 'pf.coverChange': 'เปลี่ยนภาพปก',
   soldByLabel: 'ผู้ขาย:', moreFrom: 'ของอื่นจาก {name}',
+  'pf.complete': 'ทำโปรไฟล์ให้สมบูรณ์', 'pf.completeOf': 'เสร็จแล้ว {done} จาก {total}', 'pf.todo.photo': 'เพิ่มรูปโปรไฟล์', 'pf.todo.area': 'เลือกเขตของคุณในปารีส', 'pf.todo.cover': 'เลือกภาพปก', 'pf.todo.listing': 'ลงขายของชิ้นแรก', 'pf.todo.friend': 'ติดตามเพื่อนบ้านสักคน', 'pf.allDone': 'โปรไฟล์ของคุณสมบูรณ์แล้ว เยี่ยม!', 'ls.emptyH': 'ยังไม่มีของขาย',
+  'tab.browse': 'เลือกดู', 'br.search': 'ค้นหาประกาศ…', 'br.clear': 'ล้างการค้นหา', 'br.sortLabel': 'เรียงตาม', 'br.sort.nearest': 'ใกล้ที่สุดก่อน', 'br.sort.low': 'ราคา: ต่ำไปสูง', 'br.sort.high': 'ราคา: สูงไปต่ำ', 'br.none': 'ไม่พบประกาศที่ตรงกับ "{q}"', 'br.noneHint': 'ลองคำอื่นหรือล้างตัวกรอง', 'br.reset': 'ล้างตัวกรอง', 'br.save': 'บันทึก {title}', 'br.count_one': '{n} ประกาศ', 'br.count_other': '{n} ประกาศ',
 }

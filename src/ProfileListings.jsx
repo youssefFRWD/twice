@@ -3,7 +3,7 @@ import * as api from './api.js'
 import { CATS } from './data.js'
 import { useI18n } from './i18n.js'
 import { toJpeg } from './lib.js'
-import { Icon } from './ui.jsx'
+import { EmptyCard, Icon } from './ui.jsx'
 
 const CONDITIONS = ['Like new', 'Very good', 'Good', 'Fair']
 const MAX_PHOTOS = 6
@@ -231,7 +231,12 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
         <button className="btn primary small" onClick={() => setForm('new')}><Icon name="plus" size={16} />{t('ls.new')}</button>
       </div>
       {list.length === 0 ? (
-        <p className="pf-empty">{t('ls.none')}</p>
+        <EmptyCard
+          icon="tag"
+          title={t('ls.emptyH')}
+          text={t('ls.none')}
+          action={<button className="btn primary" onClick={() => setForm('new')}><Icon name="plus" size={16} />{t('ls.new')}</button>}
+        />
       ) : (
         <ul className="ml-list">
           {list.map(l => (

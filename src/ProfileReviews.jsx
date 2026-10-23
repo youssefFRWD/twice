@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
+import { EmptyCard } from './ui.jsx'
 import { locale } from './locale.js'
 
 const when = iso => new Date(iso).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
@@ -17,7 +18,7 @@ function Stars({ n }) {
 
 export function ReviewList({ list, who, empty, onDelete }) {
   const { t } = useI18n()
-  if (!list.length) return <p className="pf-empty">{empty}</p>
+  if (!list.length) return <EmptyCard compact icon="star" text={empty} />
   return (
     <ul className="reviews">
       {list.map(r => (

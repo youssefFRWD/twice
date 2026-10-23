@@ -183,4 +183,6 @@ export default {
   'pv.listings': 'الإعلانات', 'pv.noListings': 'لا توجد إعلانات نشطة حاليًا.', 'pv.open': 'افتح ملف {name}',
   'pf.cover': 'صورة الغلاف', 'pf.coverColor': 'نمط الغلاف {n}', 'pf.coverUpload': 'ارفع صورة غلاف', 'pf.coverRemove': 'أزل صورة الغلاف', 'pf.coverChange': 'غيّر الغلاف',
   soldByLabel: 'البائع:', moreFrom: 'المزيد من {name}',
+  'pf.complete': 'أكمل ملفك الشخصي', 'pf.completeOf': 'تم {done} من {total}', 'pf.todo.photo': 'أضف صورة للملف', 'pf.todo.area': 'اختر دائرتك في باريس', 'pf.todo.cover': 'اختر غلافًا', 'pf.todo.listing': 'اعرض أول غرض للبيع', 'pf.todo.friend': 'تابع أحد الجيران', 'pf.allDone': 'ملفك الشخصي مكتمل. رائع!', 'ls.emptyH': 'لا شيء للبيع بعد',
+  'tab.browse': 'تصفح', 'br.search': 'ابحث في الإعلانات…', 'br.clear': 'مسح البحث', 'br.sortLabel': 'ترتيب', 'br.sort.nearest': 'الأقرب أولًا', 'br.sort.low': 'السعر: من الأقل', 'br.sort.high': 'السعر: من الأعلى', 'br.none': 'لا توجد إعلانات تطابق «{q}»', 'br.noneHint': 'جرّب كلمة أخرى أو امسح عوامل التصفية.', 'br.reset': 'مسح عوامل التصفية', 'br.save': 'احفظ {title}', 'br.count_one': 'إعلان واحد', 'br.count_other': '{n} إعلان', 'br.count_two': 'إعلانان', 'br.count_few': '{n} إعلانات', 'br.count_many': '{n} إعلانًا',
 }

@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'İlanlar', 'pv.noListings': 'Şu an yayında ilan yok.', 'pv.open': '{name} profilini aç',
   'pf.cover': 'Kapak', 'pf.coverColor': 'Kapak stili {n}', 'pf.coverUpload': 'Kapak fotoğrafı yükle', 'pf.coverRemove': 'Kapak fotoğrafını kaldır', 'pf.coverChange': 'Kapağı değiştir',
   soldByLabel: 'Satıcı:', moreFrom: '{name} kişisinden daha fazlası',
+  'pf.complete': 'Profilini tamamla', 'pf.completeOf': '{total} adımdan {done} tamamlandı', 'pf.todo.photo': 'Profil fotoğrafı ekle', 'pf.todo.area': 'Paris bölgeni seç', 'pf.todo.cover': 'Kapak seç', 'pf.todo.listing': 'İlk ürününü ilana koy', 'pf.todo.friend': 'Bir komşuyu takip et', 'pf.allDone': 'Profilin tamamlandı. Harika!', 'ls.emptyH': 'Henüz satılık bir şey yok',
+  'tab.browse': 'Göz at', 'br.search': 'İlanlarda ara…', 'br.clear': 'Aramayı temizle', 'br.sortLabel': 'Sırala', 'br.sort.nearest': 'Önce en yakın', 'br.sort.low': 'Fiyat: düşükten yükseğe', 'br.sort.high': 'Fiyat: yüksekten düşüğe', 'br.none': '“{q}” ile eşleşen ilan yok', 'br.noneHint': 'Başka bir kelime deneyin ya da filtreleri temizleyin.', 'br.reset': 'Filtreleri temizle', 'br.save': '{title} kaydet', 'br.count_one': '{n} ilan', 'br.count_other': '{n} ilan',
 }

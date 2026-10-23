@@ -180,4 +180,6 @@ export default {
   'pv.listings': 'Anuncios', 'pv.noListings': 'No hay anuncios activos ahora mismo.', 'pv.open': 'Abrir el perfil de {name}',
   'pf.cover': 'Portada', 'pf.coverColor': 'Estilo de portada {n}', 'pf.coverUpload': 'Subir una foto de portada', 'pf.coverRemove': 'Quitar la foto de portada', 'pf.coverChange': 'Cambiar portada',
   soldByLabel: 'Vendido por', moreFrom: 'Más de {name}',
+  'pf.complete': 'Completa tu perfil', 'pf.completeOf': '{done} de {total} hechos', 'pf.todo.photo': 'Añade una foto de perfil', 'pf.todo.area': 'Elige tu distrito de París', 'pf.todo.cover': 'Elige una portada', 'pf.todo.listing': 'Publica tu primer objeto', 'pf.todo.friend': 'Sigue a un vecino', 'pf.allDone': 'Tu perfil está completo. ¡Genial!', 'ls.emptyH': 'Aún no vendes nada',
+  'tab.browse': 'Explorar', 'br.search': 'Buscar anuncios…', 'br.clear': 'Borrar búsqueda', 'br.sortLabel': 'Ordenar', 'br.sort.nearest': 'Más cercanos primero', 'br.sort.low': 'Precio: de menor a mayor', 'br.sort.high': 'Precio: de mayor a menor', 'br.none': 'Ningún anuncio coincide con «{q}»', 'br.noneHint': 'Prueba otra palabra o quita los filtros.', 'br.reset': 'Quitar filtros', 'br.save': 'Guardar {title}', 'br.count_one': '{n} anuncio', 'br.count_other': '{n} anuncios',
 }

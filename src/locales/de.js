@@ -180,4 +180,6 @@ export default {
   'pv.listings': 'Anzeigen', 'pv.noListings': 'Gerade keine aktiven Anzeigen.', 'pv.open': 'Profil von {name} öffnen',
   'pf.cover': 'Titelbild', 'pf.coverColor': 'Titelbild-Stil {n}', 'pf.coverUpload': 'Titelbild hochladen', 'pf.coverRemove': 'Titelbild entfernen', 'pf.coverChange': 'Titelbild ändern',
   soldByLabel: 'Verkauft von', moreFrom: 'Mehr von {name}',
+  'pf.complete': 'Vervollständige dein Profil', 'pf.completeOf': '{done} von {total} erledigt', 'pf.todo.photo': 'Profilfoto hinzufügen', 'pf.todo.area': 'Dein Arrondissement wählen', 'pf.todo.cover': 'Titelbild wählen', 'pf.todo.listing': 'Ersten Artikel einstellen', 'pf.todo.friend': 'Einem Nachbarn folgen', 'pf.allDone': 'Dein Profil ist vollständig. Super!', 'ls.emptyH': 'Noch nichts zu verkaufen',
+  'tab.browse': 'Stöbern', 'br.search': 'Anzeigen durchsuchen…', 'br.clear': 'Suche löschen', 'br.sortLabel': 'Sortieren', 'br.sort.nearest': 'Nächste zuerst', 'br.sort.low': 'Preis: aufsteigend', 'br.sort.high': 'Preis: absteigend', 'br.none': 'Keine Anzeigen für „{q}“', 'br.noneHint': 'Versuche ein anderes Wort oder setze die Filter zurück.', 'br.reset': 'Filter zurücksetzen', 'br.save': '{title} merken', 'br.count_one': '{n} Anzeige', 'br.count_other': '{n} Anzeigen',
 }
