@@ -321,7 +321,8 @@ select,input[type=email],input[type=password]{font:inherit;padding:10px 12px;bor
 .lp-end h2{margin:0;font:800 clamp(36px,6.5vw,72px)/.95 var(--font-display);letter-spacing:-.035em;max-width:16ch;text-wrap:balance}
 .lp-end p{margin:0;max-width:52ch;opacity:.88}
 .le-copy{display:grid;gap:22px;justify-items:start}
-.le-vis{display:none}
+.le-vis{display:block;justify-self:center;width:100%}
+.le-vis img{width:100%;max-height:260px;object-fit:contain;display:block}
 @media (min-width:900px){
   .lp-end .lp-in{grid-template-columns:1.1fr .9fr;align-items:center}
   .le-vis{display:block}
@@ -1207,3 +1208,95 @@ html.embedded ::-webkit-scrollbar{display:none}
 .theme-seg{grid-template-columns:repeat(3,1fr)}
 .theme-seg button{align-items:center;text-align:center}
 .theme-seg .l{justify-content:center}
+
+/* landing: scroll-driven motion (only when .anim is set, i.e. motion allowed) */
+.landing.anim [data-reveal]{opacity:0;translate:0 48px;transition:opacity .9s cubic-bezier(.2,.7,.2,1) var(--d,0s),translate 1s cubic-bezier(.2,.7,.2,1) var(--d,0s),scale 1.1s cubic-bezier(.2,.7,.2,1) var(--d,0s)}
+.landing.anim [data-reveal="left"]{translate:-64px 0}
+.landing.anim [data-reveal="zoom"]{translate:0 24px;scale:.92}
+.landing.anim [data-reveal].in{opacity:1;translate:0 0;scale:1}
+.landing.anim .lp-hero h1{translate:0 calc(var(--p,0) * -70px);opacity:calc(1 - var(--p,0) * .8)}
+.landing.anim .lp-hero .lp-cta{translate:0 calc(var(--p,0) * -40px)}
+.landing.anim .lp-stage .f1{translate:calc(var(--mx,0) * -26px) calc(var(--p,0) * -110px + var(--my,0) * -20px)}
+.landing.anim .lp-stage .f2{translate:calc(var(--mx,0) * -18px) calc(var(--p,0) * -50px + var(--my,0) * -14px)}
+.landing.anim .lp-stage .f3{translate:calc(var(--mx,0) * -34px) calc(var(--p,0) * -160px + var(--my,0) * -26px)}
+.landing.anim .lp-stage .trk{translate:calc(var(--mx,0) * 12px) calc(var(--p,0) * 60px + var(--my,0) * 10px)}
+
+/* ============ design pass ============ */
+/* layered, softer shadows and a few global niceties */
+:root{--shadow:0 1px 2px rgba(30,42,36,.06),0 8px 22px rgba(30,42,36,.08),0 26px 50px -12px rgba(30,42,36,.14);--ease-out:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.56,.64,1)}
+:root[data-theme="dark"]{--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 26px rgba(0,0,0,.35),0 30px 60px -14px rgba(0,0,0,.55)}
+::selection{background:var(--coral);color:#1E2A24}
+h1,h2,h3{text-wrap:balance}
+*{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+
+/* paper grain over everything, never in the way of clicks */
+body::after{content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:none;opacity:.05;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+:root[data-theme="dark"] body::after{mix-blend-mode:screen;opacity:.035;filter:invert(1)}
+
+
+/* ---- landing wow ---- */
+.landing{transition:background-color .9s var(--ease-out)}
+.landing .lp-end{background:transparent}
+.landing.deep{background-color:var(--accent-soft)}
+.lp-stage{perspective:1100px}
+.lp-stage .phone{transform:rotateY(calc(var(--mx,0) * 14deg)) rotateX(calc(var(--my,0) * -10deg));transition:transform .5s var(--ease-out);transform-style:preserve-3d}
+.lp-stage:hover .phone{transition-duration:.12s}
+.lp-stage .float{transition:translate .5s var(--ease-out)}
+.lp-stage::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;background:radial-gradient(600px circle at calc(50% + var(--mx,0) * 40%) calc(50% + var(--my,0) * 40%),rgba(255,253,248,.14),transparent 45%);opacity:0;transition:opacity .4s}
+.lp-stage:hover::after{opacity:1}
+[data-magnet]{transition:translate .35s var(--spring),scale .12s,box-shadow .25s}
+[data-magnet]:hover{box-shadow:0 10px 26px -6px rgba(30,42,36,.35)}
+.lp-h1 .m::after{transform-origin:left;animation:underline .9s .55s var(--ease-out) both}
+@keyframes underline{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+
+/* ---- micro-interactions ---- */
+.btn,.chip,.rb,.tab,.mb,.filt,.pf-tabs button,.seg button,.auth-seg button,.tk-item{transition:scale .14s var(--ease-out),background-color .2s,border-color .2s,color .2s,box-shadow .25s}
+.btn:not(:disabled):active,.chip:active,.rb:not(:disabled):active,.tab:active,.mb:active,.filt:active,.pf-tabs button:active,.seg button:active,.auth-seg button:active{scale:.95}
+.tab .ti{transition:background-color .3s var(--ease-out),scale .3s var(--spring)}
+.tab[aria-current="page"] .ti{scale:1.06}
+@media (hover:hover){
+  .btn:not(:disabled):hover{box-shadow:0 4px 14px -6px rgba(30,42,36,.35)}
+  .sc{transition:translate .3s var(--ease-out),box-shadow .3s var(--ease-out),border-color .3s}
+  .sc:hover{translate:0 -5px;box-shadow:var(--shadow);border-color:transparent}
+  .sc .art{overflow:hidden}
+  .sc .art>img,.sc .art>svg{transition:scale .6s var(--ease-out)}
+  .sc:hover .art>img{scale:1.05}
+  .chip:hover{border-color:var(--muted)}
+}
+/* heart burst when something is saved */
+.msgb{position:relative}
+.sc .foot .msgb.on svg{animation:heartpop .5s var(--spring)}
+.sc .foot .msgb.on::after{content:"";position:absolute;inset:-2px;border-radius:inherit;border:2px solid var(--nope);animation:burst .55s var(--ease-out) forwards;pointer-events:none}
+@keyframes heartpop{0%{scale:.4}60%{scale:1.3}100%{scale:1}}
+@keyframes burst{from{opacity:.9;scale:.6}to{opacity:0;scale:1.7}}
+/* switching tabs fades the new view in */
+.view.on{animation:viewin .38s var(--ease-out)}
+#v-map.on{animation-name:fadein}
+@keyframes viewin{from{opacity:0;translate:0 10px}to{opacity:1;translate:0 0}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+
+/* ---- login & profile showcase ---- */
+.auth-art{background-size:auto;animation:hatchdrift 18s linear infinite}
+@keyframes hatchdrift{to{background-position:240px 0}}
+.auth-claim span{display:block;animation:rise .7s var(--ease-out) both}
+.auth-claim span:nth-child(2){animation-delay:.1s}.auth-claim span:nth-child(3){animation-delay:.2s}
+.auth-card>*{animation:rise .55s var(--ease-out) both}
+.auth-card>*:nth-child(2){animation-delay:.05s}.auth-card>*:nth-child(3){animation-delay:.1s}.auth-card>*:nth-child(4){animation-delay:.15s}.auth-card>*:nth-child(5){animation-delay:.2s}.auth-card>*:nth-child(n+6){animation-delay:.25s}
+.pf-hero{animation:rise .6s var(--ease-out) both}
+.pf-cover:not(.has-photo){background-size:180% 180%;animation:coverflow 16s ease-in-out infinite alternate}
+@keyframes coverflow{from{background-position:0% 30%}to{background-position:100% 70%}}
+.pf-hero .avatar{border:4px solid transparent;background:linear-gradient(var(--accent-soft),var(--accent-soft)) padding-box,conic-gradient(from 210deg,var(--coral),var(--accent),var(--logo-green),var(--coral)) border-box;box-shadow:0 0 0 4px var(--surface),0 12px 28px rgba(30,42,36,.22);transition:rotate .6s var(--spring)}
+.pf-hero .avatar:hover{rotate:-4deg}
+.pf-stats>div{transition:background-color .25s}
+@media (hover:hover){.pf-stats>div:hover{background:var(--surface)}}
+.pf-stats dd{font-variant-numeric:tabular-nums}
+.pf-panel{animation:viewin .35s var(--ease-out)}
+.pf-tabs button[aria-selected=true]{box-shadow:0 6px 16px -6px rgba(31,77,58,.55)}
+
+/* sign-in headline: beat the generic .gate p rule */
+.gate .auth-claim{font:800 clamp(30px,8vw,42px)/.98 var(--font-display);letter-spacing:-.03em;color:var(--on-accent)}
+@media (min-width:900px){.gate .auth-claim{font-size:clamp(52px,6vw,84px)}}
+/* dark mode keeps the brand panels forest green instead of the lighter accent */
+:root[data-theme="dark"] .lp-stage,:root[data-theme="dark"] .lp-end .lp-in,:root[data-theme="dark"] .auth-art{background-color:#1F4D3A;color:#F6F1E7}
+:root[data-theme="dark"] .gate .auth-claim,:root[data-theme="dark"] .auth-art .brand,:root[data-theme="dark"] .lp-end h2,:root[data-theme="dark"] .lp-end p{color:#F6F1E7}
+:root[data-theme="dark"] .lp-stage .trk{color:#F6F1E7}

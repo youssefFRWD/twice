@@ -4,7 +4,7 @@ import { useI18n } from './i18n.js'
 import { ARR_NUMBERS, SUBURB_NUMBERS, areaName } from './areas.js'
 import { locale } from './locale.js'
 import { COVER_STYLES } from './data.js'
-import { Avatar, Cover, Icon } from './ui.jsx'
+import { Avatar, CountUp, Cover, Icon } from './ui.jsx'
 import { toJpeg } from './lib.js'
 import ProfileListings from './ProfileListings.jsx'
 import ProfileReviews, { ReviewList } from './ProfileReviews.jsx'
@@ -456,8 +456,8 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
               <dt>{t('pf.statRating')}</dt>
               <dd>{avg == null ? '–' : <><span className="stars">★</span> {avg.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</>}</dd>
             </div>
-            <div><dt>{t('pf.statReceived')}</dt><dd>{received.length}</dd></div>
-            <div><dt>{t('pf.statWritten')}</dt><dd>{page.written ? written.length : '–'}</dd></div>
+            <div><dt>{t('pf.statReceived')}</dt><dd><CountUp value={received.length} /></dd></div>
+            <div><dt>{t('pf.statWritten')}</dt><dd>{page.written ? <CountUp value={written.length} /> : '–'}</dd></div>
             {!asVisitor && <div className="pf-loops"><dt>{t('loops.name')}</dt><dd>{loops.toLocaleString(locale())}</dd></div>}
           </dl>
         </section>
@@ -511,7 +511,7 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
                   </button>
                 ))}
               </div>
-              <div id="pf-panel" role="tabpanel" aria-labelledby={`pft-${section}`} className="pf-panel">
+              <div key={section} id="pf-panel" role="tabpanel" aria-labelledby={`pft-${section}`} className="pf-panel">
                 {!backendOn || !uid ? (
                   section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
 

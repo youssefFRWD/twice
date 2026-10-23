@@ -6,9 +6,9 @@ const listeners = new Set()
 export function getThemePref() {
   try {
     const v = localStorage.getItem(KEY)
-    return v === 'light' || v === 'dark' ? v : 'auto'
+    return v === 'dark' || v === 'auto' ? v : 'light'
   } catch {
-    return 'auto'
+    return 'light'
   }
 }
 
@@ -25,8 +25,7 @@ export function applyTheme(pref = getThemePref()) {
 
 export function setThemePref(pref) {
   try {
-    if (pref === 'auto') localStorage.removeItem(KEY)
-    else localStorage.setItem(KEY, pref)
+    localStorage.setItem(KEY, pref)
   } catch {
     /* storage blocked: applies for this visit only */
   }
