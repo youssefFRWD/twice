@@ -234,7 +234,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
   const tk = copy =>
     ITEMS.slice(0, 14).map(it => (
       <button key={it.id} className="tk-item" tabIndex={copy ? -1 : 0} onClick={() => setViewing(it)}>
-        <i />{it.t} <span className="mono">{money(it.p)} · {place(it.a)}</span>
+        <i />{t('it.' + it.id) || it.t} <span className="mono">{money(it.p)} · {place(it.a)}</span>
       </button>
     ))
 
