@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
-import { ITEMS, LM } from './data.js'
+import { ITEMS, LM, catOf } from './data.js'
+import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
+import secondHome from './assets/second-home.png'
 
 const DEMO = [1, 14, 8, 18, 5]
 const DIRS = [1, -1, 1, 1]
@@ -10,6 +12,7 @@ const pick = id => itemById(id) || ITEMS[id % ITEMS.length]
 
 /** The phone mock-up: the top card flies off every few seconds, then goes to the back of the stack. */
 function PhoneDemo() {
+  const { t, money } = useI18n()
   const [order, setOrder] = useState(DEMO)
   const [leaving, setLeaving] = useState(null)
   const [pop, setPop] = useState({ dir: 0, n: 0 })
@@ -55,11 +58,11 @@ function PhoneDemo() {
           return (
             <div className="dcard" key={id} style={style}>
               <Art item={it} />
-              <div className="tag yes" style={{ opacity: out && leaving.dir > 0 ? 1 : 0 }}>Save</div>
-              <div className="tag no" style={{ opacity: out && leaving.dir < 0 ? 1 : 0 }}>Pass</div>
+              <div className="tag yes" style={{ opacity: out && leaving.dir > 0 ? 1 : 0 }}>{t('save')}</div>
+              <div className="tag no" style={{ opacity: out && leaving.dir < 0 ? 1 : 0 }}>{t('pass')}</div>
               <div className="b">
                 <b>{it.t}</b>
-                <div className="pr"><em>€{it.p}</em><span>{place(it.a)}</span></div>
+                <div className="pr"><em>{money(it.p)}</em><span>{place(it.a)}</span></div>
               </div>
             </div>
           )
@@ -104,9 +107,107 @@ function RouteVisual() {
   )
 }
 
-export default function Landing({ onStart, onSignIn }) {
+function ItemPage({ item, onBack, onStart }) {
+  const { money, cond } = useI18n()
+  const backRef = useRef(null)
+  useEffect(() => {
+    backRef.current?.focus({ preventScroll: true })
+    const onKey = e => e.key === 'Escape' && onBack()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onBack])
+
+  return (
+    <div className="item-page" role="dialog" aria-modal="true" aria-labelledby="ip-t">
+      <div className="gut">
+        <div className="lp-in ip-in">
+          <button className="btn small" ref={backRef} onClick={onBack}>&larr; Back</button>
+          <div className="ip-art"><Art item={item} /></div>
+          <div className="ip-body">
+            <span className="eyebrow">{catOf(item.c).label}</span>
+            <h1 id="ip-t">{item.t}</h1>
+            <div className="ip-price">{money(item.p)}</div>
+            <dl className="ip-facts">
+              <div><dt>Condition</dt><dd>{cond(item.cond)}</dd></div>
+              <div><dt>Seller</dt><dd>{item.s}</dd></div>
+              <div><dt>Location</dt><dd>{item.a}</dd></div>
+            </dl>
+            <p>{item.d}</p>
+            <div className="lp-cta">
+              <button className="btn primary big" onClick={onStart}>Log in to save or message</button>
+              <button className="btn big" onClick={onBack}>Keep browsing</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const INFO = {
+  safety: {
+    title: 'Safety tips',
+    lead: 'A few habits that make buying and selling second-hand go smoothly.',
+    points: [
+      'Meet in a public place, ideally a métro station or a busy street, and in daylight when you can.',
+      'Look the item over before you pay. Test electronics and try on clothes.',
+      'Pay when you have the item in your hands, and keep the conversation inside twice so there is a record.',
+      'Tell a friend where you are going, especially for large pickups from someone’s home.',
+    ],
+  },
+  contact: {
+    title: 'Contact',
+    lead: 'Buyers and sellers talk to each other directly.',
+    points: [
+      'To ask about an item, open it, log in and choose Message seller. Replies land in the Messages tab.',
+      'Sample listings on this page are examples and have no seller to message.',
+    ],
+  },
+  privacy: {
+    title: 'Privacy policy',
+    lead: 'What twice stores so the app works on any device.',
+    points: [
+      'Your email address and whether you use twice as a buyer or a seller.',
+      'The items you save or pass, and the items you open on the map.',
+      'The starting point you choose, either your current location or a station, to work out distances and routes.',
+      'Your messages with other users.',
+    ],
+  },
+}
+
+function InfoPage({ id, onBack }) {
+  const info = INFO[id]
+  const backRef = useRef(null)
+  useEffect(() => {
+    backRef.current?.focus({ preventScroll: true })
+    const onKey = e => e.key === 'Escape' && onBack()
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [onBack])
+
+  return (
+    <div className="item-page" role="dialog" aria-modal="true" aria-labelledby="info-t">
+      <div className="gut">
+        <div className="lp-in info-in">
+          <button className="btn small" ref={backRef} onClick={onBack}>&larr; Back</button>
+          <h1 id="info-t">{info.title}</h1>
+          <p className="info-lead">{info.lead}</p>
+          <ul>
+            {info.points.map(t => <li key={t}>{t}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function Landing({ onStart, onSignIn, tabs, onNav }) {
+  const { t, money } = useI18n()
   const howRef = useRef(null)
   const goRef = useRef(null)
+  const [viewing, setViewing] = useState(null)
+  const [info, setInfo] = useState(null)
+  const rootRef = useRef(null)
 
   useEffect(() => {
     const t = setTimeout(() => goRef.current?.focus({ preventScroll: true }), 50)
@@ -114,44 +215,58 @@ export default function Landing({ onStart, onSignIn }) {
   }, [])
 
   const how = () => howRef.current.scrollIntoView({ behavior: reducedMotion() ? 'auto' : 'smooth' })
+  const nav = id => tabs.find(t => t[0] === id)[1]
+  const cols = [
+    ['Browse', [['Home', 'top'], [nav('discover'), 'discover'], [nav('map'), 'map'], [nav('messages'), 'messages']]],
+    ['Swipe and save', [['Start swiping', 'start'], ['Saved items', 'saved']]],
+    ['Learn more', [['How it works', 'how'], ['Safety tips', 'safety'], ['Contact', 'contact'], ['Privacy policy', 'privacy']]],
+    ['Your account', [['Log in', 'start']]],
+  ]
+  const run = act => {
+    if (act === 'top') rootRef.current.scrollTo({ top: 0, behavior: reducedMotion() ? 'auto' : 'smooth' })
+    else if (act === 'how') how()
+    else if (act === 'start') onStart()
+    else if (INFO[act]) setInfo(act)
+    else onNav(act)
+  }
   const a = pick(13)
   const b = pick(9)
-  const tk = ITEMS.slice(0, 14).map(it => (
-    <span key={it.id}><i />{it.t} <span className="mono">€{it.p} · {place(it.a)}</span></span>
-  ))
+  const tk = copy =>
+    ITEMS.slice(0, 14).map(it => (
+      <button key={it.id} className="tk-item" tabIndex={copy ? -1 : 0} onClick={() => setViewing(it)}>
+        <i />{it.t} <span className="mono">{money(it.p)} · {place(it.a)}</span>
+      </button>
+    ))
 
   return (
-    <div className="landing on" aria-label="Welcome to twice">
+    <div className="landing on" aria-label={t('lp.welcome')} ref={rootRef}>
       <div className="gut">
         <div className="lp-in lp-nav">
           <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
+          <nav className="lp-links" aria-label={t('sections')}>
+            {tabs.map(([id, label, ic]) => (
+              <button key={id} className="tab" aria-label={label} onClick={() => onNav(id)}>
+                <span className="ti"><Icon name={ic} size={22} /></span>
+                <span>{label}</span>
+              </button>
+            ))}
+          </nav>
           <div className="lp-actions">
-            {onSignIn && <button className="btn small" onClick={onSignIn}>Sign in / Sign up</button>}
-            <button className="btn small primary" onClick={onStart}>Open the app</button>
+            {onSignIn && <button className="btn small primary" onClick={onSignIn}>{t('signInUp')}</button>}
           </div>
         </div>
       </div>
       <div className="gut">
         <section className="lp-in lp-hero">
           <div>
-            <span className="eyebrow"><Icon name="pin" size={15} />Second-hand, close to home</span>
             <h1 className="lp-h1">
-              <span>Swipe it.</span>
-              <span>Save it.</span>
-              <span><i className="m" style={{ fontStyle: 'normal' }}>Métro</i> to it.</span>
+              <span>{t('lp.h1a')}</span>
+              <span>{t('lp.h1b')}</span>
+              <span><i className="m" style={{ fontStyle: 'normal' }}>{t('lp.h1c')}</i> {t('lp.h1d')}</span>
             </h1>
-            <p className="lp-sub">
-              Second-hand finds from people all over Île-de-France, in one deck you can swipe. Keep what you like, then
-              see how far each item is and which line gets you there.
-            </p>
             <div className="lp-cta">
-              <button className="btn primary big" ref={goRef} onClick={onStart}>Start swiping</button>
-              <button className="btn big" onClick={how}>How it works</button>
-            </div>
-            <div className="lp-promise">
-              <span><Icon name="leaf" size={18} />Every item bought here is one less made new</span>
-              <span><Icon name="x" size={18} />No shops</span>
-              <span><Icon name="train" size={18} />Métro directions built in</span>
+              <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
+              <button className="btn big" onClick={how}>{t('lp.how')}</button>
             </div>
           </div>
           <div className="lp-stage">
@@ -163,26 +278,26 @@ export default function Landing({ onStart, onSignIn }) {
               </g>
             </svg>
             <PhoneDemo />
-            <div className="float f1" aria-hidden="true"><Icon name="heart" size={16} sw={2.4} /><span>Saved to favorites</span></div>
+            <div className="float f1" aria-hidden="true"><Icon name="heart" size={16} sw={2.4} /><span>{t('lp.savedFav')}</span></div>
             <div className="float f2" aria-hidden="true"><LineBadge id="14" /><span>Châtelet → Saint-Ouen</span><span className="mono">17 min</span></div>
             <div className="float f3" aria-hidden="true"><Icon name="pin" size={16} /><span className="mono">1.9 km</span></div>
           </div>
         </section>
       </div>
-      <div className="ticker" aria-hidden="true"><div className="tk">{tk}{tk}</div></div>
+      <div className="ticker"><div className="tk">{tk(false)}<span className="tk-dup" aria-hidden="true">{tk(true)}</span></div></div>
       <div className="gut">
         <section className="lp-in lp-how" ref={howRef}>
-          <span className="eyebrow">How it works</span>
-          <h2 className="lp-h2">Three stops from scrolling to buying.</h2>
+          <span className="eyebrow">{t('lp.how')}</span>
+          <h2 className="lp-h2">{t('lp.h2')}</h2>
           <ol className="stops">
             <li className="stp">
               <span className="stn">1</span>
               <div className="vis v1">
-                <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">PASS</span></div>
-                <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">SAVE</span></div>
+                <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">{t('pass').toUpperCase()}</span></div>
+                <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">{t('save').toUpperCase()}</span></div>
               </div>
-              <h3>Swipe what is near you</h3>
-              <p>Right to save, left to pass. Every card tells you how far the item is and how long the walk takes.</p>
+              <h3>{t('lp.s1h')}</h3>
+              <p>{t('lp.s1p')}</p>
             </li>
             <li className="stp">
               <span className="stn">2</span>
@@ -193,14 +308,14 @@ export default function Landing({ onStart, onSignIn }) {
                   </Art>
                 ))}
               </div>
-              <h3>Keep your favourites together</h3>
-              <p>Everything you save lands in one place. Filter by category, or by what is closest to you.</p>
+              <h3>{t('lp.s2h')}</h3>
+              <p>{t('lp.s2p')}</p>
             </li>
             <li className="stp">
               <span className="stn">3</span>
               <div className="vis v3"><RouteVisual /></div>
-              <h3>Get there on foot or by métro</h3>
-              <p>Your saves become pins on a map of Île-de-France. Tap one to see which line to take, which way, and how many stops.</p>
+              <h3>{t('lp.s3h')}</h3>
+              <p>{t('lp.s3p')}</p>
             </li>
           </ol>
         </section>
@@ -208,21 +323,45 @@ export default function Landing({ onStart, onSignIn }) {
       <section className="lp-end">
         <div className="gut">
           <div className="lp-in">
-            <h2>Good things deserve a second home.</h2>
-            <p>
-              Your next find is probably a few stops away. Buyers and sellers use the same app, so tell us which one you
-              are and start with what is nearest.
-            </p>
-            <button className="btn inv big" onClick={onStart}>Start swiping</button>
+            <div className="le-copy">
+              <h2>{t('lp.endH')}</h2>
+              <p>
+                Your next find is probably a few stops away. Buyers and sellers use the same app, so tell us which one you
+                are and start with what is nearest.
+              </p>
+              <button className="btn inv big" onClick={onStart}>{t('lp.start')}</button>
+            </div>
+            <div className="le-vis" aria-hidden="true">
+              <img src={secondHome} alt="" />
+            </div>
           </div>
         </div>
       </section>
-      <div className="gut">
-        <footer className="lp-in lp-foot">
-          <span>twice · Second-hand, close to home</span>
-          <span>Listings shown are examples.</span>
-        </footer>
-      </div>
+      {viewing && <ItemPage item={viewing} onBack={() => setViewing(null)} onStart={onStart} />}
+      {info && <InfoPage id={info} onBack={() => setInfo(null)} />}
+      <footer className="lp-foot">
+        <div className="gut">
+          <div className="lp-in">
+            <h2>Everything at twice</h2>
+            <div className="lf-cols">
+              {cols.map(([h, links]) => (
+                <nav key={h} aria-label={h}>
+                  <h3>{h}</h3>
+                  <ul>
+                    {links.map(([label, act]) => (
+                      <li key={label}><button onClick={() => run(act)}>{label}</button></li>
+                    ))}
+                  </ul>
+                </nav>
+              ))}
+            </div>
+            <div className="lf-base">
+              <span>© 2026 twice</span>
+              <span>{t('lp.examples')}</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

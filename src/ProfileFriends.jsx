@@ -1,21 +1,26 @@
 import { useCallback, useEffect, useState } from 'react'
 import * as api from './api.js'
+import { useI18n } from './i18n.js'
+import { Avatar, EmptyCard } from './ui.jsx'
 
 const area = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : '')
 
-function Person({ p, action }) {
+/** One person; the picture and name open their profile. */
+function Person({ p, action, onOpen }) {
+  const { t } = useI18n()
   return (
     <li className="fr-person">
-      <span className="avatar" style={{ width: 40, height: 40, fontSize: 17 }}>
-        {p.avatar ? <img src={p.avatar} alt="" /> : <span aria-hidden="true">{(p.display_name || '?').charAt(0).toUpperCase()}</span>}
-      </span>
-      <span className="fr-name"><b>{p.display_name}</b>{area(p.arrondissement) && <small>{area(p.arrondissement)}</small>}</span>
+      <button type="button" className="fr-open" aria-label={t('pv.open', { name: p.display_name })} onClick={() => onOpen(p.id)}>
+        <Avatar src={p.avatar} name={p.display_name} size={40} />
+        <span className="fr-name"><b>{p.display_name}</b>{area(p.arrondissement) && <small>{area(p.arrondissement)}</small>}</span>
+      </button>
       {action}
     </li>
   )
 }
 
-export default function ProfileFriends({ uid, onToast }) {
+export default function ProfileFriends({ uid, onToast, onOpen }) {
+  const { t } = useI18n()
   const [conn, setConn] = useState(null)
   const [failed, setFailed] = useState(false)
   const [q, setQ] = useState('')
@@ -33,7 +38,7 @@ export default function ProfileFriends({ uid, onToast }) {
     try {
       setFound(await api.searchProfiles(q.trim()))
     } catch {
-      onToast('Search failed. Try again.')
+      onToast(t('fr.searchFail'))
     }
   }
 
@@ -44,48 +49,48 @@ export default function ProfileFriends({ uid, onToast }) {
       await load()
       setFound(f => f && f.map(x => (x.id === p.id ? { ...x, i_follow: !following } : x)))
     } catch {
-      onToast('Could not update. Try again.')
+      onToast(t('fr.updateFail'))
     }
     setBusyId(null)
   }
 
   const btn = (p, following) => (
     <button className={`btn small${following ? '' : ' primary'}`} disabled={busyId === p.id} onClick={() => toggle(p, following)}>
-      {following ? 'Unfollow' : 'Follow'}
+      {following ? t('fr.unfollow') : t('fr.follow')}
     </button>
   )
 
-  if (failed) return <p className="pf-empty">Could not load your friends. Check your connection and reopen this tab.</p>
-  if (!conn) return <p className="pf-empty" role="status">Loading…</p>
+  if (failed) return <p className="pf-empty">{t('fr.loadFail')}</p>
+  if (!conn) return <p className="pf-empty" role="status">{t('loading')}</p>
 
   return (
     <>
       <section className="pf-sec" aria-labelledby="fr-find">
-        <div className="pf-sec-h"><h2 id="fr-find">Find neighbours</h2></div>
+        <div className="pf-sec-h"><h2 id="fr-find">{t('fr.find')}</h2></div>
         <form className="fr-search" onSubmit={search}>
-          <input type="text" aria-label="Search by name" placeholder="Search by name" value={q} onChange={e => setQ(e.target.value)} />
-          <button className="btn primary small" type="submit">Search</button>
+          <input type="text" aria-label={t('fr.searchName')} placeholder={t('fr.searchName')} value={q} onChange={e => setQ(e.target.value)} />
+          <button className="btn primary small" type="submit">{t('search')}</button>
         </form>
         {found && (found.length ? (
-          <ul className="fr-list">{found.map(p => <Person key={p.id} p={p} action={btn(p, p.i_follow)} />)}</ul>
+          <ul className="fr-list">{found.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={btn(p, p.i_follow)} />)}</ul>
         ) : (
-          <p className="pf-empty">Nobody found with that name.</p>
+          <EmptyCard compact icon="users" text={t('fr.nobody')} />
         ))}
       </section>
       <section className="pf-sec" aria-labelledby="fr-ing">
-        <div className="pf-sec-h"><h2 id="fr-ing">Following</h2><span>{conn.following.length}</span></div>
+        <div className="pf-sec-h"><h2 id="fr-ing">{t('fr.following')}</h2><span>{conn.following.length}</span></div>
         {conn.following.length ? (
-          <ul className="fr-list">{conn.following.map(p => <Person key={p.id} p={p} action={btn(p, true)} />)}</ul>
+          <ul className="fr-list">{conn.following.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={btn(p, true)} />)}</ul>
         ) : (
-          <p className="pf-empty">You are not following anyone yet.</p>
+          <EmptyCard compact icon="users" text={t('fr.noFollowing')} />
         )}
       </section>
       <section className="pf-sec" aria-labelledby="fr-ers">
-        <div className="pf-sec-h"><h2 id="fr-ers">Followers</h2><span>{conn.followers.length}</span></div>
+        <div className="pf-sec-h"><h2 id="fr-ers">{t('fr.followers')}</h2><span>{conn.followers.length}</span></div>
         {conn.followers.length ? (
-          <ul className="fr-list">{conn.followers.map(p => <Person key={p.id} p={p} action={p.i_follow ? <span className="pf-pill">Following</span> : btn(p, false)} />)}</ul>
+          <ul className="fr-list">{conn.followers.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={p.i_follow ? <span className="pf-pill">{t('fr.following')}</span> : btn(p, false)} />)}</ul>
         ) : (
-          <p className="pf-empty">No followers yet.</p>
+          <EmptyCard compact icon="users" text={t('fr.noFollowers')} />
         )}
       </section>
     </>

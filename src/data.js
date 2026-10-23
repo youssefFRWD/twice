@@ -1,4 +1,9 @@
-/* Static data, transit graph and route planning, ported unchanged from the original single-file page. */
+/* Static data, transit graph and route planning, ported from the original single-file page. */
+import { locale } from './locale.js'
+import en from './locales/en.js'
+
+/** English fallback when a caller does not pass a translator to the route planners. */
+const enT=(k,v)=>{let s=en[k]??(v&&typeof v.n==='number'?en[`${k}_${v.n===1?'one':'other'}`]:undefined)??k;return v?s.replace(/\{(\w+)\}/g,(_,x)=>v[x]??''):s};
 const ICON={
   x:'<path d="M6 6l12 12M18 6L6 18"/>',
   heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
@@ -8,6 +13,13 @@ const ICON={
   arrow:'<path d="M3 11l18-8-8 18-2-8z"/>',
   chat:'<path d="M4 5h16v11H9l-5 4z"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18.5 14.2A6.5 6.5 0 0 1 21.5 20"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13.5" r="3.5"/>',
+  mail:'<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3.5 7l8.5 6 8.5-6"/>',
+  eye:'<path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.6a9.8 9.8 0 0 1 1.4-.1c6.4 0 10 6.5 10 6.5a17 17 0 0 1-3.2 3.9M6.3 7.3A16.7 16.7 0 0 0 2 12s3.6 6.5 10 6.5a9.6 9.6 0 0 0 4-.9"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   plus:'<path d="M12 5v14M5 12h14"/>', minus:'<path d="M5 12h14"/>',
   walk:'<circle cx="13" cy="4.5" r="1.8"/><path d="M9.5 21l2-6 2.5 2.2V21M11.5 15l.8-5-3.3 1.6L8 15M12.3 10l3 2 2.7.5"/>',
   train:'<rect x="5" y="3" width="14" height="14" rx="3"/><path d="M5 11h14M8 21l2-4M16 21l-2-4"/>',
@@ -20,6 +32,13 @@ const ICON={
   card:'<rect x="3" y="5.5" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>',
   lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  info:'<circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.6v.1"/>',
+  star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 16.9 6.8 19.7l1-5.9L3.5 9.7l5.9-.8z"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/>',
+  down:'<path d="M6 9l6 6 6-6"/>',
+  checks:'<path d="M2.5 12.5l4.5 4.5L16 8M12 16.5l1 1L22 8"/>',
   phone:'<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
   wallet:'<path d="M4 7.5V18a2 2 0 0 0 2 2h14V9H6a2 2 0 0 1-2-2 2 2 0 0 1 2-2h12"/><circle cx="16" cy="14.5" r="1"/>',
   car:'<path d="M4 16V12l2-5h12l2 5v4M4 16h16M4 16v2M20 16v2"/><circle cx="8" cy="13" r=".6"/><circle cx="16" cy="13" r=".6"/>'
@@ -136,50 +155,53 @@ const STN_NODES=new Map();NODES.forEach((n,i)=>{if(!STN_NODES.has(n.sid))STN_NOD
 
 const nearStations=(p,max=2.2,n=6)=>STN.map(s=>({s,d:hav(p.lat,p.lon,s.lat,s.lon)})).filter(o=>o.d<=max).sort((a,b)=>a.d-b.d).slice(0,n);
 const compass=(a,b,c,d)=>{const r=Math.PI/180,y=Math.sin((d-b)*r)*Math.cos(c*r),x=Math.cos(a*r)*Math.sin(c*r)-Math.sin(a*r)*Math.cos(c*r)*Math.cos((d-b)*r);const br=(Math.atan2(y,x)/r+360)%360;return ['north','north-east','east','south-east','south','south-west','west','north-west'][Math.round(br/45)%8]};
-const fmtD=km=>km<1?`${Math.max(10,Math.round(km*100)*10)} m`:`${km<10?km.toFixed(1):Math.round(km)} km`;
+const fmtD=km=>km<1?`${Math.max(10,Math.round(km*100)*10)} m`:`${km<10?km.toLocaleString(locale(),{minimumFractionDigits:1,maximumFractionDigits:1}):Math.round(km)} km`;
 const fmtT=m=>{m=Math.max(1,Math.round(m));return m>=60?`${Math.floor(m/60)} h ${String(m%60).padStart(2,'0')}`:`${m} min`};
 
-function planWalk(from,to){
+function planWalk(from,to,t=enT){
   const km=hav(from.lat,from.lon,to.lat,to.lon),rk=km*1.25,min=rk/5*60;
   const ns=nearStations(to,1.5,1)[0];
   return {mode:'walk',min,km:rk,
-    steps:[{k:'walk',tx:`Head ${compass(from.lat,from.lon,to.lat,to.lon)} on foot`,sub:`About ${fmtD(rk)} by street, ${fmtD(km)} as the crow flies`,mn:fmtT(min)},
-           {k:'flag',tx:`Arrive at ${to.a}`,sub:ns?`Nearest station: ${ns.s.name} (${fmtD(ns.d)})`:'No metro station within 1.5 km',mn:''}],
+    steps:[{k:'walk',tx:t('plan.head',{dir:t('dir.'+compass(from.lat,from.lon,to.lat,to.lon))}),sub:t('plan.byStreet',{street:fmtD(rk),crow:fmtD(km)}),mn:fmtT(min)},
+           {k:'flag',tx:t('plan.arrive',{place:to.a}),sub:ns?t('plan.nearestStation',{name:ns.s.name,d:fmtD(ns.d)}):t('plan.noStation'),mn:''}],
     geo:[{kind:'walk',pts:[[from.lat,from.lon],[to.lat,to.lon]]}]};
 }
-function planMetro(from,to){
-  const A=nearStations(from),B=nearStations(to);if(!A.length||!B.length)return {mode:'metro',none:true,why:!A.length?'No station within 2 km of your position.':'No station within 2 km of this item.'};
+function planMetro(from,to,t=enT){
+  const A=nearStations(from),B=nearStations(to);if(!A.length||!B.length)return {mode:'metro',none:true,why:!A.length?t('plan.noStationFrom'):t('plan.noStationTo')};
   const N=NODES.length,dist=new Float64Array(N).fill(Infinity),prev=new Int32Array(N).fill(-1),done=new Uint8Array(N);
   A.forEach(o=>STN_NODES.get(o.s.id).forEach(n=>{const w=walkMin(o.d)+2.5;if(w<dist[n]){dist[n]=w;prev[n]=-2}}));
   for(;;){let u=-1,b=Infinity;for(let i=0;i<N;i++)if(!done[i]&&dist[i]<b){b=dist[i];u=i}if(u<0)break;done[u]=1;for(const e of ADJ[u]){const nd=b+e.w;if(nd<dist[e.v]){dist[e.v]=nd;prev[e.v]=u}}}
   let best=-1,bt=Infinity,bd=0;
   B.forEach(o=>STN_NODES.get(o.s.id).forEach(n=>{const t=dist[n]+walkMin(o.d);if(t<bt){bt=t;best=n;bd=o.d}}));
-  if(best<0||!isFinite(bt))return {mode:'metro',none:true,why:'No connection found between the nearest stations.'};
+  if(best<0||!isFinite(bt))return {mode:'metro',none:true,why:t('plan.noConnection')};
   const path=[];for(let n=best;n>=0;n=prev[n])path.unshift(n);
   const legs=[];let cur=null;
   path.forEach(i=>{const n=NODES[i];if(!cur||cur.line!==n.line){cur={line:n.line,nodes:[n]};legs.push(cur)}else cur.nodes.push(n)});
-  if(legs.length===1&&legs[0].nodes.length<2)return {mode:'metro',none:true,why:'The nearest station is the same at both ends. Walking is faster.'};
+  if(legs.length===1&&legs[0].nodes.length<2)return {mode:'metro',none:true,why:t('plan.sameStation')};
+  const lineName=l=>LM[l].rer?t('plan.rer',{id:l}):t('plan.line',{id:l});
   const first=NODES[path[0]].s,last=NODES[best].s,a0=A.find(o=>o.s===first),steps=[],geo=[];
-  steps.push({k:'walk',tx:`Walk to ${first.name}`,sub:`${fmtD(a0?a0.d*1.25:0)} on foot`,mn:fmtT(walkMin(a0?a0.d:0)+0.01)});
+  steps.push({k:'walk',tx:t('plan.walkTo',{name:first.name}),sub:t('plan.onFoot',{d:fmtD(a0?a0.d*1.25:0)}),mn:fmtT(walkMin(a0?a0.d:0)+0.01)});
   geo.push({kind:'walk',pts:[[from.lat,from.lon],[first.lat,first.lon]]});
   legs.forEach((lg,i)=>{
     const ord=LINE_ST[lg.line],ia=ord.indexOf(lg.nodes[0].s),ib=ord.indexOf(lg.nodes[lg.nodes.length-1].s);
     if(lg.nodes.length>1){
       const toward=(ib>ia?ord[ord.length-1]:ord[0]).name,stops=lg.nodes.length-1;
       let m=0;for(let j=1;j<lg.nodes.length;j++)m+=hop(lg.nodes[j-1].s,lg.nodes[j].s,lg.line);
-      steps.push({k:'ride',line:lg.line,tx:`Take ${LM[lg.line].rer?'RER ':'line '}${lg.line} toward ${toward}`,sub:`${stops} ${stops>1?'stops':'stop'}, get off at ${lg.nodes[lg.nodes.length-1].s.name}`,mn:fmtT(m)});
+      steps.push({k:'ride',line:lg.line,tx:t('plan.take',{line:lineName(lg.line),toward}),sub:t('plan.stopsOff',{n:stops,name:lg.nodes[lg.nodes.length-1].s.name}),mn:fmtT(m)});
       geo.push({kind:'ride',line:lg.line,pts:lg.nodes.map(n=>[n.s.lat,n.s.lon])});
     }
     const nx=legs[i+1];
     if(nx){const e=lg.nodes[lg.nodes.length-1].s,s2=nx.nodes[0].s;
-      if(e.id===s2.id)steps.push({k:'change',line:nx.line,tx:`Change at ${e.name}`,sub:`Continue on ${LM[nx.line].rer?'RER ':'line '}${nx.line}`,mn:'4 min'});
-      else{const d=hav(e.lat,e.lon,s2.lat,s2.lon);steps.push({k:'change',line:nx.line,tx:`Walk to ${s2.name} and change`,sub:`${fmtD(d*1.25)} between stations, then ${LM[nx.line].rer?'RER ':'line '}${nx.line}`,mn:fmtT(4+walkMin(d))});geo.push({kind:'walk',pts:[[e.lat,e.lon],[s2.lat,s2.lon]]})}}
+      if(e.id===s2.id)steps.push({k:'change',line:nx.line,tx:t('plan.changeAt',{name:e.name}),sub:t('plan.continueOn',{line:lineName(nx.line)}),mn:fmtT(4)});
+      else{const d=hav(e.lat,e.lon,s2.lat,s2.lon);steps.push({k:'change',line:nx.line,tx:t('plan.walkChange',{name:s2.name}),sub:t('plan.betweenStations',{d:fmtD(d*1.25),line:lineName(nx.line)}),mn:fmtT(4+walkMin(d))});geo.push({kind:'walk',pts:[[e.lat,e.lon],[s2.lat,s2.lon]]})}}
   });
-  steps.push({k:'walk',tx:`Walk to the item`,sub:`${fmtD(bd*1.25)} on foot from ${last.name}`,mn:fmtT(walkMin(bd)+0.01)});
-  steps.push({k:'flag',tx:`Arrive at ${to.a}`,sub:'',mn:''});
+  steps.push({k:'walk',tx:t('plan.walkToItem'),sub:t('plan.onFootFrom',{d:fmtD(bd*1.25),name:last.name}),mn:fmtT(walkMin(bd)+0.01)});
+  steps.push({k:'flag',tx:t('plan.arrive',{place:to.a}),sub:'',mn:''});
   geo.push({kind:'walk',pts:[[last.lat,last.lon],[to.lat,to.lon]]});
   return {mode:'metro',min:bt,km:hav(from.lat,from.lon,to.lat,to.lon),steps,geo};
 }
 
 const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
-export {ICON,CATS,ITEMS,catOf,CAT_ALL,LM,LINE_ST,STN,STNMAP,toXY,fromXY,PLACES,REGION,PARIS,SEINE,MARNE,FORESTS,hav,walkMin,nearStations,fmtD,fmtT,planWalk,planMetro,clamp};
+/** Profile banner colour styles (see .cover-* in index.css). */
+const COVER_STYLES=['forest','coral','sand','ink','sky','plum'];
+export {COVER_STYLES,ICON,CATS,ITEMS,catOf,CAT_ALL,LM,LINE_ST,STN,STNMAP,toXY,fromXY,PLACES,REGION,PARIS,SEINE,MARNE,FORESTS,hav,walkMin,nearStations,fmtD,fmtT,planWalk,planMetro,clamp};
