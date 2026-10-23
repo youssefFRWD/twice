@@ -14,7 +14,7 @@
 <path d="M398 368 L486 376 L488 396 L402 390 Z" fill="#3E6B55" />
 <path d="M398 368 L386 252 L424 246 L438 360 Z" fill="#4A7A62" />
 <path d="M384 256 Q392 196 452 204 Q486 214 482 246 Q442 228 422 252 Z" fill="#2F5E48" />
-<path d="M386 254 L400 366" fill="none" stroke="#D9704C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /><path d="M424 248 L438 362" fill="none" stroke="#D9704C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M386 254 L400 366" fill="none" stroke="#A14947" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /><path d="M424 248 L438 362" fill="none" stroke="#A14947" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 <path d="M388 262 L420 258 L424 300 L394 306 Z" fill="#FFFFFF" opacity=".08"/>
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />

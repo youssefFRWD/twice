@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EADFD4"/><stop offset="1" stop-color="#E0D1C4"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C5B6"/><stop offset="1" stop-color="#C5B2A2"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="470" rx="140" ry="10" fill="#1E2A24" opacity="0.12" filter="url(#blur)"/>
+<path d="M400 150 C 400 130 424 128 424 144 C 424 156 408 156 400 168" fill="none" stroke="#8D8F89" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M312 214 L400 178 L488 214 L480 224 L400 194 L320 224 Z" fill="#B8B5AC" />
+<defs><linearGradient id="dr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B8625F"/><stop offset="1" stop-color="#964441"/></linearGradient></defs>
+<path d="M364 212 Q400 250 436 212 L446 292 Q462 360 482 456 Q400 480 318 456 Q338 360 354 292 Z" fill="url(#dr)" />
+<path d="M364 212 Q400 250 436 212 L430 206 Q400 232 370 206 Z" fill="#7E3331" />
+<path d="M352 292 L448 292 L450 314 L350 314 Z" fill="#662827" /><rect x="386" y="292" width="28" height="22" rx="4" fill="#D2A94E" />
+<line x1="372" y1="340" x2="350" y2="450" stroke="#7E3331" stroke-width="3" stroke-linecap="round" opacity=".45"/><line x1="400" y1="346" x2="400" y2="460" stroke="#7E3331" stroke-width="3" stroke-linecap="round" opacity=".45"/><line x1="428" y1="340" x2="450" y2="450" stroke="#7E3331" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+<path d="M338 230 Q330 280 344 300 Q344 260 358 226 Z" fill="#FFFFFF" opacity=".14"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

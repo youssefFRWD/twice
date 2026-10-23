@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EBE2CF"/><stop offset="1" stop-color="#DFD3B9"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C8A9"/><stop offset="1" stop-color="#C6B590"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="474" rx="150" ry="12" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<ellipse cx="330" cy="456" rx="40" ry="24" fill="#B07A4A" /><ellipse cx="470" cy="456" rx="40" ry="24" fill="#B07A4A" /><ellipse cx="330" cy="456" rx="24" ry="14" fill="#D9B98B" /><ellipse cx="470" cy="456" rx="24" ry="14" fill="#D9B98B" />
+<ellipse cx="400" cy="390" rx="86" ry="92" fill="#B7814E" /><ellipse cx="400" cy="404" rx="52" ry="62" fill="#DDBF92" />
+<ellipse cx="322" cy="372" rx="30" ry="52" fill="#B07A4A" transform="rotate(24 322 372)"/><ellipse cx="478" cy="372" rx="30" ry="52" fill="#B07A4A" transform="rotate(-24 478 372)"/>
+<circle cx="346" cy="214" r="28" fill="#B07A4A" /><circle cx="454" cy="214" r="28" fill="#B07A4A" /><circle cx="346" cy="214" r="15" fill="#DDBF92" /><circle cx="454" cy="214" r="15" fill="#DDBF92" />
+<circle cx="400" cy="262" r="78" fill="#B7814E" /><ellipse cx="400" cy="288" rx="36" ry="28" fill="#DDBF92" />
+<circle cx="372" cy="246" r="7" fill="#26312B" /><circle cx="428" cy="246" r="7" fill="#26312B" /><ellipse cx="400" cy="276" rx="12" ry="8" fill="#26312B" /><path d="M400 284 L400 292 M388 296 Q400 306 412 296" fill="none" stroke="#26312B" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M368 322 L400 336 L432 322 L432 346 L400 340 L368 346 Z" fill="#A14947" /><circle cx="400" cy="334" r="8" fill="#7E3331" />
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

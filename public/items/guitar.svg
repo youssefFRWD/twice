@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DFE3DA"/><stop offset="1" stop-color="#D0D6CC"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4CCC1"/><stop offset="1" stop-color="#B2BBAF"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="420" cy="474" rx="140" ry="10" fill="#1E2A24" opacity="0.2" filter="url(#blur)"/>
+<g transform="rotate(10 400 300)">
+<rect x="386" y="70" width="28" height="220" rx="6" fill="#7A5233" /><rect x="374" y="46" width="52" height="50" rx="10" fill="#5E3F28" /><circle cx="384" cy="60" r="5" fill="#D5D7D0" /><circle cx="400" cy="60" r="5" fill="#D5D7D0" /><circle cx="416" cy="60" r="5" fill="#D5D7D0" />
+<path d="M400 246 C 330 246 322 300 346 330 C 300 350 296 440 352 460 C 380 470 420 470 448 460 C 504 440 500 350 454 330 C 478 300 470 246 400 246 Z" fill="#C89452" />
+<path d="M400 262 C 346 262 340 304 362 330 C 322 352 318 430 362 446 C 386 454 414 454 438 446 C 482 430 478 352 438 330 C 460 304 454 262 400 262 Z" fill="#D9A862" />
+<circle cx="400" cy="346" r="28" fill="#2A211A" /><circle cx="400" cy="346" r="32" fill="none" stroke="#8E5E2E" stroke-width="5"/>
+<rect x="374" y="420" width="52" height="14" rx="5" fill="#4A2F1C" />
+<line x1="392" y1="100" x2="392" y2="424" stroke="#E7E0D0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/><line x1="398" y1="100" x2="398" y2="424" stroke="#E7E0D0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/><line x1="404" y1="100" x2="404" y2="424" stroke="#E7E0D0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/><line x1="410" y1="100" x2="410" y2="424" stroke="#E7E0D0" stroke-width="1.2" stroke-linecap="round" opacity=".8"/>
+</g>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDE5D8"/><stop offset="1" stop-color="#CED9C9"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C2CFBB"/><stop offset="1" stop-color="#AFBFA8"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="430" cy="474" rx="180" ry="10" fill="#1E2A24" opacity="0.2" filter="url(#blur)"/>
+<g transform="rotate(-14 400 400)">
+<rect x="388" y="316" width="24" height="150" rx="8" fill="#2B302D" /><rect x="384" y="330" width="32" height="100" rx="6" fill="#3A433F" />
+<ellipse cx="400" cy="210" rx="86" ry="108" fill="none" stroke="#2F5E48" stroke-width="14"/>
+<line x1="330" y1="120" x2="330" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="347.5" y1="120" x2="347.5" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="365" y1="120" x2="365" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="382.5" y1="120" x2="382.5" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="400" y1="120" x2="400" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="417.5" y1="120" x2="417.5" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="435" y1="120" x2="435" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="452.5" y1="120" x2="452.5" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="470" y1="120" x2="470" y2="300" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+<line x1="318" y1="116" x2="482" y2="116" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="134" x2="482" y2="134" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="152" x2="482" y2="152" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="170" x2="482" y2="170" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="188" x2="482" y2="188" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="206" x2="482" y2="206" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="224" x2="482" y2="224" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="242" x2="482" y2="242" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="260" x2="482" y2="260" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="278" x2="482" y2="278" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/><line x1="318" y1="296" x2="482" y2="296" stroke="#E7E0D0" stroke-width="1.6" stroke-linecap="round" opacity=".85"/>
+<path d="M336 290 L400 322 L464 290" fill="none" stroke="#2F5E48" stroke-width="10" stroke-linejoin="round"/>
+</g>
+<circle cx="542" cy="452" r="22" fill="#C8CC6B" /><path d="M524 446 C 536 462 548 462 560 448" fill="none" stroke="#F3EEE1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><ellipse cx="542" cy="474" rx="24" ry="5" fill="#1E2A24" opacity="0.25" filter="url(#blur)"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

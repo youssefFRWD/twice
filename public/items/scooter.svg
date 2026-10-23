@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DDE5D8"/><stop offset="1" stop-color="#CED9C9"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C2CFBB"/><stop offset="1" stop-color="#AFBFA8"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="410" cy="476" rx="220" ry="12" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<rect x="300" y="420" width="230" height="22" rx="10" fill="#2F5E48" /><rect x="300" y="420" width="230" height="8" rx="8" fill="#3C7059" />
+<path d="M504 424 L474 224" fill="none" stroke="#2B302D" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" /><path d="M446 222 L514 222" fill="none" stroke="#2B302D" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" /><circle cx="446" cy="222" r="10" fill="#A14947" /><circle cx="514" cy="222" r="10" fill="#A14947" />
+<path d="M514 442 L528 462" fill="none" stroke="#2B302D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
+<circle cx="312" cy="458" r="26" fill="none" stroke="#2B302D" stroke-width="10"/><circle cx="312" cy="458" r="14" fill="#D2A94E" /><circle cx="312" cy="458" r="4" fill="#2B302D" /><circle cx="528" cy="460" r="26" fill="none" stroke="#2B302D" stroke-width="10"/><circle cx="528" cy="460" r="14" fill="#D2A94E" /><circle cx="528" cy="460" r="4" fill="#2B302D" />
+<path d="M300 428 L270 456" fill="none" stroke="#2B302D" stroke-width="9" stroke-linecap="round"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

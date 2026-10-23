@@ -15,7 +15,7 @@
 <rect x="246" y="358" width="148" height="62" rx="18" fill="#35664F" /><rect x="406" y="358" width="148" height="62" rx="18" fill="#35664F" />
 <rect x="210" y="316" width="52" height="118" rx="26" fill="#2A5641" /><rect x="538" y="316" width="52" height="118" rx="26" fill="#2A5641" />
 <path d="M400 360 L400 420" fill="none" stroke="#244B39" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-<g transform="rotate(-10 305 357)"><rect x="268" y="322" width="74" height="70" rx="14" fill="#D9704C" /></g>
+<g transform="rotate(-10 305 357)"><rect x="268" y="322" width="74" height="70" rx="14" fill="#A14947" /></g>
 <g transform="rotate(8 498 361)"><rect x="462" y="328" width="72" height="66" rx="14" fill="#D2A94E" /></g>
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />

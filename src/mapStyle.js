@@ -17,8 +17,8 @@ const C = {
   ink: '#1E2A24',
   muted: '#636A61',
   halo: '#F8F4EA',
-  coral: '#F26B42',
-  coralInk: '#C9472A',
+  coral: '#A14947',
+  coralInk: '#8F3F3D',
   accent: '#1F4D3A',
   surface: '#FFFDF8',
 }

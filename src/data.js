@@ -86,8 +86,6 @@ const ITEMS=[
  {id:28,t:'Hand-knit wool sweater',p:22,c:'fashion',cond:'Like new',s:'Geneviève M.',a:'Paris 16e',lat:48.8640,lon:2.2740,d:'Oatmeal, size L, from a small workshop. Worn twice.'},
  {id:29,t:'Garden chairs, set of four',p:60,c:'home',cond:'Good',s:'Olivier P.',a:'Saint-Germain-en-Laye',lat:48.8980,lon:2.0940,d:'Powder-coated steel, foldable. Repainted last summer.'}
 ];
-/* every sample listing has its own illustration in public/items (muted scenes in the app's palette) */
-ITEMS.forEach(i=>{i.img=`/items/${i.id}.svg`});
 const catOf=id=>CATS.find(c=>c.id===id)||{id,label:id,art:CATS[0].art};
 const CAT_ALL=[{id:'all',label:'All'},{id:'nearest',label:'Nearest'},...CATS];
 

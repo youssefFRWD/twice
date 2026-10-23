@@ -17,7 +17,7 @@
 <defs><radialGradient id="gl" cx="38%" cy="34%"><stop offset="0" stop-color="#587888"/><stop offset=".6" stop-color="#22343C"/><stop offset="1" stop-color="#0F171C"/></radialGradient></defs>
 <circle cx="400" cy="354" r="48" fill="url(#gl)" /><circle cx="400" cy="354" r="22" fill="#0F171C" opacity=".7"/>
 <path d="M366 326 C 380 314 398 312 414 316" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/>
-<circle cx="512" cy="312" r="5" fill="#D9704C" /><rect x="250" y="286" width="8" height="20" rx="2" fill="#A9ADA6" />
+<circle cx="512" cy="312" r="5" fill="#A14947" /><rect x="250" y="286" width="8" height="20" rx="2" fill="#A9ADA6" />
 <path d="M246 286 C 220 330 232 390 262 420" fill="none" stroke="#7B5A3C" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />

@@ -9,13 +9,13 @@
 
 <ellipse cx="400" cy="470" rx="200" ry="14" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
 <rect x="246" y="150" width="308" height="92" rx="6" fill="#A9BFA9" /><rect x="246" y="196" width="308" height="8" rx="3" fill="#C9A06B" />
-<rect x="270" y="168" width="30" height="28" rx="5" fill="#C0654A" /><rect x="273" y="162" width="24" height="7" rx="3" fill="#EFE7D4" /><rect x="310" y="168" width="30" height="28" rx="5" fill="#D2A94E" /><rect x="313" y="162" width="24" height="7" rx="3" fill="#EFE7D4" /><rect x="350" y="168" width="30" height="28" rx="5" fill="#7E97A8" /><rect x="353" y="162" width="24" height="7" rx="3" fill="#EFE7D4" />
+<rect x="270" y="168" width="30" height="28" rx="5" fill="#B25E58" /><rect x="273" y="162" width="24" height="7" rx="3" fill="#EFE7D4" /><rect x="310" y="168" width="30" height="28" rx="5" fill="#D2A94E" /><rect x="313" y="162" width="24" height="7" rx="3" fill="#EFE7D4" /><rect x="350" y="168" width="30" height="28" rx="5" fill="#7E97A8" /><rect x="353" y="162" width="24" height="7" rx="3" fill="#EFE7D4" />
 <path d="M470 168 L470 200" fill="none" stroke="#7B5A3C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><circle cx="470" cy="206" r="8" fill="#7B5A3C" /><path d="M500 168 L500 200" fill="none" stroke="#7B5A3C" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" /><circle cx="500" cy="206" r="8" fill="#7B5A3C" />
 <rect x="236" y="238" width="328" height="24" rx="6" fill="#C9A06B" /><rect x="250" y="262" width="300" height="204" rx="6" fill="#E0BF8C" />
 <rect x="270" y="318" width="134" height="130" rx="8" fill="#8FA68E" /><rect x="290" y="340" width="94" height="56" rx="6" fill="#E9E1CC" /><rect x="294" y="344" width="86" height="48" rx="4" fill="#C9B79B" opacity=".5"/><rect x="292" y="322" width="90" height="8" rx="4" fill="#6F8A6E" />
 <rect x="424" y="262" width="112" height="36" rx="8" fill="#C9D1CE" /><rect x="432" y="268" width="96" height="24" rx="6" fill="#AAB4B1" /><path d="M500 262 L500 244 Q500 238 506 238 L520 238" fill="none" stroke="#8D918B" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" />
-<rect x="424" y="318" width="112" height="130" rx="8" fill="#8FA68E" /><circle cx="442" cy="330" r="5" fill="#D9704C" /><circle cx="448" cy="244" r="0" fill="#000" />
-<circle cx="274" cy="296" r="6" fill="#D9704C" /><circle cx="316" cy="296" r="6" fill="#D2A94E" /><circle cx="358" cy="296" r="6" fill="#EFE7D4" />
+<rect x="424" y="318" width="112" height="130" rx="8" fill="#8FA68E" /><circle cx="442" cy="330" r="5" fill="#A14947" /><circle cx="448" cy="244" r="0" fill="#000" />
+<circle cx="274" cy="296" r="6" fill="#A14947" /><circle cx="316" cy="296" r="6" fill="#D2A94E" /><circle cx="358" cy="296" r="6" fill="#EFE7D4" />
 <rect x="266" y="466" width="14" height="10" rx="3" fill="#7A5233" /><rect x="520" y="466" width="14" height="10" rx="3" fill="#7A5233" />
 <rect x="300" y="220" width="52" height="20" rx="4" fill="#3A423E" /><path d="M352 226 L372 222" fill="none" stroke="#3A423E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 

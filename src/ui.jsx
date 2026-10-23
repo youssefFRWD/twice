@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { COVER_STYLES, ICON, LM, catOf } from './data.js'
 import Gallery from './Gallery.jsx'
 import { useI18n } from './i18n.js'
+import { pictureFor } from './itemArt.js'
 import { reducedMotion } from './lib.js'
 
 export function Icon({ name, size = 20, sw = 2 }) {
@@ -21,9 +22,6 @@ export function Icon({ name, size = 20, sw = 2 }) {
   )
 }
 
-/** Illustration used when a listing has no photo of its own, one per category. */
-const CATEGORY_PICTURE = { furniture: 2, fashion: 4, electronics: 7, books: 11, sports: 14, home: 18, kids: 24 }
-
 /** A listing picture that falls back to the next source, then to the drawn tile, if one fails to load. */
 function Photo({ srcs, fallback }) {
   const [bad, setBad] = useState(0)
@@ -42,7 +40,7 @@ export function Art({ item, extra = '', children, gallery = false, swipe = true 
       ) : (
         <Photo
           key={`${item.id}|${item.img}`}
-          srcs={[item.img, CATEGORY_PICTURE[item.c] && `/items/${CATEGORY_PICTURE[item.c]}.svg`].filter(Boolean)}
+          srcs={[item.img, pictureFor(item)].filter(Boolean)}
           fallback={<svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />}
         />
       )}

@@ -209,10 +209,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       { root, threshold: 0.15, rootMargin: '0px 0px -8% 0px' },
     )
     root.querySelectorAll('[data-reveal]').forEach(el => io.observe(el))
-    // the background warms toward green once the closing section is in view
-    const end = root.querySelector('.lp-end')
-    const deep = new IntersectionObserver(([e]) => root.classList.toggle('deep', e.isIntersecting), { root, threshold: 0.35 })
-    if (end) deep.observe(end)
 
     // the ticker races while you scroll, then eases back to its normal pace
     const tick = root.querySelector('.tk')?.getAnimations?.()[0]
@@ -267,7 +263,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
 
     return () => {
       io.disconnect()
-      deep.disconnect()
       cancelAnimationFrame(raf)
       if (tick) tick.playbackRate = 1
       root.removeEventListener('scroll', onScroll)

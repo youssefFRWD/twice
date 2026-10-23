@@ -11,9 +11,9 @@
 <path d="M320 368 Q354 400 394 392 L396 372 L350 358 Z" fill="#1E2A24" opacity=".55"/>
 <path d="M464 372 Q504 384 520 416 L518 442 L452 442 Q470 410 464 372 Z" fill="#26302B" />
 <path d="M300 420 L342 420 L342 442 L300 442 Z" fill="#26302B" opacity=".9"/>
-<path d="M404 372 L440 356 L452 414 L412 424 Z" fill="#D9704C" />
+<path d="M404 372 L440 356 L452 414 L412 424 Z" fill="#A14947" />
 <line x1="416" y1="384" x2="446" y2="372" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".5"/><line x1="420" y1="398" x2="450" y2="388" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".5"/>
-<path d="M300 384 C 288 376 288 358 302 352" fill="none" stroke="#D9704C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 384 C 288 376 288 358 302 352" fill="none" stroke="#A14947" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
 <path d="M296 440 L524 440 L524 452 Q524 458 516 458 L304 458 Q296 458 296 452 Z" fill="#EFE7D4" />
 <rect x="296" y="452" width="228" height="6" rx="3" fill="#26302B" />
 </g><g transform="translate(-64 4)">
@@ -21,9 +21,9 @@
 <path d="M320 368 Q354 400 394 392 L396 372 L350 358 Z" fill="#1E2A24" opacity=".55"/>
 <path d="M464 372 Q504 384 520 416 L518 442 L452 442 Q470 410 464 372 Z" fill="#26302B" />
 <path d="M300 420 L342 420 L342 442 L300 442 Z" fill="#26302B" opacity=".9"/>
-<path d="M404 372 L440 356 L452 414 L412 424 Z" fill="#D9704C" />
+<path d="M404 372 L440 356 L452 414 L412 424 Z" fill="#A14947" />
 <line x1="416" y1="384" x2="446" y2="372" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".5"/><line x1="420" y1="398" x2="450" y2="388" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".5"/>
-<path d="M300 384 C 288 376 288 358 302 352" fill="none" stroke="#D9704C" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M300 384 C 288 376 288 358 302 352" fill="none" stroke="#A14947" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" />
 <path d="M296 440 L524 440 L524 452 Q524 458 516 458 L304 458 Q296 458 296 452 Z" fill="#EFE7D4" />
 <rect x="296" y="452" width="228" height="6" rx="3" fill="#26302B" />
 </g>

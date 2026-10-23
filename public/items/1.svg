@@ -15,7 +15,7 @@
 <circle cx="336" cy="358" r="4.5" fill="#D8B25A" /><circle cx="354" cy="358" r="4.5" fill="#D8B25A" /><circle cx="450" cy="358" r="4.5" fill="#D8B25A" /><circle cx="468" cy="358" r="4.5" fill="#D8B25A" />
 <rect x="518" y="252" width="34" height="34" rx="6" fill="#E7DEC9" /><path d="M535 252 C 530 222 520 214 512 206 M535 252 C 536 226 548 214 556 204 M535 252 C 534 232 534 220 536 200" fill="none" stroke="#4E7A5E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
 <path d="M520 206 q-18 -6 -22 10 q16 6 22 -10 Z" fill="#5F8C70" /><path d="M558 204 q20 -4 22 12 q-18 4 -22 -12 Z" fill="#5F8C70" />
-<rect x="236" y="262" width="70" height="22" rx="3" fill="#7E97A8" /><rect x="240" y="244" width="62" height="18" rx="3" fill="#D2A94E" /><rect x="244" y="228" width="54" height="16" rx="3" fill="#C0654A" />
+<rect x="236" y="262" width="70" height="22" rx="3" fill="#7E97A8" /><rect x="240" y="244" width="62" height="18" rx="3" fill="#D2A94E" /><rect x="244" y="228" width="54" height="16" rx="3" fill="#B25E58" />
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
 </svg>

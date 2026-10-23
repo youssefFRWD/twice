@@ -10,8 +10,8 @@
 <ellipse cx="400" cy="462" rx="190" ry="12" fill="#1E2A24" opacity="0.18" filter="url(#blur)"/>
 <path d="M284 336 C 276 190 524 190 516 336" fill="none" stroke="#2B312E" stroke-width="26" stroke-linecap="round" stroke-linejoin="round" />
 <path d="M284 336 C 278 206 522 206 516 336" fill="none" stroke="#454C48" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity=".7"/>
-<path d="M316 238 C 360 214 440 214 484 238" fill="none" stroke="#D9704C" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
-<ellipse cx="252" cy="366" rx="46" ry="62" fill="#2E3532" /><ellipse cx="266" cy="366" rx="38" ry="54" fill="#3C4541" /><ellipse cx="274" cy="366" rx="30" ry="44" fill="#4B5450" /><circle cx="252" cy="366" r="18" fill="none" stroke="#D9704C" stroke-width="3"/><ellipse cx="242" cy="342" rx="10" ry="20" fill="#FFFFFF" opacity=".12"/><ellipse cx="548" cy="366" rx="46" ry="62" fill="#2E3532" /><ellipse cx="534" cy="366" rx="38" ry="54" fill="#3C4541" /><ellipse cx="526" cy="366" rx="30" ry="44" fill="#4B5450" /><circle cx="548" cy="366" r="18" fill="none" stroke="#D9704C" stroke-width="3"/><ellipse cx="538" cy="342" rx="10" ry="20" fill="#FFFFFF" opacity=".12"/>
+<path d="M316 238 C 360 214 440 214 484 238" fill="none" stroke="#A14947" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+<ellipse cx="252" cy="366" rx="46" ry="62" fill="#2E3532" /><ellipse cx="266" cy="366" rx="38" ry="54" fill="#3C4541" /><ellipse cx="274" cy="366" rx="30" ry="44" fill="#4B5450" /><circle cx="252" cy="366" r="18" fill="none" stroke="#A14947" stroke-width="3"/><ellipse cx="242" cy="342" rx="10" ry="20" fill="#FFFFFF" opacity=".12"/><ellipse cx="548" cy="366" rx="46" ry="62" fill="#2E3532" /><ellipse cx="534" cy="366" rx="38" ry="54" fill="#3C4541" /><ellipse cx="526" cy="366" rx="30" ry="44" fill="#4B5450" /><circle cx="548" cy="366" r="18" fill="none" stroke="#A14947" stroke-width="3"/><ellipse cx="538" cy="342" rx="10" ry="20" fill="#FFFFFF" opacity=".12"/>
 <rect x="240" y="322" width="24" height="8" rx="3" fill="#222926" />
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />

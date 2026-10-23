@@ -19,6 +19,7 @@ import { ViewSwitch } from './PhoneView.jsx'
 import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
 import { startScrollReveal } from './scrollReveal.js'
+import { startScrollTint } from './scrollTint.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -161,6 +162,7 @@ export default function App() {
   const approvedForMe = convs.filter(c => c.iAmBuyer && c.approval === 'approved').map(c => c.itemId)
   const data = { me, saved, passed, reserved: approvedForMe }
   useEffect(() => startScrollReveal(document.body), [])
+  useEffect(() => startScrollTint(), [])
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
   useEffect(() => {

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EADFD4"/><stop offset="1" stop-color="#E0D1C4"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C5B6"/><stop offset="1" stop-color="#C5B2A2"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="468" rx="170" ry="12" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<path d="M336 262 C 336 150 464 150 464 262" fill="none" stroke="#6A4022" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+<defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B97B4E"/><stop offset="1" stop-color="#8E5832"/></linearGradient></defs>
+<path d="M286 250 L514 250 L536 450 Q400 474 264 450 Z" fill="url(#bg)" />
+<path d="M286 250 L514 250 L520 300 L280 300 Z" fill="#FFFFFF" opacity=".1"/>
+<path d="M296 300 Q400 322 504 300" fill="none" stroke="#5E3820" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+<rect x="374" y="292" width="52" height="40" rx="8" fill="#D2A94E" stroke="#8E6B26" stroke-width="3"/><circle cx="400" cy="312" r="6" fill="#8E6B26" />
+<path d="M296 262 L282 440 M504 262 L518 440" fill="none" stroke="#6A4022" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="8 7" opacity=".6"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

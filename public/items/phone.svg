@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#DFE3DA"/><stop offset="1" stop-color="#D0D6CC"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C4CCC1"/><stop offset="1" stop-color="#B2BBAF"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="470" rx="120" ry="10" fill="#1E2A24" opacity="0.2" filter="url(#blur)"/>
+<g transform="rotate(-5 400 300)"><rect x="322" y="150" width="156" height="300" rx="28" fill="#2A322E" /><defs><linearGradient id="ph" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3C6A58"/><stop offset="1" stop-color="#1F3A30"/></linearGradient></defs><rect x="332" y="162" width="136" height="276" rx="20" fill="url(#ph)" />
+<rect x="372" y="170" width="56" height="12" rx="6" fill="#14191A" />
+<rect x="344" y="206" width="32" height="32" rx="9" fill="#A14947" opacity=".85"/><rect x="384" y="206" width="32" height="32" rx="9" fill="#A9BFA9" opacity=".85"/><rect x="424" y="206" width="32" height="32" rx="9" fill="#EFE7D4" opacity=".85"/><rect x="344" y="250" width="32" height="32" rx="9" fill="#D2A94E" opacity=".85"/><rect x="384" y="250" width="32" height="32" rx="9" fill="#7E97A8" opacity=".85"/><rect x="424" y="250" width="32" height="32" rx="9" fill="#E7DEC9" opacity=".85"/><rect x="344" y="294" width="32" height="32" rx="9" fill="#A14947" opacity=".85"/><rect x="384" y="294" width="32" height="32" rx="9" fill="#A9BFA9" opacity=".85"/><rect x="424" y="294" width="32" height="32" rx="9" fill="#EFE7D4" opacity=".85"/><rect x="344" y="338" width="32" height="32" rx="9" fill="#D2A94E" opacity=".85"/><rect x="384" y="338" width="32" height="32" rx="9" fill="#7E97A8" opacity=".85"/><rect x="424" y="338" width="32" height="32" rx="9" fill="#E7DEC9" opacity=".85"/>
+<rect x="344" y="392" width="112" height="30" rx="15" fill="#EFE7D4" opacity=".35"/></g>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

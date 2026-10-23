@@ -30,7 +30,7 @@ function Hand() {
       </defs>
       {/* sleeve */}
       <path d="M22 112h52l6 20H16z" fill="#1F4D3A" />
-      <path d="M22 112h52" stroke="#F26B42" strokeWidth="5" strokeLinecap="round" />
+      <path d="M22 112h52" stroke="#A14947" strokeWidth="5" strokeLinecap="round" />
       {/* palm and folded fingers */}
       <path
         d="M24 66c0-5 4-8 9-8h30c8 0 14 5 14 13v22c0 13-9 21-21 21H44c-12 0-20-8-20-20z"
@@ -350,7 +350,7 @@ function MetroAct({ interact }) {
           <g className="ha-dest" transform="translate(566 124)">
             <ellipse cx="0" cy="3" rx="16" ry="6" fill="#000" opacity=".25" />
             <g className="ha-pin">
-              <path d="M0 0l-9-17a22 22 0 1 1 18 0z" fill="#F26B42" stroke="#FFFDF8" strokeWidth="3.5" />
+              <path d="M0 0l-9-17a22 22 0 1 1 18 0z" fill="#A14947" stroke="#FFFDF8" strokeWidth="3.5" />
               <circle cx="0" cy="-34" r="8" fill="#FFFDF8" />
             </g>
           </g>

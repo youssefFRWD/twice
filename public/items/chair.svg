@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E9DFCB"/><stop offset="1" stop-color="#DCCFB5"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D3C3A5"/><stop offset="1" stop-color="#C2B08F"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="400" cy="474" rx="150" ry="12" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<rect x="292" y="168" width="216" height="30" rx="12" fill="#A07444" />
+<rect x="300" y="168" width="22" height="170" rx="8" fill="#C0925B" /><rect x="478" y="168" width="22" height="170" rx="8" fill="#C0925B" />
+<rect x="336" y="204" width="14" height="118" rx="6" fill="#D4AE7B" /><rect x="366" y="204" width="14" height="118" rx="6" fill="#D4AE7B" /><rect x="396" y="204" width="14" height="118" rx="6" fill="#D4AE7B" /><rect x="426" y="204" width="14" height="118" rx="6" fill="#D4AE7B" /><rect x="456" y="204" width="14" height="118" rx="6" fill="#D4AE7B" />
+<rect x="284" y="326" width="232" height="30" rx="10" fill="#D4AE7B" /><rect x="284" y="326" width="232" height="10" rx="10" fill="#E2C294" />
+<path d="M302 354 L326 354 L316 468 L304 468 Z" fill="#A07444" /><path d="M474 354 L498 354 L496 468 L484 468 Z" fill="#A07444" />
+<path d="M330 356 L346 356 L342 450 L334 450 Z" fill="#8E6638" /><path d="M454 356 L470 356 L466 450 L458 450 Z" fill="#8E6638" />
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

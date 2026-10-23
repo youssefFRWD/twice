@@ -8,7 +8,7 @@ img{max-width:100%}
 :root{
   --bg:#F6F1E7; --surface:#FFFDF8; --surface-2:#EFE8D6; --ink:#1E2A24; --muted:#636A61; --line:#E3DBC8;
   --accent:#1F4D3A; --on-accent:#FFFDF8; --logo-green:#1F4D3A; --accent-soft:#DCE6DD;
-  --coral:#F26B42; --on-coral:#1E2A24; --coral-ink:#C9472A;
+  --coral:#A14947; --on-coral:#FFFDF8; --coral-ink:#8F3F3D;
   --nope:#C9472A; --on-nope:#FFFDF8; --nope-soft:#F8DED3;
   --me:#2F7DF6; --focus:#1F4D3A; --shadow:0 12px 30px rgba(30,42,36,.12); --hatch:rgba(30,42,36,.07);
   --map-out:#E6DDC8; --map-land:#EFE8D6; --map-paris:#F8F4EA; --map-edge:#D5CAB0; --map-water:#BBD7DA; --map-green:#D3E2BF; --halo:#F8F4EA;
@@ -23,7 +23,7 @@ img{max-width:100%}
 :root[data-theme="dark"]{
   --bg:#141A17; --surface:#1C2420; --surface-2:#262F2A; --ink:#EDE8DC; --muted:#9BA59D; --line:#2F3A34;
   --accent:#5BAE88; --on-accent:#0F1713; --logo-green:#5BAE88; --accent-soft:#23392E;
-  --coral:#F26B42; --on-coral:#1E2A24; --coral-ink:#FF8D68;
+  --coral:#B35553; --on-coral:#FFFDF8; --coral-ink:#E49A96;
   --nope:#E5714F; --on-nope:#1A0F0B; --nope-soft:#3A221B;
   --me:#6AA4FF; --focus:#8FD0AE; --shadow:0 12px 30px rgba(0,0,0,.5); --hatch:rgba(237,232,220,.07);
   --map-out:#1A211D; --map-land:#222B26; --map-paris:#27312B; --map-edge:#3A463F; --map-water:#2C4A4F; --map-green:#2E4030; --halo:#27312B;
@@ -798,8 +798,8 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 
 /* profile cover: colour styles or an uploaded photo */
 .pf-cover{background-size:cover;background-position:center}
-.cover-forest{background-image:linear-gradient(120deg,#1F4D3A 0%,#2D6B50 58%,#F26B42 135%)}
-.cover-coral{background-image:linear-gradient(120deg,#C9472A 0%,#F26B42 60%,#F6B38E 120%)}
+.cover-forest{background-image:linear-gradient(120deg,#1F4D3A 0%,#2D6B50 58%,#A14947 135%)}
+.cover-coral{background-image:linear-gradient(120deg,#7E3634 0%,#A14947 60%,#D49A93 120%)}
 .cover-sand{background-image:linear-gradient(120deg,#CDBB92 0%,#E3D6B6 60%,#F6F1E7 120%)}
 .cover-ink{background-image:linear-gradient(120deg,#141C18 0%,#2E3B34 60%,#4F6157 120%)}
 .cover-sky{background-image:linear-gradient(120deg,#2F7DF6 0%,#6FA8F8 60%,#BBD7DA 120%)}
@@ -1377,7 +1377,7 @@ html.embedded ::-webkit-scrollbar{display:none}
   .ha-eta{opacity:1}
 }
 /* the hero stage keeps its own light "paper" palette, whatever theme the rest of the app uses */
-.ha-wrap{color:#1E2A24;--bg:#F6F1E7;--surface:#FFFDF8;--surface-2:#EFE8D6;--ink:#1E2A24;--muted:#636A61;--line:#E3DBC8;--accent:#1F4D3A;--on-accent:#FFFDF8;--accent-soft:#DCE6DD;--coral:#F26B42;--on-coral:#1E2A24;--coral-ink:#C9472A;--nope:#C9472A;--me:#2F7DF6;--hatch:rgba(30,42,36,.07);--tile-1:#EFE8D6;--tile-2:#EFE8D6;--tile-3:#EFE8D6;--tile-4:#EFE8D6;--tile-5:#EFE8D6;--tile-6:#EFE8D6;--tile-7:#EFE8D6;--tile-8:#EFE8D6;color-scheme:light}
+.ha-wrap{color:#1E2A24;--bg:#F6F1E7;--surface:#FFFDF8;--surface-2:#EFE8D6;--ink:#1E2A24;--muted:#636A61;--line:#E3DBC8;--accent:#1F4D3A;--on-accent:#FFFDF8;--accent-soft:#DCE6DD;--coral:#A14947;--on-coral:#FFFDF8;--coral-ink:#8F3F3D;--nope:#C9472A;--me:#2F7DF6;--hatch:rgba(30,42,36,.07);--tile-1:#EFE8D6;--tile-2:#EFE8D6;--tile-3:#EFE8D6;--tile-4:#EFE8D6;--tile-5:#EFE8D6;--tile-6:#EFE8D6;--tile-7:#EFE8D6;--tile-8:#EFE8D6;color-scheme:light}
 /* hero layout tuning */
 .ha-stamp{top:76%;padding:6px 20px 6px 12px;border-width:6px;font-size:40px}
 .ha-panel{left:22px;width:292px}
@@ -1402,7 +1402,7 @@ html.embedded ::-webkit-scrollbar{display:none}
 /* layered, softer shadows and a few global niceties */
 :root{--shadow:0 1px 2px rgba(30,42,36,.06),0 8px 22px rgba(30,42,36,.08),0 26px 50px -12px rgba(30,42,36,.14);--ease-out:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.34,1.56,.64,1)}
 :root[data-theme="dark"]{--shadow:0 1px 2px rgba(0,0,0,.3),0 10px 26px rgba(0,0,0,.35),0 30px 60px -14px rgba(0,0,0,.55)}
-::selection{background:var(--coral);color:#1E2A24}
+::selection{background:var(--coral);color:#FFFDF8}
 h1,h2,h3{text-wrap:balance}
 *{scrollbar-width:thin;scrollbar-color:var(--line) transparent}
 
@@ -1412,9 +1412,7 @@ body::after{content:"";position:fixed;inset:0;z-index:2147483000;pointer-events:
 
 
 /* ---- landing wow ---- */
-.landing{transition:background-color .9s var(--ease-out)}
 .landing .lp-end{background:transparent}
-.landing.deep{background-color:var(--accent-soft)}
 .lp-stage{perspective:1100px}
 .lp-stage .phone{transform:rotateY(calc(var(--mx,0) * 14deg)) rotateX(calc(var(--my,0) * -10deg));transition:transform .5s var(--ease-out);transform-style:preserve-3d}
 .lp-stage:hover .phone{transition-duration:.12s}

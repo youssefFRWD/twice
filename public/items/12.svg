@@ -15,7 +15,7 @@
 <line x1="344" y1="262" x2="466" y2="262" stroke="#C9A24A" stroke-width="6" stroke-linecap="round" /><line x1="364" y1="284" x2="446" y2="284" stroke="#C9A24A" stroke-width="3" stroke-linecap="round" />
 <circle cx="404" cy="384" r="46" fill="none" stroke="#C9A24A" stroke-width="3"/><circle cx="404" cy="384" r="30" fill="none" stroke="#C9A24A" stroke-width="1.5"/>
 <path d="M404 330 L412 378 L458 384 L412 390 L404 438 L396 390 L350 384 L396 378 Z" fill="#C9A24A" />
-<rect x="480" y="462" width="8" height="34" rx="2" fill="#D9704C" />
+<rect x="480" y="462" width="8" height="34" rx="2" fill="#A14947" />
 <path d="M264 196 L528 196 L528 214 L264 214 Z" fill="#FFFFFF" opacity=".07"/>
 
 <rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
