@@ -14,6 +14,7 @@ import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import SellerListings from './SellerListings.jsx'
+import { itemsInArr } from './arr.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -102,8 +103,28 @@ export default function App() {
   const [landing, setLanding] = useState(true)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
+  const [dealPay, setDealPay] = useState(null)
+  const [paidDeals, setPaidDeals] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('twice.paidDeals') || '[]')
+    } catch {
+      return []
+    }
+  })
+  const markPaid = id => {
+    setPaidDeals(prev => {
+      const next = [...prev, id]
+      try {
+        localStorage.setItem('twice.paidDeals', JSON.stringify(next))
+      } catch {
+        /* storage blocked: the item just stays in the cart until reload */
+      }
+      return next
+    })
+  }
   const [seller, setSeller] = useState(null)
   const [showNearby, setShowNearby] = useState(false)
+  const [arr, setArr] = useState(null)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -454,6 +475,14 @@ export default function App() {
   const nearbyAll = nearbyFor(cat.map, data, radius, uid)
   const nearbyList = showNearby ? nearbyAll : []
   const toggleNearby = () => setShowNearby(v => !v)
+  const arrItems = arr ? itemsInArr(arr) : []
+  const pickArr = n => {
+    setArr(n)
+    setSel(null)
+    setPlans(null)
+    if (n) setCmd({ n: ++cmdN.current, type: 'fitArr', arr: n })
+    else mapCmd('fitSaved')
+  }
   const hasUnseen = listFor('discover', 'all', data).length > 0
   const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller
 
@@ -530,6 +559,10 @@ export default function App() {
               nearby={nearbyList}
               showNearby={showNearby}
               nearbyCount={nearbyAll.length}
+              arr={arr}
+              arrItems={arrItems}
+              saved={saved}
+              onArr={pickArr}
               onToggleNearby={toggleNearby}
               sel={sel}
               plans={plans}
@@ -560,7 +593,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -624,9 +657,10 @@ export default function App() {
       {buyId !== null && (
         <Checkout
           key={buyId}
-          item={itemById(buyId)}
+          item={dealPay && dealPay.itemId === buyId ? { ...itemById(buyId), p: dealPay.eur } : itemById(buyId)}
           me={me}
           canMessage={canMessage}
+          onPaid={() => dealPay && markPaid(dealPay.id)}
           onMessage={it => {
             setBuyId(null)
             messageSeller(it)
@@ -635,7 +669,10 @@ export default function App() {
             setBuyId(null)
             showOnMap(id)
           }}
-          onClose={() => setBuyId(null)}
+          onClose={() => {
+            setBuyId(null)
+            setDealPay(null)
+          }}
         />
       )}
       <LocModal

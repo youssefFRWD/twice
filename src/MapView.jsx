@@ -7,6 +7,7 @@ import { distOf, itemById, meName, reducedMotion, walkLabel } from './lib.js'
 import { useI18n } from './i18n.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
 import Navigation from './Navigation.jsx'
+import { ARR_LIST, arrCounts, arrLatLng } from './arr.js'
 import { INK, METRO_LAYERS, PARIS, buildStyle, circleFeature, idfLatLng, meElement, pinElement } from './mapStyle.js'
 
 function Steps({ plan }) {
@@ -28,7 +29,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
   const { t, cat: catName, money } = useI18n()
   const it = sel != null ? itemById(sel) : null
   let body
@@ -89,6 +90,29 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
                 : 'Times are estimates. Walking uses straight-line distance plus 25% for streets, metro uses average line speeds. This is not live traffic or timetable data.'}
             </p>
           </div>
+        </div>
+      </>
+    )
+  } else if (arr) {
+    const info = ARR_LIST.find(a => a.n === arr)
+    const sorted = arrItems.slice().sort((a, b) => distOf(me, a) - distOf(me, b))
+    body = (
+      <>
+        <div className="panel-head">
+          <h2>Paris {info.label} · {info.name}</h2>
+          <button className="btn small" onClick={() => onArr(null)}><Icon name="x" size={16} />Clear</button>
+        </div>
+        <div className="panel-body">
+          <p className="note" style={{ padding: '0 2px' }}>
+            {sorted.length ? `${sorted.length} ${sorted.length > 1 ? 'items' : 'item'} for sale in this arrondissement` : 'Nothing for sale in this arrondissement yet.'}
+          </p>
+          {sorted.map(i => (
+            <button className="li" key={i.id} onClick={() => onPick(i.id)}>
+              <Art item={i} />
+              <span><b>{i.t}</b><small>{i.a} · €{i.p}{saved.includes(i.id) ? ' · saved' : ''}</small></span>
+              <span className="d">{fmtD(distOf(me, i))}</span>
+            </button>
+          ))}
         </div>
       </>
     )
@@ -153,7 +177,7 @@ maplibregl.setWorkerUrl(workerUrl)
 
 export default function MapView(props) {
   const { t } = useI18n()
-  const { active, me, radius, list, nearby, showNearby, nearbyCount, onToggleNearby, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
+  const { active, me, radius, list, nearby, showNearby, nearbyCount, onToggleNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
   const { canMessage, onMessage, onBuy, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
   const boxRef = useRef(null)
@@ -167,11 +191,12 @@ export default function MapView(props) {
   const [mapObj, setMapObj] = useState(null)
   const [metroOn, setMetroOn] = useState(false)
   const [navOn, setNavOn] = useState(false)
+  const counts = arrCounts()
   const [size, setSize] = useState({ W: 0, H: 0 })
 
   // latest callbacks for the long-lived map handlers
   useEffect(() => {
-    live.current = { placing, onSelect, onPlace, t }
+    live.current = { placing, onSelect, onPlace, onArr, arr, nav: navOn, t }
   })
 
   /* create the map once */
@@ -202,6 +227,12 @@ export default function MapView(props) {
     map.on('mouseleave', 'arr-fill', () => {
       if (hovered !== null) map.setFeatureState({ source: 'arr', id: hovered }, { hover: false })
       hovered = null
+    })
+    map.on('click', 'arr-fill', e => {
+      const l = live.current
+      if (l.placing || l.nav) return
+      const n = e.features[0]?.properties?.n
+      if (n) l.onArr(l.arr === n ? null : n)
     })
     map.on('click', e => {
       const l = live.current
@@ -236,6 +267,15 @@ export default function MapView(props) {
     if (mapRef.current) mapRef.current.getCanvas().style.cursor = placing ? 'crosshair' : ''
   }, [placing, ready])
 
+  /* the chosen arrondissement */
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    const f = ['==', ['get', 'n'], arr || -1]
+    map.setFilter('arr-sel-fill', f)
+    map.setFilter('arr-sel-line', f)
+  }, [arr, ready])
+
   /* metro network on/off */
   useEffect(() => {
     const map = mapRef.current
@@ -259,7 +299,9 @@ export default function MapView(props) {
     const map = mapRef.current
     if (!ready || !map) return
     markers.current.pins.forEach(m => m.remove())
-    const all = [...(showNearby ? nearby : []).map(it => ({ it, other: true })), ...list.map(it => ({ it, other: false }))]
+    const all = arr
+      ? arrItems.map(it => ({ it, other: !saved.includes(it.id) }))
+      : [...(showNearby ? nearby : []).map(it => ({ it, other: true })), ...list.map(it => ({ it, other: false }))]
     markers.current.pins = all.filter(({ it }) => !navOn || it.id === sel).map(({ it, other }) => {
       const isSel = sel === it.id
       const far = distOf(me, it) > radius && !isSel
@@ -282,7 +324,7 @@ export default function MapView(props) {
       })
       return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, 7] }).setLngLat([it.lon, it.lat]).addTo(map)
     })
-  }, [list, nearby, showNearby, sel, me, radius, ready, navOn])
+  }, [list, nearby, showNearby, arr, arrItems, saved, sel, me, radius, ready, navOn])
 
   /* the chosen route */
   useEffect(() => {
@@ -327,6 +369,7 @@ export default function MapView(props) {
       mapRef.current?.resize()
       if (cmd.type === 'fitSaved') fitSaved(cmd.animate !== false)
       else if (cmd.type === 'fitRoute') fitRoute()
+      else if (cmd.type === 'fitArr') fit(arrLatLng(cmd.arr), 14)
       else if (cmd.type === 'overview') mapRef.current?.jumpTo({ center: PARIS, zoom: 10 })
     })
     return () => cancelAnimationFrame(id)
@@ -374,6 +417,17 @@ export default function MapView(props) {
           />
         )}
         <div className="maptl" hidden={navOn}>
+          <label className="arr-pick" htmlFor="arr-select">
+            <Icon name="pin" size={16} />
+            <select id="arr-select" value={arr || ''} onChange={e => onArr(e.target.value ? +e.target.value : null)}>
+              <option value="">All of Île-de-France</option>
+              {ARR_LIST.map(a => (
+                <option key={a.n} value={a.n}>
+                  Paris {a.label} · {a.name}{counts[a.n] ? ` (${counts[a.n]})` : ''}
+                </option>
+              ))}
+            </select>
+          </label>
           <button className={`all-btn${showNearby ? ' on' : ''}`} aria-pressed={showNearby} onClick={onToggleNearby}>
             <Icon name="tag" size={16} />
             {showNearby ? 'Showing all listings · Hide' : `Show all listings${nearbyCount ? ` (${nearbyCount})` : ''}`}
@@ -417,6 +471,10 @@ export default function MapView(props) {
       </div>
       {!navOn && (
       <Panel
+        arr={arr}
+        arrItems={arrItems}
+        saved={saved}
+        onArr={onArr}
         nearby={nearby}
         showNearby={showNearby}
         onStartNav={() => setNavOn(true)}
