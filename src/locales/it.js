@@ -180,4 +180,6 @@ export default {
   'pv.listings': 'Annunci', 'pv.noListings': 'Nessun annuncio attivo al momento.', 'pv.open': 'Apri il profilo di {name}',
   'pf.cover': 'Copertina', 'pf.coverColor': 'Stile copertina {n}', 'pf.coverUpload': 'Carica una foto di copertina', 'pf.coverRemove': 'Rimuovi la foto di copertina', 'pf.coverChange': 'Cambia copertina',
   soldByLabel: 'Venduto da', moreFrom: 'Altro da {name}',
+  'pf.complete': 'Completa il tuo profilo', 'pf.completeOf': '{done} su {total} fatti', 'pf.todo.photo': 'Aggiungi una foto profilo', 'pf.todo.area': 'Scegli il tuo arrondissement', 'pf.todo.cover': 'Scegli una copertina', 'pf.todo.listing': 'Metti in vendita il primo oggetto', 'pf.todo.friend': 'Segui un vicino', 'pf.allDone': 'Il tuo profilo è completo. Bene!', 'ls.emptyH': 'Ancora niente in vendita',
+  'tab.browse': 'Sfoglia', 'br.search': 'Cerca annunci…', 'br.clear': 'Cancella ricerca', 'br.sortLabel': 'Ordina', 'br.sort.nearest': 'Prima i più vicini', 'br.sort.low': 'Prezzo: dal più basso', 'br.sort.high': 'Prezzo: dal più alto', 'br.none': 'Nessun annuncio per «{q}»', 'br.noneHint': 'Prova un’altra parola o cancella i filtri.', 'br.reset': 'Cancella filtri', 'br.save': 'Salva {title}', 'br.count_one': '{n} annuncio', 'br.count_other': '{n} annunci',
 }

@@ -611,6 +611,12 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .picker .inp>svg{position:absolute;inset-inline-start:14px;color:var(--muted);pointer-events:none}
 .pf-card .picker input[type=search]{font:inherit;width:100%;padding:12px 14px 12px 42px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);transition:border-color .15s,box-shadow .15s}
 [dir=rtl] .pf-card .picker input[type=search]{padding:12px 42px 12px 14px}
+.picker-toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:start;font:inherit;padding:12px 14px;border-radius:12px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.picker-toggle:hover{border-color:var(--muted)}
+.picker-toggle[aria-expanded=true]{border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.picker-toggle svg{flex:none;color:var(--muted);transition:transform .15s}
+.picker-toggle[aria-expanded=true] svg{transform:rotate(180deg)}
+.picker-pop{display:grid;gap:8px}
 .picker-list{max-height:248px;overflow-y:auto;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:4px;overscroll-behavior:contain}
 .picker-list button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;text-align:start;border:0;background:none;padding:9px 12px;border-radius:9px;font-size:14.5px;color:var(--ink)}
 .picker-list button:hover,.picker-list button.hl{background:var(--surface-2)}
@@ -877,3 +883,60 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .ip-facts dt{color:var(--muted);font-weight:600}
 .ip-facts dd{margin:0;font-weight:700;text-align:right}
 @media (min-width:760px){.ip-in{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:40px}.ip-in>.btn{grid-column:1/-1}.ip-art{max-height:none}}
+
+/* ---------- richer profile: checklist aside, tab icons, empty states ---------- */
+.pf-tabs button{display:inline-flex;align-items:center;gap:7px}
+.pf-tabs button svg{flex:none;opacity:.8}
+.pf-body{display:grid;gap:20px;min-width:0}
+.pf-main{display:grid;gap:20px;min-width:0;align-content:start}
+.pf-todo{flex-direction:column;align-items:stretch;gap:10px;padding:18px}
+.pf-todo h2{margin:0;font:800 18px/1.2 var(--font-display);letter-spacing:-.01em}
+.pf-todo small{color:var(--muted);font-weight:600}
+.pf-bar{height:8px;border-radius:99px;background:var(--surface-2);overflow:hidden}
+.pf-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--accent),var(--coral));transition:width .4s ease}
+.pf-todo ul{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:6px}
+.pf-todo li button{display:flex;align-items:center;gap:10px;width:100%;text-align:start;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:9px 12px;font-weight:600;font-size:14px;color:var(--ink);transition:background .15s,transform .15s}
+.pf-todo li button:not(:disabled):hover{background:var(--surface-2);transform:translateX(2px)}
+[dir=rtl] .pf-todo li button:not(:disabled):hover{transform:translateX(-2px)}
+.pf-todo-ico{flex:none;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--accent-soft);color:var(--accent)}
+.pf-todo li.done button{color:var(--muted);text-decoration:line-through;opacity:.75;cursor:default}
+.pf-todo li.done .pf-todo-ico{background:var(--accent);color:var(--on-accent)}
+.pf-emptycard{display:grid;justify-items:center;gap:8px;text-align:center;padding:34px 20px;border:1.5px dashed var(--line);border-radius:var(--r-lg);background:linear-gradient(180deg,var(--surface),var(--bg))}
+.pf-emptycard.compact{padding:18px 16px;gap:6px;border-radius:var(--r-md)}
+.pf-emptyico{display:grid;place-items:center;width:60px;height:60px;border-radius:50%;background:var(--accent-soft);color:var(--accent);box-shadow:0 0 0 8px rgba(220,230,221,.45)}
+.compact .pf-emptyico{width:42px;height:42px;box-shadow:none}
+.pf-emptycard h3{margin:6px 0 0;font:800 20px/1.2 var(--font-display);letter-spacing:-.01em}
+.pf-emptycard p{margin:0;max-width:44ch;color:var(--muted);font-family:var(--font-serif)}
+.pf-emptycard .btn{margin-top:8px}
+@media (min-width:1000px){
+  .profile-wrap{max-width:1120px}
+  .pf-body.has-aside{grid-template-columns:minmax(0,1fr) 310px;align-items:start}
+  .pf-body.has-aside .pf-aside{order:2;position:sticky;top:0}
+}
+
+/* ---------- Browse: every listing, searchable ---------- */
+#v-browse{overflow-y:auto;padding-block:16px 24px;align-items:flex-start}
+#browse-wrap{width:100%;display:grid;gap:14px;align-content:start}
+#browse-wrap .titlebar{margin-bottom:0}
+.br-bar{width:100%;max-width:1180px;margin-inline:auto;display:flex;gap:10px;flex-wrap:wrap}
+.br-search{position:relative;flex:1 1 260px;display:flex;align-items:center}
+.br-search>svg{position:absolute;inset-inline-start:14px;color:var(--muted);pointer-events:none}
+.br-search input{font:inherit;width:100%;padding:12px 40px 12px 42px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);transition:border-color .15s,box-shadow .15s}
+[dir=rtl] .br-search input{padding:12px 42px 12px 40px}
+.br-search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 4px var(--accent-soft)}
+.br-clear{position:absolute;inset-inline-end:8px;border:0;background:var(--surface-2);color:var(--ink);width:26px;height:26px;border-radius:50%;display:grid;place-items:center}
+.br-sort select{font:inherit;padding:12px 14px;border-radius:999px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);width:auto}
+.br-chips{width:100%;max-width:1180px;margin-inline:auto;display:flex;gap:8px;overflow-x:auto;padding-block:2px 6px;scrollbar-width:none}
+.br-chips::-webkit-scrollbar{display:none}
+.br-chips .chip{flex:none}
+#browse-wrap .grid,#browse-wrap .pf-emptycard{width:100%;max-width:1180px;margin-inline:auto}
+.sc .foot .msgb.on{color:var(--nope);background:var(--nope-soft);border-color:var(--nope-soft)}
+.sc .foot .msgb.on svg{fill:currentColor}
+
+/* landing nav: same look as the app's top tabs (icon circle + label) */
+.lp-links{gap:4px}
+.lp-links .tab{flex:none;flex-direction:row;gap:8px;padding:6px 14px 6px 8px;font-size:14px;border-radius:999px}
+.lp-links .tab:hover{color:var(--accent)}
+.lp-links .tab:hover .ti{background:var(--accent-soft)}
+.lp-links .ti{width:34px;height:34px}
+@media (max-width:759px){.lp-links .tab{padding:4px}.lp-links .tab>span:not(.ti){display:none}.lp-links .ti{width:38px;height:38px}}

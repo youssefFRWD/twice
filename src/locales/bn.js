@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'বিজ্ঞাপন', 'pv.noListings': 'এখন কোনো চালু বিজ্ঞাপন নেই।', 'pv.open': '{name}-এর প্রোফাইল খুলুন',
   'pf.cover': 'কভার', 'pf.coverColor': 'কভার স্টাইল {n}', 'pf.coverUpload': 'কভার ছবি আপলোড করুন', 'pf.coverRemove': 'কভার ছবি সরান', 'pf.coverChange': 'কভার বদলান',
   soldByLabel: 'বিক্রেতা:', moreFrom: '{name}-এর আরও জিনিস',
+  'pf.complete': 'আপনার প্রোফাইল সম্পূর্ণ করুন', 'pf.completeOf': '{total}-এর মধ্যে {done}টি শেষ', 'pf.todo.photo': 'প্রোফাইল ছবি যোগ করুন', 'pf.todo.area': 'প্যারিসের এলাকা বাছুন', 'pf.todo.cover': 'একটি কভার বাছুন', 'pf.todo.listing': 'প্রথম জিনিস বিক্রির জন্য দিন', 'pf.todo.friend': 'একজন প্রতিবেশীকে ফলো করুন', 'pf.allDone': 'আপনার প্রোফাইল সম্পূর্ণ। দারুণ!', 'ls.emptyH': 'এখনো বিক্রির জন্য কিছু নেই',
+  'tab.browse': 'ব্রাউজ করুন', 'br.search': 'বিজ্ঞাপন খুঁজুন…', 'br.clear': 'খোঁজা মুছুন', 'br.sortLabel': 'সাজান', 'br.sort.nearest': 'সবচেয়ে কাছেরটা আগে', 'br.sort.low': 'দাম: কম থেকে বেশি', 'br.sort.high': 'দাম: বেশি থেকে কম', 'br.none': '"{q}"-এর সঙ্গে মেলে এমন কোনো বিজ্ঞাপন নেই', 'br.noneHint': 'অন্য শব্দ চেষ্টা করুন বা ফিল্টার মুছুন।', 'br.reset': 'ফিল্টার মুছুন', 'br.save': '{title} সংরক্ষণ করুন', 'br.count_one': '{n}টি বিজ্ঞাপন', 'br.count_other': '{n}টি বিজ্ঞাপন',
 }

@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'Matangazo', 'pv.noListings': 'Hakuna matangazo hai kwa sasa.', 'pv.open': 'Fungua wasifu wa {name}',
   'pf.cover': 'Jalada', 'pf.coverColor': 'Mtindo wa jalada {n}', 'pf.coverUpload': 'Pakia picha ya jalada', 'pf.coverRemove': 'Ondoa picha ya jalada', 'pf.coverChange': 'Badilisha jalada',
   soldByLabel: 'Inauzwa na', moreFrom: 'Zaidi kutoka kwa {name}',
+  'pf.complete': 'Kamilisha wasifu wako', 'pf.completeOf': '{done} kati ya {total} yamekamilika', 'pf.todo.photo': 'Ongeza picha ya wasifu', 'pf.todo.area': 'Chagua wilaya yako ya Paris', 'pf.todo.cover': 'Chagua jalada', 'pf.todo.listing': 'Weka kitu chako cha kwanza', 'pf.todo.friend': 'Mfuate jirani', 'pf.allDone': 'Wasifu wako umekamilika. Vizuri!', 'ls.emptyH': 'Bado hakuna kinachouzwa',
+  'tab.browse': 'Vinjari', 'br.search': 'Tafuta matangazo…', 'br.clear': 'Futa utafutaji', 'br.sortLabel': 'Panga', 'br.sort.nearest': 'Karibu zaidi kwanza', 'br.sort.low': 'Bei: ndogo hadi kubwa', 'br.sort.high': 'Bei: kubwa hadi ndogo', 'br.none': 'Hakuna tangazo linalolingana na "{q}"', 'br.noneHint': 'Jaribu neno lingine au futa vichujio.', 'br.reset': 'Futa vichujio', 'br.save': 'Hifadhi {title}', 'br.count_one': 'Tangazo {n}', 'br.count_other': 'Matangazo {n}',
 }

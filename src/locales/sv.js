@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'Annonser', 'pv.noListings': 'Inga aktiva annonser just nu.', 'pv.open': 'Öppna profilen för {name}',
   'pf.cover': 'Omslag', 'pf.coverColor': 'Omslagsstil {n}', 'pf.coverUpload': 'Ladda upp en omslagsbild', 'pf.coverRemove': 'Ta bort omslagsbilden', 'pf.coverChange': 'Byt omslag',
   soldByLabel: 'Säljs av', moreFrom: 'Mer från {name}',
+  'pf.complete': 'Fyll i din profil', 'pf.completeOf': '{done} av {total} klara', 'pf.todo.photo': 'Lägg till profilbild', 'pf.todo.area': 'Välj ditt arrondissement', 'pf.todo.cover': 'Välj ett omslag', 'pf.todo.listing': 'Lägg upp din första sak', 'pf.todo.friend': 'Följ en granne', 'pf.allDone': 'Din profil är komplett. Snyggt!', 'ls.emptyH': 'Inget till salu än',
+  'tab.browse': 'Bläddra', 'br.search': 'Sök annonser…', 'br.clear': 'Rensa sökningen', 'br.sortLabel': 'Sortera', 'br.sort.nearest': 'Närmast först', 'br.sort.low': 'Pris: lågt till högt', 'br.sort.high': 'Pris: högt till lågt', 'br.none': 'Inga annonser matchar "{q}"', 'br.noneHint': 'Prova ett annat ord eller rensa filtren.', 'br.reset': 'Rensa filter', 'br.save': 'Spara {title}', 'br.count_one': '{n} annons', 'br.count_other': '{n} annonser',
 }

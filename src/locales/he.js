@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'מודעות', 'pv.noListings': 'אין כרגע מודעות פעילות.', 'pv.open': 'פתיחת הפרופיל של {name}',
   'pf.cover': 'תמונת נושא', 'pf.coverColor': 'סגנון תמונת נושא {n}', 'pf.coverUpload': 'העלאת תמונת נושא', 'pf.coverRemove': 'הסרת תמונת הנושא', 'pf.coverChange': 'שינוי תמונת הנושא',
   soldByLabel: 'נמכר על ידי', moreFrom: 'עוד מ{name}',
+  'pf.complete': 'השלימו את הפרופיל', 'pf.completeOf': '{done} מתוך {total} הושלמו', 'pf.todo.photo': 'הוספת תמונת פרופיל', 'pf.todo.area': 'בחירת הרובע שלכם בפריז', 'pf.todo.cover': 'בחירת תמונת נושא', 'pf.todo.listing': 'פרסום הפריט הראשון', 'pf.todo.friend': 'מעקב אחרי שכן', 'pf.allDone': 'הפרופיל שלכם מושלם. כל הכבוד!', 'ls.emptyH': 'עדיין אין כלום למכירה',
+  'tab.browse': 'עיון', 'br.search': 'חיפוש מודעות…', 'br.clear': 'ניקוי החיפוש', 'br.sortLabel': 'מיון', 'br.sort.nearest': 'הכי קרוב קודם', 'br.sort.low': 'מחיר: מהנמוך לגבוה', 'br.sort.high': 'מחיר: מהגבוה לנמוך', 'br.none': 'אין מודעות שמתאימות ל"{q}"', 'br.noneHint': 'נסו מילה אחרת או נקו את המסננים.', 'br.reset': 'ניקוי מסננים', 'br.save': 'שמירת {title}', 'br.count_one': 'מודעה אחת', 'br.count_other': '{n} מודעות', 'br.count_two': 'שתי מודעות',
 }

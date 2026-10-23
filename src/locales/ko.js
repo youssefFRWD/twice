@@ -163,4 +163,6 @@ export default {
   'pv.listings': '판매글', 'pv.noListings': '지금 판매 중인 글이 없어요.', 'pv.open': '{name}님의 프로필 열기',
   'pf.cover': '커버', 'pf.coverColor': '커버 스타일 {n}', 'pf.coverUpload': '커버 사진 올리기', 'pf.coverRemove': '커버 사진 삭제', 'pf.coverChange': '커버 변경',
   soldByLabel: '판매자:', moreFrom: '{name}님의 다른 상품',
+  'pf.complete': '프로필을 완성하세요', 'pf.completeOf': '{total}개 중 {done}개 완료', 'pf.todo.photo': '프로필 사진 추가', 'pf.todo.area': '파리 지역 선택', 'pf.todo.cover': '커버 고르기', 'pf.todo.listing': '첫 상품 올리기', 'pf.todo.friend': '이웃 팔로우하기', 'pf.allDone': '프로필이 완성됐어요. 좋아요!', 'ls.emptyH': '아직 판매 중인 물건이 없어요',
+  'tab.browse': '둘러보기', 'br.search': '판매글 검색…', 'br.clear': '검색 지우기', 'br.sortLabel': '정렬', 'br.sort.nearest': '가까운 순', 'br.sort.low': '가격 낮은 순', 'br.sort.high': '가격 높은 순', 'br.none': '"{q}"와(과) 일치하는 판매글이 없어요', 'br.noneHint': '다른 단어를 입력하거나 필터를 지워 보세요.', 'br.reset': '필터 지우기', 'br.save': '{title} 저장', 'br.count_one': '판매글 {n}개', 'br.count_other': '판매글 {n}개',
 }

@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'آگهی‌ها', 'pv.noListings': 'در حال حاضر آگهی فعالی نیست.', 'pv.open': 'باز کردن نمایهٔ {name}',
   'pf.cover': 'تصویر جلد', 'pf.coverColor': 'سبک جلد {n}', 'pf.coverUpload': 'بارگذاری عکس جلد', 'pf.coverRemove': 'حذف عکس جلد', 'pf.coverChange': 'تغییر جلد',
   soldByLabel: 'فروشنده:', moreFrom: 'موارد بیشتر از {name}',
+  'pf.complete': 'نمایهٔ خود را کامل کنید', 'pf.completeOf': '{done} از {total} انجام شد', 'pf.todo.photo': 'افزودن عکس نمایه', 'pf.todo.area': 'انتخاب منطقهٔ پاریس', 'pf.todo.cover': 'انتخاب جلد', 'pf.todo.listing': 'گذاشتن اولین مورد برای فروش', 'pf.todo.friend': 'دنبال کردن یک همسایه', 'pf.allDone': 'نمایهٔ شما کامل است. عالی!', 'ls.emptyH': 'هنوز چیزی برای فروش نیست',
+  'tab.browse': 'مرور', 'br.search': 'جستجوی آگهی‌ها…', 'br.clear': 'پاک کردن جستجو', 'br.sortLabel': 'مرتب‌سازی', 'br.sort.nearest': 'نزدیک‌ترین‌ها اول', 'br.sort.low': 'قیمت: کم به زیاد', 'br.sort.high': 'قیمت: زیاد به کم', 'br.none': 'آگهی‌ای برای «{q}» پیدا نشد', 'br.noneHint': 'کلمهٔ دیگری امتحان کنید یا فیلترها را پاک کنید.', 'br.reset': 'پاک کردن فیلترها', 'br.save': 'ذخیرهٔ {title}', 'br.count_one': '{n} آگهی', 'br.count_other': '{n} آگهی',
 }

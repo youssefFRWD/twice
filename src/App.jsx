@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
-import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
+import { CAT_ALL, ITEMS, catOf, planMetro, planWalk } from './data.js'
 import { useI18n } from './i18n.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
@@ -7,6 +7,7 @@ import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, persi
 import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
+import Browse from './Browse.jsx'
 import Messages from './Messages.jsx'
 import { buildPlans } from './routing.js'
 import Profile from './Profile.jsx'
@@ -18,7 +19,7 @@ import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 const MapView = lazy(() => import('./MapView.jsx'))
 
 const GPS_LABEL = 'Your location' // stored value that marks a GPS position; shown translated
-const TABS = [['discover', 'disc'], ['saved', 'heart'], ['map', 'map'], ['messages', 'chat'], ['profile', 'user']]
+const TABS = [['discover', 'disc'], ['browse', 'all'], ['saved', 'heart'], ['map', 'map'], ['messages', 'chat'], ['profile', 'user']]
 
 function initState() {
   const d = loadStored()
@@ -97,7 +98,8 @@ export default function App() {
   const [mode, setMode] = useState('walk')
   const [placing, setPlacing] = useState(false)
   const [peek, setPeek] = useState(false)
-  const [landing, setLanding] = useState(init.fresh)
+  // the welcome page is the front door: it opens on every load, not just the first visit
+  const [landing, setLanding] = useState(true)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
   const [seller, setSeller] = useState(null)
@@ -479,7 +481,7 @@ export default function App() {
             <span>{me.src === 'gps' ? t('yourLocation') : me.label}</span>
           </button>
         </header>
-        {tab !== 'messages' && tab !== 'profile' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
+        {tab !== 'messages' && tab !== 'profile' && tab !== 'browse' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
         <main>
           <section className={`view${tab === 'discover' ? ' on' : ''}`} id="v-discover" aria-label={t('tab.discover')}>
             {tab === 'discover' && (
@@ -494,6 +496,22 @@ export default function App() {
                 onSeller={setSeller}
                 onUndo={undo}
                 onReset={resetPassed}
+              />
+            )}
+          </section>
+          <section className={`view${tab === 'browse' ? ' on' : ''}`} id="v-browse" aria-label={t('tab.browse')}>
+            {tab === 'browse' && (
+              <Browse
+                items={ITEMS}
+                me={me}
+                saved={saved}
+                onSave={it => decide(it, 1)}
+                onUnsave={unsave}
+                onBuy={setBuyId}
+                onShowMap={showOnMap}
+                canMessage={canMessage}
+                onMessage={messageSeller}
+                onSeller={setSeller}
               />
             )}
           </section>
@@ -578,7 +596,7 @@ export default function App() {
       {landing && <Landing
           onStart={startApp}
           onSignIn={signedOut ? () => setAuthOpen(true) : undefined}
-          tabs={TABS}
+          tabs={TABS.map(([id, ic]) => [id, t('tab.' + id), ic])}
           onNav={t => {
             startApp()
             setTab(t)

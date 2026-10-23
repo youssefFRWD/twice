@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
-import { Avatar } from './ui.jsx'
+import { Avatar, EmptyCard } from './ui.jsx'
 
 const area = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : '')
 
@@ -74,7 +74,7 @@ export default function ProfileFriends({ uid, onToast, onOpen }) {
         {found && (found.length ? (
           <ul className="fr-list">{found.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={btn(p, p.i_follow)} />)}</ul>
         ) : (
-          <p className="pf-empty">{t('fr.nobody')}</p>
+          <EmptyCard compact icon="users" text={t('fr.nobody')} />
         ))}
       </section>
       <section className="pf-sec" aria-labelledby="fr-ing">
@@ -82,7 +82,7 @@ export default function ProfileFriends({ uid, onToast, onOpen }) {
         {conn.following.length ? (
           <ul className="fr-list">{conn.following.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={btn(p, true)} />)}</ul>
         ) : (
-          <p className="pf-empty">{t('fr.noFollowing')}</p>
+          <EmptyCard compact icon="users" text={t('fr.noFollowing')} />
         )}
       </section>
       <section className="pf-sec" aria-labelledby="fr-ers">
@@ -90,7 +90,7 @@ export default function ProfileFriends({ uid, onToast, onOpen }) {
         {conn.followers.length ? (
           <ul className="fr-list">{conn.followers.map(p => <Person key={p.id} p={p} onOpen={onOpen} action={p.i_follow ? <span className="pf-pill">{t('fr.following')}</span> : btn(p, false)} />)}</ul>
         ) : (
-          <p className="pf-empty">{t('fr.noFollowers')}</p>
+          <EmptyCard compact icon="users" text={t('fr.noFollowers')} />
         )}
       </section>
     </>

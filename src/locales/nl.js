@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'Advertenties', 'pv.noListings': 'Op dit moment geen actieve advertenties.', 'pv.open': 'Profiel van {name} openen',
   'pf.cover': 'Omslag', 'pf.coverColor': 'Omslagstijl {n}', 'pf.coverUpload': 'Omslagfoto uploaden', 'pf.coverRemove': 'Omslagfoto verwijderen', 'pf.coverChange': 'Omslag wijzigen',
   soldByLabel: 'Verkocht door', moreFrom: 'Meer van {name}',
+  'pf.complete': 'Maak je profiel compleet', 'pf.completeOf': '{done} van {total} klaar', 'pf.todo.photo': 'Profielfoto toevoegen', 'pf.todo.area': 'Kies je arrondissement', 'pf.todo.cover': 'Kies een omslag', 'pf.todo.listing': 'Zet je eerste item te koop', 'pf.todo.friend': 'Volg een buur', 'pf.allDone': 'Je profiel is compleet. Mooi!', 'ls.emptyH': 'Nog niets te koop',
+  'tab.browse': 'Bladeren', 'br.search': 'Zoek advertenties…', 'br.clear': 'Zoekopdracht wissen', 'br.sortLabel': 'Sorteren', 'br.sort.nearest': 'Dichtstbij eerst', 'br.sort.low': 'Prijs: laag naar hoog', 'br.sort.high': 'Prijs: hoog naar laag', 'br.none': 'Geen advertenties voor “{q}”', 'br.noneHint': 'Probeer een ander woord of wis de filters.', 'br.reset': 'Filters wissen', 'br.save': '{title} bewaren', 'br.count_one': '{n} advertentie', 'br.count_other': '{n} advertenties',
 }
