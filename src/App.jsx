@@ -101,6 +101,25 @@ export default function App() {
   const [landing, setLanding] = useState(init.fresh)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
+  const [dealPay, setDealPay] = useState(null)
+  const [paidDeals, setPaidDeals] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('twice.paidDeals') || '[]')
+    } catch {
+      return []
+    }
+  })
+  const markPaid = id => {
+    setPaidDeals(prev => {
+      const next = [...prev, id]
+      try {
+        localStorage.setItem('twice.paidDeals', JSON.stringify(next))
+      } catch {
+        /* storage blocked: the item just stays in the cart until reload */
+      }
+      return next
+    })
+  }
   const [seller, setSeller] = useState(null)
   const [showNearby, setShowNearby] = useState(false)
   const [arr, setArr] = useState(null)
@@ -556,7 +575,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -620,9 +639,10 @@ export default function App() {
       {buyId !== null && (
         <Checkout
           key={buyId}
-          item={itemById(buyId)}
+          item={dealPay && dealPay.itemId === buyId ? { ...itemById(buyId), p: dealPay.eur } : itemById(buyId)}
           me={me}
           canMessage={canMessage}
+          onPaid={() => dealPay && markPaid(dealPay.id)}
           onMessage={it => {
             setBuyId(null)
             messageSeller(it)
@@ -631,7 +651,10 @@ export default function App() {
             setBuyId(null)
             showOnMap(id)
           }}
-          onClose={() => setBuyId(null)}
+          onClose={() => {
+            setBuyId(null)
+            setDealPay(null)
+          }}
         />
       )}
       <LocModal
