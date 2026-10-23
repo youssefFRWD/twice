@@ -35,6 +35,7 @@ export default {
   'discover.hint': 'Swipe right to save, left to pass. Arrow keys work too. {n} left.',
   'saved.noneInCat': 'Nothing saved in this category', 'saved.none': 'No favorites yet', 'saved.pickOther': 'Pick another category above.',
   'saved.swipeHint': 'Swipe right on Discover and the items you like will collect here.',
+  'saved.sort': 'Sort', 'saved.by.date': 'Date', 'saved.by.name': 'Name', 'saved.by.price': 'Price', 'saved.reverse.on': 'Order: reversed', 'saved.reverse.off': 'Reverse order', 'saved.search': 'Search saved items', 'saved.noMatch': 'No saved items match your search.',
   'saved.count': '{n} of {total} items, distances from {name}',
   'saved.showOn': 'Show {title} on the map', 'saved.msgSeller': 'Message the seller of {title}', 'saved.remove': 'Remove {title} from favorites',
 
@@ -70,6 +71,11 @@ export default {
   'msg.offline': 'Messaging is only available once twice is connected online.', 'msg.noConvs': 'No conversations yet',
   'msg.noConvsHint': 'Open a saved item and tap the message button to ask the seller a question.', 'msg.you': 'You: ',
   'msg.none': 'No messages yet', 'msg.select': 'Select a conversation to read it.',
+  'appr.seller.talkFirst': 'Talk with {name} first. Once you have both written, you can approve the sale here.',
+  'appr.seller.none': 'Agreed with {name}? Approve the sale so they can pay.', 'appr.seller.approved': 'You approved the sale. {name} can pay now.',
+  'appr.seller.withdrawn': 'You withdrew your approval. The item is back on sale.',
+  'appr.buyer.approved': '{name} approved your purchase.', 'appr.buyer.withdrawn': '{name} withdrew their approval.',
+  'appr.approve': 'Approve sale', 'appr.withdraw': 'Withdraw', 'appr.payNow': 'Pay now',
 
   // location, auth, toasts
   'loc.title': 'Where are you?', 'loc.body': 'Distances and directions start from this point.', 'loc.now': 'Right now: {place}.',
@@ -96,12 +102,16 @@ export default {
   'co.errName': 'Enter the name on the card.', 'co.errNumber': 'This card number is not valid.', 'co.errExp': 'Use MM/YY, not in the past.', 'co.errCvc': '3 or 4 digits.',
   'co.paid': 'Paid {amount}', 'co.reserved': 'Reserved', 'co.yours': '{title} is yours. {seller} has been told to keep it for you.',
   'co.setAside': '{title} is set aside for you. Bring {amount} in cash when you meet {seller}.', 'co.order': 'Order {ref}',
-  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.item': 'Item',
+  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.buyTitle': 'Buy this item', 'co.item': 'Item',
   'co.collect': 'You collect it in person from {seller}.', 'co.howPay': 'How do you pay?', 'co.method': 'Payment method',
   'co.testWallet': 'Test mode: no money is charged.', 'co.testCard': 'Test mode: no money is charged, and card details never leave this page.',
   'co.nameOnCard': 'Name on card', 'co.cardNumber': 'Card number', 'co.expiry': 'Expiry', 'co.summary': 'Summary',
   'co.handover': 'Handover in person', 'co.free': 'Free', 'co.total': 'Total', 'co.waitPaypal': 'Waiting for PayPal…', 'co.processing': 'Processing…',
   'co.pay': 'Pay {amount}', 'co.payApple': 'Pay {amount} with Apple Pay', 'co.toPaypal': 'Continue to PayPal · {amount}', 'co.reservePay': 'Reserve, pay {amount} in cash',
+  'co.talkH': 'Message {seller} first', 'co.talkP': 'Talk it through with {seller} in Messages. Once you have both written, they can approve the sale, and payment opens here.',
+  'co.withdrawnH': '{seller} withdrew their approval',
+  'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
+  'co.approved': '{seller} approved your purchase.',
 
   // profile
   'pf.sec.listings': 'My listings', 'pf.sec.reviews': 'Reviews', 'pf.sec.friends': 'Friends', 'pf.sec.settings': 'Settings',
@@ -135,7 +145,7 @@ export default {
   'ls.deletedToast': 'Listing deleted', 'ls.deleteFail': 'Could not delete the listing.', 'ls.loadFail': 'Could not load your listings. Check your connection and reopen this tab.',
   'ls.loading': 'Loading your listings…',
   'ls.none': 'You have not listed anything yet. Add photos, a price and a pickup area, and neighbours can find it on Discover and the map.',
-  'ls.status.active': 'Active', 'ls.status.hidden': 'Hidden', 'ls.status.sold': 'Sold',
+  'ls.status.active': 'Active', 'ls.status.hidden': 'Hidden', 'ls.status.reserved': 'Reserved', 'ls.status.sold': 'Sold',
   'ls.confirmDelete': 'Delete this listing for good?', 'ls.yesDelete': 'Yes, delete', 'ls.keep': 'Keep it',
   'ls.show': 'Show', 'ls.hide': 'Hide', 'ls.relist': 'Relist', 'ls.markSold': 'Mark sold',
 
@@ -182,4 +192,11 @@ export default {
   soldByLabel: 'Sold by', moreFrom: 'More from {name}',
   'pf.complete': 'Complete your profile', 'pf.completeOf': '{done} of {total} done', 'pf.todo.photo': 'Add a profile photo', 'pf.todo.area': 'Choose your Paris area', 'pf.todo.cover': 'Pick a cover', 'pf.todo.listing': 'List your first item', 'pf.todo.friend': 'Follow a neighbour', 'pf.allDone': 'Your profile is complete. Nice!', 'ls.emptyH': 'Nothing for sale yet',
   'tab.browse': 'Browse', 'br.search': 'Search listings…', 'br.clear': 'Clear search', 'br.sortLabel': 'Sort', 'br.sort.nearest': 'Nearest first', 'br.sort.low': 'Price: low to high', 'br.sort.high': 'Price: high to low', 'br.none': 'No listings match “{q}”', 'br.noneHint': 'Try another word, or clear the filters.', 'br.reset': 'Clear filters', 'br.save': 'Save {title}', 'br.count_one': '{n} listing', 'br.count_other': '{n} listings',
+  // sample item titles for ticker
+  'it.1': 'Mid-century oak sideboard', 'it.2': 'Velvet two-seater sofa', 'it.3': 'White ladder bookshelf', 'it.4': 'Vintage leather jacket, size M', 'it.5': 'Wool trench coat, size M', 'it.6': 'Leather ankle boots, size 39', 'it.7': '13-inch ultrabook, 16 GB RAM', 'it.8': '35 mm film camera with 50 mm lens', 'it.9': 'Turntable with built-in preamp', 'it.10': 'Noise-cancelling headphones', 'it.11': 'Box of 40 French paperbacks', 'it.12': 'Illustrated atlas of Paris, 1950s', 'it.13': '30 jazz LPs, mixed labels', 'it.14': 'Road bike, 54 cm frame',
+  // item details and photo gallery
+  'item.photos': 'Photos', 'item.photoOf': 'Photo {i} of {n}', 'item.prev': 'Previous photo', 'item.next': 'Next photo',
+  'item.moreInfo': 'More info', 'item.details': 'Details', 'item.where': 'Where', 'item.distance': 'Distance', 'item.seller': 'Seller',
+  'item.about': 'About this item', 'item.noDesc': 'The seller has not added a description.', 'item.saved': 'Saved',
+  'prefs.appearance': 'Appearance', 'prefs.theme.auto': 'Automatic', 'prefs.theme.light': 'Light', 'prefs.theme.dark': 'Dark', 'prefs.themeNote': 'Automatic follows your device. This is saved on this device.',
 }

@@ -46,11 +46,11 @@ export function parseBody(body) {
     if (body.startsWith(OFFER_TAG)) {
       const o = JSON.parse(body.slice(OFFER_TAG.length))
       if (!validOffer(o)) return null
-      return { kind: 'offer', price: o.price, cur: o.cur, note: String(o.note || '').slice(0, 300), itemId: o.itemId, title: String(o.title || ''), re: o.re }
+      return { kind: 'offer', price: o.price, cur: o.cur, note: String(o.note || '').slice(0, 300), itemId: o.itemId, title: String(o.title || ''), re: o.re == null ? undefined : String(o.re) }
     }
     if (body.startsWith(REPLY_TAG)) {
       const r = JSON.parse(body.slice(REPLY_TAG.length))
-      if ((r.action === 'accept' || r.action === 'refuse') && typeof r.to === 'string') return { kind: 'reply', to: r.to, action: r.action }
+      if ((r.action === 'accept' || r.action === 'refuse') && (typeof r.to === 'string' || typeof r.to === 'number')) return { kind: 'reply', to: String(r.to), action: r.action }
     }
   } catch {
     /* not valid JSON: show it as plain text */
@@ -77,31 +77,13 @@ export function deriveOffers(msgs) {
     const p = parseBody(m.body)
     if (!p) continue
     if (p.kind === 'offer') {
-      offers.set(m.id, { m, o: p, status: 'pending', by: null, at: null })
+      offers.set(String(m.id), { m, o: p, status: 'pending', by: null, at: null })
       const t = p.re && offers.get(p.re)
-      if (t && t.status === 'pending' && t.m.sender_id !== m.sender_id) Object.assign(t, { status: 'countered', by: m.id, at: m.created_at })
+      if (t && t.status === 'pending' && t.m.sender_id !== m.sender_id) Object.assign(t, { status: 'countered', by: String(m.id), at: m.created_at })
     } else {
       const t = offers.get(p.to)
-      if (t && t.status === 'pending' && t.m.sender_id !== m.sender_id) Object.assign(t, { status: p.action === 'accept' ? 'accepted' : 'refused', by: m.id, at: m.created_at })
+      if (t && t.status === 'pending' && t.m.sender_id !== m.sender_id) Object.assign(t, { status: p.action === 'accept' ? 'accepted' : 'refused', by: String(m.id), at: m.created_at })
     }
   }
   return offers
-}
-
-/** Accepted offers in conversations where the user is the buyer: the cart. */
-export function dealsOf(msgs, { convId, iAmBuyer, partner, itemId, itemTitle }) {
-  if (!iAmBuyer) return []
-  return [...deriveOffers(msgs).values()]
-    .filter(e => e.status === 'accepted')
-    .map(e => ({
-      id: e.m.id,
-      convId,
-      partner,
-      itemId: e.o.itemId ?? itemId,
-      title: e.o.title || itemTitle,
-      price: e.o.price,
-      cur: e.o.cur,
-      eur: toEur(e.o.price, e.o.cur),
-      at: e.at,
-    }))
 }

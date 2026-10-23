@@ -165,4 +165,6 @@ export default {
   soldByLabel: '出品者：', moreFrom: '{name}のほかの出品',
   'pf.complete': 'プロフィールを充実させよう', 'pf.completeOf': '{total} 件中 {done} 件完了', 'pf.todo.photo': 'プロフィール写真を追加', 'pf.todo.area': 'パリのエリアを選ぶ', 'pf.todo.cover': 'カバーを選ぶ', 'pf.todo.listing': '最初の出品をする', 'pf.todo.friend': 'ご近所さんをフォロー', 'pf.allDone': 'プロフィールが完成しました！', 'ls.emptyH': 'まだ出品がありません',
   'tab.browse': 'さがす一覧', 'br.search': '出品を検索…', 'br.clear': '検索をクリア', 'br.sortLabel': '並べ替え', 'br.sort.nearest': '近い順', 'br.sort.low': '価格の安い順', 'br.sort.high': '価格の高い順', 'br.none': '「{q}」に一致する出品はありません', 'br.noneHint': '別の言葉を試すか、絞り込みを解除してください。', 'br.reset': '絞り込みを解除', 'br.save': '{title}を保存', 'br.count_one': '{n} 件の出品', 'br.count_other': '{n} 件の出品',
+  // sample item titles for ticker
+  'it.1': 'ミッドセンチュリースタイルのオーク材サイドボード', 'it.2': 'ベルベット生地の2人掛けソファ', 'it.3': 'ホワイトのラダー本棚', 'it.4': 'ヴィンテージレザージャケット、Mサイズ', 'it.5': 'ウールトレンチコート、Mサイズ', 'it.6': 'レザーアンクルブーツ、39サイズ', 'it.7': '13インチ・ウルトラブック、16GB RAM', 'it.8': '35mmフィルムカメラ、50mmレンズ付き', 'it.9': '内蔵プリアンプ付きターンテーブル', 'it.10': 'ノイズキャンセリングヘッドフォン', 'it.11': 'フランス語ペーパーバック40冊入りボックス', 'it.12': 'パリのイラスト入り地図帳、1950年代', 'it.13': 'ジャズLP30枚、混合レーベル', 'it.14': 'ロードバイク、54cmフレーム',
 }

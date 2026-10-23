@@ -3,9 +3,9 @@ import { ITEMS, catOf, fmtD } from './data.js'
 import { distOf } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-/** Everything one neighbour currently has for sale (only active listings are ever loaded). */
+/** Everything one neighbour currently has for sale (active listings; a reserved one only reaches its approved buyer). */
 export default function SellerListings({ sid, name, me, uid, canMessage, onMessage, onBuy, onClose }) {
-  const list = ITEMS.filter(i => i.sid === sid)
+  const list = ITEMS.filter(i => i.sid === sid && !i.reserved)
 
   useEffect(() => {
     const onKey = e => e.key === 'Escape' && onClose()

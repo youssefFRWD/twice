@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
 import { currencyName, locale } from './locale.js'
-import { currencyList, dealsOf, deriveOffers, formatMoney, offerBody, parseBody, replyBody, toEur } from './offers.js'
+import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, previewOf, replyBody, toEur } from './offers.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -334,7 +334,7 @@ function StarredPage({ items, convIds, onBack, onGo, onUnstar }) {
   )
 }
 
-function OfferCard({ e, mine, partner, busy, onAccept, onCounter, onRefuse }) {
+function OfferCard({ e, mine, partner, busy, iAmBuyer, paid, onAccept, onCounter, onRefuse, onCheckout }) {
   const { m, o, status } = e
   return (
     <div className={`bub-row offer-row${mine ? ' mine' : ''}`} data-mid={m.id}>
@@ -354,7 +354,16 @@ function OfferCard({ e, mine, partner, busy, onAccept, onCounter, onRefuse }) {
           </div>
         )}
         {status === 'pending' && mine && <p className="offer-state">Waiting for {partner} to respond</p>}
-        {status === 'accepted' && <p className="offer-state ok"><Icon name="check" size={14} />Accepted · added to the cart</p>}
+        {status === 'accepted' && (
+          <>
+            <p className="offer-state ok"><Icon name="check" size={14} />{paid ? 'Accepted and paid' : 'Accepted'}</p>
+            {iAmBuyer && !paid && (
+              <button className="btn primary small offer-pay" onClick={() => onCheckout(e)}>
+                <Icon name="card" size={15} />Go to checkout
+              </button>
+            )}
+          </>
+        )}
         {status === 'refused' && <p className="offer-state no"><Icon name="x" size={14} />Refused</p>}
         {status === 'countered' && <p className="offer-state">Countered</p>}
       </div>
@@ -411,41 +420,50 @@ function OfferComposer({ init, busy, onSend, onClose }) {
   )
 }
 
-function CartPanel({ deals, onPay, onGo, onClose }) {
-  return (
-    <aside className="msg-cart" aria-label="Cart">
-      <header>
-        <button className="btn small cart-close" onClick={onClose}><Icon name="undo" size={16} />Back</button>
-        <h2>Cart</h2>
-        {deals.length > 0 && <i>{deals.length}</i>}
-      </header>
-      <p className="note cart-sub">Accepted offers, ready to pay.</p>
-      <div className="cart-list">
-        {deals.length === 0 && (
-          <div className="cart-empty">
-            <Icon name="bag" size={32} />
-            <p>Nothing here yet. When an offer is accepted, the item is added to your cart.</p>
-          </div>
-        )}
-        {deals.map(d => (
-          <div key={d.id} className="cart-item">
-            <button className="cart-title" onClick={() => onGo(d.convId)}>{d.title}</button>
-            <small>with {d.partner}</small>
-            <div className="cart-price">
-              <b>{formatMoney(d.price, d.cur)}</b>
-              {d.cur !== 'EUR' && <span>≈ {formatMoney(d.eur, 'EUR')}</span>}
-            </div>
-            <button className="btn primary small" onClick={() => onPay(d)}>
-              <Icon name="card" size={15} />Pay
-            </button>
-          </div>
-        ))}
+/**
+ * Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here.
+ * Approving only opens once both people have written, so the sale is always agreed in conversation first.
+ */
+function ApprovalBar({ conv, talked, onApprove, onBuy }) {
+  const { t } = useI18n()
+  const [busy, setBusy] = useState(false)
+  const { approval: st, partner, iAmBuyer } = conv
+  if (conv.sample || !conv.itemId || (iAmBuyer && !st)) return null
+  const set = async approve => {
+    setBusy(true)
+    await onApprove(conv, approve)
+    setBusy(false)
+  }
+  if (!iAmBuyer && !st && !talked) {
+    return (
+      <div className="th-req withdrawn" role="status">
+        <Icon name="chat" size={18} />
+        <span>{t('appr.seller.talkFirst', { name: partner })}</span>
       </div>
-    </aside>
+    )
+  }
+  const state = st || 'none'
+  return (
+    <div className={`th-req ${state}`} role="status">
+      <Icon name={st === 'approved' ? 'check' : 'bag'} size={18} />
+      <span>{t(`appr.${iAmBuyer ? 'buyer' : 'seller'}.${state}`, { name: partner })}</span>
+      {!iAmBuyer && (
+        <span className="th-req-btns">
+          {st === 'approved' ? (
+            <button className="btn small" disabled={busy} onClick={() => set(false)}>{t('appr.withdraw')}</button>
+          ) : (
+            <button className="btn small primary" disabled={busy} onClick={() => set(true)}>{t('appr.approve')}</button>
+          )}
+        </span>
+      )}
+      {iAmBuyer && st === 'approved' && (
+        <button className="btn small primary" onClick={() => onBuy(conv.itemId)}>{t('appr.payNow')}</button>
+      )}
+    </div>
   )
 }
 
-function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem }) {
+function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy }) {
   const { t, currency } = useI18n()
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
@@ -557,21 +575,23 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
     setFlash(msg)
     setTimeout(() => setFlash(''), 4000)
   }
+  const checkout = e => onPay?.({ id: String(e.m.id), itemId: e.o.itemId ?? conv.itemId, eur: toEur(e.o.price, e.o.cur) })
   const respond = async (e, action) => {
     setBusy(true)
     setError('')
     try {
-      await post(replyBody({ to: e.m.id, action }))
+      await post(replyBody({ to: String(e.m.id), action }))
       if (action === 'refuse') say('Offer refused.')
-      else say(conv.iAmBuyer ? `Offer accepted. “${e.o.title || conv.itemTitle}” was added to your cart.` : `Offer accepted. “${e.o.title || conv.itemTitle}” was added to ${conv.partner}'s cart.`)
-    } catch {
-      setError('Could not send your answer. Check your connection and try again.')
+      else if (conv.iAmBuyer) checkout(e)
+      else say(`Offer accepted. ${conv.partner} can now check out.`)
+    } catch (err) {
+      setError(`Could not send your answer${err?.message ? `: ${err.message}` : '. Check your connection and try again'}.`)
     }
     setBusy(false)
   }
   const openOffer = counterOf => {
     const cur = counterOf ? counterOf.o.cur : currency
-    setComposer({ re: counterOf?.m.id, price: counterOf?.o.price, cur: currencyList().includes(cur) ? cur : 'EUR' })
+    setComposer({ re: counterOf ? String(counterOf.m.id) : undefined, price: counterOf?.o.price, cur: currencyList().includes(cur) ? cur : 'EUR' })
   }
   const sendOffer = async ({ price, cur, note }) => {
     setBusy(true)
@@ -580,8 +600,8 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
       await post(offerBody({ price, cur, note, itemId: conv.itemId, title: conv.itemTitle, re: composer.re }))
       say(composer.re ? 'Counter-offer sent.' : 'Offer sent.')
       setComposer(null)
-    } catch {
-      setError('Offer not sent. Check your connection and try again.')
+    } catch (err) {
+      setError(`Offer not sent${err?.message ? `: ${err.message}` : '. Check your connection and try again'}.`)
     }
     setBusy(false)
   }
@@ -607,6 +627,7 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
   }
 
   const lastSeen = [...msgs].reverse().find(m => m.sender_id === uid && m.read_at)?.id
+  const talked = msgs.some(m => m.sender_id === uid) && msgs.some(m => m.sender_id !== uid)
   const st = presence(conv.theirAt)
 
   return (
@@ -640,23 +661,24 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
         </button>
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
+      <ApprovalBar conv={conv} talked={talked} onApprove={onApprove} onBuy={onBuy} />
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
         {msgs.map(m => {
           const p = parseBody(m.body)
           if (p?.kind === 'offer') {
-            return <OfferCard key={m.id} e={offers.get(m.id)} mine={m.sender_id === uid} partner={conv.partner} busy={busy} onAccept={e => respond(e, 'accept')} onRefuse={e => respond(e, 'refuse')} onCounter={openOffer} />
+            return <OfferCard key={m.id} e={offers.get(String(m.id))} mine={m.sender_id === uid} partner={conv.partner} busy={busy} iAmBuyer={!!conv.iAmBuyer} paid={paid.includes(String(m.id))} onAccept={e => respond(e, 'accept')} onRefuse={e => respond(e, 'refuse')} onCounter={openOffer} onCheckout={checkout} />
           }
           if (p?.kind === 'reply') {
             const e = offers.get(p.to)
-            if (!e || e.by !== m.id) return null
+            if (!e || e.by !== String(m.id)) return null
             const who = m.sender_id === uid ? 'You' : conv.partner
             const price = formatMoney(e.o.price, e.o.cur)
             return (
               <p key={m.id} className={`offer-sys ${p.action === 'accept' ? 'ok' : 'no'}`} data-mid={m.id}>
                 {p.action === 'accept'
-                  ? `${who} accepted the offer of ${price}. “${e.o.title || conv.itemTitle}” was added to ${conv.iAmBuyer ? 'your' : `${conv.partner}'s`} cart.`
+                  ? `${who} accepted the offer of ${price}. ${conv.iAmBuyer ? 'You can now check out.' : `${conv.partner} can now check out.`}`
                   : `${who} refused the offer of ${price}.`}
               </p>
             )
@@ -684,8 +706,9 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
       </div>
       {flash && <p className="note th-flash" role="status">{flash}</p>}
       {error && <p className="note th-error" role="alert">{error}</p>}
+      <div className="th-compose">
+      {composer && <OfferComposer init={composer} busy={busy} onSend={sendOffer} onClose={() => setComposer(null)} />}
       <form className="th-send" onSubmit={send}>
-        {composer && <OfferComposer init={composer} busy={busy} onSend={sendOffer} onClose={() => setComposer(null)} />}
         <input
           type="text"
           aria-label={t('msg.write')}
@@ -701,6 +724,7 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
         )}
         <button className="btn primary" type="submit" disabled={busy || !text.trim()}>Send</button>
       </form>
+      </div>
     </section>
   )
 }
@@ -732,18 +756,28 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [] }) {
   const { t } = useI18n()
-  const demo = SHOW_SAMPLES && realConvs.length === 0
+  // messaging is for signed-in users only, so signed-out visitors don't get the sample conversations either
+  const demo = SHOW_SAMPLES && !!realUid && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
   const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
-  const demoConvs = useMemo(
-    () => SAMPLE_CONVS.map(c => ({ ...c, deals: dealsOf(demoMsgs[c.id], { convId: c.id, iAmBuyer: true, partner: c.partner, itemId: c.itemId, itemTitle: c.itemTitle }) })),
-    [demoMsgs],
-  )
+  const demoConvs = useMemo(() => {
+    // sample listings the buyer contacted from checkout get a conversation with their seller, unless one exists already
+    const started = sampleChats
+      .filter(it => !SAMPLE_CONVS.some(c => c.itemId === it.id))
+      .map(it => ({ id: `demo-item-${it.id}`, sample: true, iAmBuyer: true, partnerId: `demo-seller-${it.id}`, itemId: it.id, partner: it.s, itemTitle: it.t, last: null, unread: 0, at: it.at, theirAt: null }))
+    return [...started, ...SAMPLE_CONVS].map(c => {
+      const msgs = demoMsgs[c.id] || []
+      const last = msgs[msgs.length - 1]
+      return {
+        ...c,
+        ...(last && c.id.startsWith('demo-item-') ? { last: { body: previewOf(last.body), mine: true }, at: last.created_at } : {}),
+      }
+    })
+  }, [demoMsgs, sampleChats])
   const convs = demo ? demoConvs : realConvs
-  const [showCart, setShowCart] = useState(false)
   const [stars, setStars] = useStored(`twice.stars.${uid}`, [])
   const [likes, setLikes] = useStored(`twice.likes.${uid}`, [])
   const [query, setQuery] = useState('')
@@ -775,7 +809,6 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
   }
   const starredList = Object.values(starMsgs).sort((a, b) => new Date(b.at) - new Date(a.at))
   const openConv = id => {
-    setShowCart(false)
     setShowStarred(false)
     onOpen(id)
   }
@@ -784,10 +817,6 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     setShowStarred(false)
     onOpen(it.convId)
   }
-  const deals = convs
-    .flatMap(c => c.deals || [])
-    .filter(d => !paid.includes(d.id))
-    .sort((a, b) => new Date(b.at) - new Date(a.at))
   const clearJump = () => setTimeout(() => setJump(null), 2600)
   const toggleLike = id => setLikes(likes.includes(id) ? likes.filter(l => l !== id) : [...likes, id])
 
@@ -812,13 +841,14 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
       <div className="empty">
         <Icon name="chat" size={40} />
         <h2>{t('msg.needAccount')}</h2>
-        <p>{backendOn ? 'Sign in to message sellers about their items.' : 'Messaging is only available once twice is connected online.'}</p>
-        {backendOn && onSignIn && <button className="btn primary" onClick={onSignIn}>Sign in / Sign up</button>}
+        <p>{backendOn ? t('msg.signInTo') : t('msg.offline')}</p>
+        {backendOn && onSignIn && <button className="btn primary" onClick={onSignIn}>{t('signInUp')}</button>}
       </div>
     )
   }
 
-  const open = convs.find(c => c.id === openId)
+  // checkout opens a sample listing's chat as demo-item-<id>; one of the built-in sample chats may cover that item
+  const open = convs.find(c => c.id === openId) ?? (demo ? convs.find(c => openId === `demo-item-${c.itemId}`) : undefined)
   const finding = filter === 'others'
   const visible = ordered.slice(0, VISIBLE)
   const rest = ordered.slice(VISIBLE)
@@ -827,15 +857,12 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
   return (
     <div className="msgs-page">
       <div className="msg-bar">
-        <button className="gd-btn cart-btn" onClick={() => setShowCart(c => !c)} aria-pressed={showCart}>
-          <Icon name="bag" size={16} />Cart{deals.length > 0 && <i>{deals.length}</i>}
-        </button>
         <button className="gd-btn" onClick={() => setGuide(true)} aria-haspopup="dialog">
           <Icon name="info" size={16} />Guidelines
         </button>
       </div>
       {guide && <Guidelines onClose={() => setGuide(false)} />}
-    <div className={`msgs${open || showStarred ? ' has-thread' : ''}${showCart ? ' show-cart' : ''}`}>
+    <div className={`msgs${open || showStarred ? ' has-thread' : ''}`}>
       <div className="msg-list">
         <div className="msg-top">
         <div className="msg-head">
@@ -907,7 +934,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
             {convs.length > 0 && ordered.length === 0 && <p className="note" style={{ padding: '8px 4px' }}>No conversation matches “{query}”.</p>}
             <div className="cv-stack">
               {visible.map(c => (
-                <ConvButton key={c.id} c={c} active={c.id === openId && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
+                <ConvButton key={c.id} c={c} active={c.id === open?.id && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
               ))}
             </div>
             {rest.length > 0 && (
@@ -920,7 +947,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
                 {moreOpen && (
                   <div className="more-menu" role="menu">
                     {rest.map(c => (
-                      <ConvButton key={c.id} c={c} active={c.id === openId} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
+                      <ConvButton key={c.id} c={c} active={c.id === open?.id} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
                     ))}
                   </div>
                 )}
@@ -961,6 +988,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
       ) : open ? (
         <Thread
           key={open.id}
+          paid={paid}
+          onPay={onPay}
           conv={open}
           demoList={demoMsgs[open.id] || []}
           onDemoAdd={m => setDemoMsgs(prev => ({ ...prev, [open.id]: [...(prev[open.id] || []), m] }))}
@@ -975,11 +1004,12 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           onBack={() => onOpen(null)}
           onChanged={onChanged}
           onOpenItem={onOpenItem}
+          onApprove={onApprove}
+          onBuy={onBuy}
         />
       ) : (
         <div className="msg-thread th-none"><p className="note">{t('msg.select')}</p></div>
       )}
-      <CartPanel deals={deals} onPay={d => onPay?.(d)} onGo={openConv} onClose={() => setShowCart(false)} />
     </div>
     </div>
   )

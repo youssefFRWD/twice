@@ -1,5 +1,5 @@
 import { supabase } from './supabase.js'
-import { dealsOf, previewOf } from './offers.js'
+import { previewOf } from './offers.js'
 
 export const backendEnabled = !!supabase
 
@@ -25,13 +25,15 @@ const rowToItem = r => ({
   d: r.description,
   b: r.brand,
   img: sortedPhotos(r.item_images)[0] ? photoUrl(sortedPhotos(r.item_images)[0].storage_path) : null,
+  imgs: sortedPhotos(r.item_images).map(i => photoUrl(i.storage_path)),
+  reserved: r.status === 'reserved',
 })
 
-/** Active listings, in the shape the UI uses. */
-const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,brand,item_images(storage_path,position)'
+const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,item_images(storage_path,position)'
 
+/** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('status', 'active').order('id'))
+  const rows = ok(await supabase.from('items').select(ITEM_COLS).in('status', ['active', 'reserved']).order('id'))
   return rows.map(rowToItem)
 }
 
@@ -181,7 +183,7 @@ export async function fetchReviewable(uid) {
     key: r.id,
     revieweeId: partnerOf(r),
     itemId: r.item_id,
-    label: `${names.get(partnerOf(r)) || 'Neighbour'} · ${r.items?.title || 'Listing no longer available'}`,
+    label: `${names.get(partnerOf(r)) || 'Unnamed user'} · ${r.items?.title || 'Listing no longer available'}`,
   }))
 }
 export const createReview = async (uid, { revieweeId, itemId, rating, body }) =>
@@ -237,7 +239,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -247,16 +249,18 @@ export async function fetchConversations(uid) {
     .map(r => {
       const msgs = (r.messages || []).slice().sort(byTime)
       const last = msgs[msgs.length - 1]
-      const partner = names.get(partnerOf(r)) || 'Neighbour'
+      // Profile name first; failing that, the seller name saved on the listing; never a generic label.
+      const partner = names.get(partnerOf(r)) || (partnerOf(r) === r.seller_id && r.items?.seller_name) || 'Unnamed user'
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
+      const approval = [].concat(r.sale_approvals ?? [])[0]
       return {
         id: r.id,
         iAmBuyer,
-        deals: dealsOf(msgs, { convId: r.id, iAmBuyer, partner, itemId: r.item_id, itemTitle }),
         partnerId: partnerOf(r),
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
+        approval: approval?.status ?? null,
         itemTitle,
         partner,
         last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
@@ -294,4 +298,41 @@ export async function startConversation(uid, item) {
   const found = ok(await supabase.from('conversations').select('id').eq('item_id', item.id).eq('buyer_id', uid).maybeSingle())
   if (found) return found.id
   return ok(await supabase.from('conversations').insert({ item_id: item.id, buyer_id: uid, seller_id: item.sid }).select('id').single()).id
+}
+
+/* ---------- sale approvals ---------- */
+
+/** Seller approves the sale to this buyer, or withdraws it. The note is posted in the thread so the buyer sees it. */
+export async function setSaleApproval(uid, conversationId, approved, note) {
+  const status = approved ? 'approved' : 'withdrawn'
+  const found = ok(await supabase.from('sale_approvals').select('status').eq('conversation_id', conversationId).maybeSingle())
+  if (found) ok(await supabase.from('sale_approvals').update({ status }).eq('conversation_id', conversationId))
+  else ok(await supabase.from('sale_approvals').insert({ conversation_id: conversationId, status }))
+  if (note) await sendMessage(uid, conversationId, note)
+}
+
+/* ---------- contact the twice team ---------- */
+const TEAM_EMAIL = 'youssef.elbosaty@forward-college.eu'
+
+/** Forwards the message to the team inbox through FormSubmit (no server of our own needed). */
+async function emailTeam({ name, email, message }) {
+  const res = await fetch(`https://formsubmit.co/ajax/${TEAM_EMAIL}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ name, email, message, _replyto: email, _subject: `twice contact: ${name}`, _template: 'table' }),
+  })
+  if (!res.ok) throw new Error('email')
+}
+
+/**
+ * Anyone can write to the team, signed in or not. Each message is emailed to the team and, when the
+ * service is connected, also stored in the contact_messages table. It counts as sent if either worked.
+ */
+export async function sendContact(form) {
+  const user = supabase ? (await supabase.auth.getSession()).data.session?.user : null
+  const saved = supabase
+    ? supabase.from('contact_messages').insert({ user_id: user?.id ?? null, ...form }).then(ok)
+    : Promise.reject(new Error('offline'))
+  const results = await Promise.allSettled([emailTeam(form), saved])
+  if (results.every(r => r.status === 'rejected')) throw new Error('contact')
 }
