@@ -310,3 +310,29 @@ export async function setSaleApproval(uid, conversationId, approved, note) {
   else ok(await supabase.from('sale_approvals').insert({ conversation_id: conversationId, status }))
   if (note) await sendMessage(uid, conversationId, note)
 }
+
+/* ---------- contact the twice team ---------- */
+const TEAM_EMAIL = 'youssef.elbosaty@forward-college.eu'
+
+/** Forwards the message to the team inbox through FormSubmit (no server of our own needed). */
+async function emailTeam({ name, email, message }) {
+  const res = await fetch(`https://formsubmit.co/ajax/${TEAM_EMAIL}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ name, email, message, _replyto: email, _subject: `twice contact: ${name}`, _template: 'table' }),
+  })
+  if (!res.ok) throw new Error('email')
+}
+
+/**
+ * Anyone can write to the team, signed in or not. Each message is emailed to the team and, when the
+ * service is connected, also stored in the contact_messages table. It counts as sent if either worked.
+ */
+export async function sendContact(form) {
+  const user = supabase ? (await supabase.auth.getSession()).data.session?.user : null
+  const saved = supabase
+    ? supabase.from('contact_messages').insert({ user_id: user?.id ?? null, ...form }).then(ok)
+    : Promise.reject(new Error('offline'))
+  const results = await Promise.allSettled([emailTeam(form), saved])
+  if (results.every(r => r.status === 'rejected')) throw new Error('contact')
+}
