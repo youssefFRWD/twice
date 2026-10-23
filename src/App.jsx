@@ -161,11 +161,11 @@ export default function App() {
 
   useEffect(() => {
     try {
-      history.replaceState(null, '', '#' + tab)
+      history.replaceState(null, '', '#' + (landing ? 'landingpage' : tab))
     } catch {
       /* sandboxed frame */
     }
-  }, [tab])
+  }, [tab, landing])
 
   /* ---------- toast ---------- */
   const showToast = useCallback((msg, undo) => {
