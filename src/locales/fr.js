@@ -101,7 +101,7 @@ export default {
   'co.errName': 'Saisissez le nom figurant sur la carte.', 'co.errNumber': 'Ce numéro de carte n’est pas valide.', 'co.errExp': 'Utilisez MM/AA, pas dans le passé.', 'co.errCvc': '3 ou 4 chiffres.',
   'co.paid': '{amount} payés', 'co.reserved': 'Réservé', 'co.yours': '{title} est à vous. {seller} a été prévenu de vous le garder.',
   'co.setAside': '{title} est mis de côté pour vous. Apportez {amount} en espèces quand vous retrouverez {seller}.', 'co.order': 'Commande {ref}',
-  'co.messageName': 'Écrire à {seller}', 'co.directions': 'Itinéraire vers le vendeur', 'co.title': 'Paiement', 'co.item': 'Objet',
+  'co.messageName': 'Écrire à {seller}', 'co.directions': 'Itinéraire vers le vendeur', 'co.title': 'Paiement', 'co.buyTitle': 'Acheter cet objet', 'co.item': 'Objet',
   'co.collect': 'Vous le récupérez en main propre auprès de {seller}.', 'co.howPay': 'Comment payez-vous ?', 'co.method': 'Moyen de paiement',
   'co.testWallet': 'Mode test : aucun argent n’est prélevé.', 'co.testCard': 'Mode test : aucun argent n’est prélevé, et les données de carte ne quittent jamais cette page.',
   'co.nameOnCard': 'Nom sur la carte', 'co.cardNumber': 'Numéro de carte', 'co.expiry': 'Expiration', 'co.summary': 'Récapitulatif',

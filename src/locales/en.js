@@ -102,7 +102,7 @@ export default {
   'co.errName': 'Enter the name on the card.', 'co.errNumber': 'This card number is not valid.', 'co.errExp': 'Use MM/YY, not in the past.', 'co.errCvc': '3 or 4 digits.',
   'co.paid': 'Paid {amount}', 'co.reserved': 'Reserved', 'co.yours': '{title} is yours. {seller} has been told to keep it for you.',
   'co.setAside': '{title} is set aside for you. Bring {amount} in cash when you meet {seller}.', 'co.order': 'Order {ref}',
-  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.item': 'Item',
+  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.buyTitle': 'Buy this item', 'co.item': 'Item',
   'co.collect': 'You collect it in person from {seller}.', 'co.howPay': 'How do you pay?', 'co.method': 'Payment method',
   'co.testWallet': 'Test mode: no money is charged.', 'co.testCard': 'Test mode: no money is charged, and card details never leave this page.',
   'co.nameOnCard': 'Name on card', 'co.cardNumber': 'Card number', 'co.expiry': 'Expiry', 'co.summary': 'Summary',

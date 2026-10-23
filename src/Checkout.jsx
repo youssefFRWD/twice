@@ -147,7 +147,7 @@ export default function Checkout({ item: it, me, uid, approval, canMessage, onMe
       <form className="co-in gut" onSubmit={submit} noValidate>
         <header className="co-head">
           <button type="button" className="btn small" onClick={onClose}><Icon name="undo" size={16} />{t('back')}</button>
-          <h1 id="co-h" tabIndex={-1} ref={headRef}>{t('co.title')}</h1>
+          <h1 id="co-h" tabIndex={-1} ref={headRef}>{approved ? t('co.title') : t('co.buyTitle')}</h1>
         </header>
 
         <section className="co-item" aria-label={t('co.item')}>
