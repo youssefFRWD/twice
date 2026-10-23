@@ -31,6 +31,8 @@ function initState() {
   // sessionStorage survives refreshes but not new-tab opens, so we can tell them apart
   const isRefresh = !!sessionStorage.getItem('twice.session')
   try { sessionStorage.setItem('twice.session', '1') } catch { /* storage blocked */ }
+  // #landingpage always forces the landing page, even on refresh
+  const forceLanding = hash === 'landingpage'
   return {
     fresh: !seeded,
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
@@ -38,7 +40,7 @@ function initState() {
     me: d?.me?.lat ? d.me : DEFAULT_ME,
     tab: TABS.some(x => x[0] === hash) ? hash : 'discover',
     firstRun: !seeded && !backendEnabled,
-    skipLanding: isRefresh,
+    skipLanding: isRefresh && !forceLanding,
   }
 }
 
