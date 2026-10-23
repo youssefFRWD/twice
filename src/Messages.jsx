@@ -445,35 +445,39 @@ function CartPanel({ deals, onPay, onGo, onClose }) {
   )
 }
 
-/** Purchase request status at the top of a thread; the seller approves or declines from here. */
-function RequestBar({ conv, onDecide, onBuy }) {
+/** Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here. */
+function ApprovalBar({ conv, onApprove, onBuy }) {
   const { t } = useI18n()
   const [busy, setBusy] = useState(false)
-  const { request: st, partner, iAmBuyer } = conv
-  if (!st) return null
-  const decide = async approve => {
+  const { approval: st, partner, iAmBuyer } = conv
+  if (conv.sample || !conv.itemId || (iAmBuyer && !st)) return null
+  const set = async approve => {
     setBusy(true)
-    await onDecide(conv, approve)
+    await onApprove(conv, approve)
     setBusy(false)
   }
+  const state = st || 'none'
   return (
-    <div className={`th-req ${st}`} role="status">
+    <div className={`th-req ${state}`} role="status">
       <Icon name={st === 'approved' ? 'check' : 'bag'} size={18} />
-      <span>{t(`req.${iAmBuyer ? 'buyer' : 'seller'}.${st}`, { name: partner })}</span>
-      {!iAmBuyer && st === 'pending' && (
+      <span>{t(`appr.${iAmBuyer ? 'buyer' : 'seller'}.${state}`, { name: partner })}</span>
+      {!iAmBuyer && (
         <span className="th-req-btns">
-          <button className="btn small" disabled={busy} onClick={() => decide(false)}>{t('req.decline')}</button>
-          <button className="btn small primary" disabled={busy} onClick={() => decide(true)}>{t('req.approve')}</button>
+          {st === 'approved' ? (
+            <button className="btn small" disabled={busy} onClick={() => set(false)}>{t('appr.withdraw')}</button>
+          ) : (
+            <button className="btn small primary" disabled={busy} onClick={() => set(true)}>{t('appr.approve')}</button>
+          )}
         </span>
       )}
       {iAmBuyer && st === 'approved' && (
-        <button className="btn small primary" onClick={() => onBuy(conv.itemId)}>{t('req.payNow')}</button>
+        <button className="btn small primary" onClick={() => onBuy(conv.itemId)}>{t('appr.payNow')}</button>
       )}
     </div>
   )
 }
 
-function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onDecide, onBuy }) {
+function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy }) {
   const { t, currency } = useI18n()
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
@@ -668,7 +672,7 @@ function Thread({ demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onSta
         </button>
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
-      <RequestBar conv={conv} onDecide={onDecide} onBuy={onBuy} />
+      <ApprovalBar conv={conv} onApprove={onApprove} onBuy={onBuy} />
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
@@ -761,7 +765,7 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onDecide, onBuy }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy }) {
   const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
@@ -1004,7 +1008,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           onBack={() => onOpen(null)}
           onChanged={onChanged}
           onOpenItem={onOpenItem}
-          onDecide={onDecide}
+          onApprove={onApprove}
           onBuy={onBuy}
         />
       ) : (

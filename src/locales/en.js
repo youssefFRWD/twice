@@ -70,11 +70,10 @@ export default {
   'msg.offline': 'Messaging is only available once twice is connected online.', 'msg.noConvs': 'No conversations yet',
   'msg.noConvsHint': 'Open a saved item and tap the message button to ask the seller a question.', 'msg.you': 'You: ',
   'msg.none': 'No messages yet', 'msg.select': 'Select a conversation to read it.',
-  'req.buyer.pending': 'Waiting for {name} to approve your purchase.', 'req.buyer.approved': '{name} approved your purchase.',
-  'req.buyer.declined': '{name} declined your purchase request.', 'req.buyer.cancelled': 'You cancelled your purchase request.',
-  'req.seller.pending': '{name} wants to buy this item.', 'req.seller.approved': 'You approved the sale. {name} can pay now.',
-  'req.seller.declined': 'You declined this purchase request.', 'req.seller.cancelled': '{name} cancelled their purchase request.',
-  'req.approve': 'Approve', 'req.decline': 'Decline', 'req.payNow': 'Pay now',
+  'appr.seller.none': 'Agreed with {name}? Approve the sale so they can pay.', 'appr.seller.approved': 'You approved the sale. {name} can pay now.',
+  'appr.seller.withdrawn': 'You withdrew your approval. The item is back on sale.',
+  'appr.buyer.approved': '{name} approved your purchase.', 'appr.buyer.withdrawn': '{name} withdrew their approval.',
+  'appr.approve': 'Approve sale', 'appr.withdraw': 'Withdraw', 'appr.payNow': 'Pay now',
 
   // location, auth, toasts
   'loc.title': 'Where are you?', 'loc.body': 'Distances and directions start from this point.', 'loc.now': 'Right now: {place}.',
@@ -107,11 +106,10 @@ export default {
   'co.nameOnCard': 'Name on card', 'co.cardNumber': 'Card number', 'co.expiry': 'Expiry', 'co.summary': 'Summary',
   'co.handover': 'Handover in person', 'co.free': 'Free', 'co.total': 'Total', 'co.waitPaypal': 'Waiting for PayPal…', 'co.processing': 'Processing…',
   'co.pay': 'Pay {amount}', 'co.payApple': 'Pay {amount} with Apple Pay', 'co.toPaypal': 'Continue to PayPal · {amount}', 'co.reservePay': 'Reserve, pay {amount} in cash',
+  'co.talkH': 'Message {seller} first', 'co.talkP': '{seller} approves each sale in your conversation. Payment opens here as soon as they do.',
+  'co.withdrawnH': '{seller} withdrew their approval',
+  'co.waitH': 'Waiting for {seller} to approve', 'co.waitP': 'Payment opens here as soon as {seller} approves.',
   'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
-  'co.askH': 'Ask {seller} first', 'co.askP': 'Sellers approve every sale before anyone pays, so you never pay for something that is already gone.',
-  'co.ask': 'Ask {seller} to approve', 'co.asking': 'Sending…', 'co.askAgain': 'Ask again',
-  'co.waitH': 'Waiting for {seller} to approve', 'co.waitP': '{seller} has your request. Payment opens here as soon as they approve, so you can keep this page open or come back later.',
-  'co.cancelAsk': 'Cancel request', 'co.declinedH': '{seller} declined your request', 'co.declinedP': 'The item may already be promised to someone else. You can message them, or ask again.',
   'co.approved': '{seller} approved your purchase.',
 
   // profile

@@ -42,8 +42,11 @@ function cardErrors(card, t) {
   return e
 }
 
-/** Every sale needs the seller's OK before payment opens. Sample listings have no real seller, so theirs is simulated. */
-function Approval({ it, status, sample, own, asking, canMessage, onAsk, onCancel, onMessage }) {
+/**
+ * Every sale needs the seller's OK before payment opens. The buyer messages the owner, and the owner approves in
+ * that conversation. Sample listings have no real owner to message, so their approval is simulated.
+ */
+function Approval({ it, status, waiting, own, onContact }) {
   const { t } = useI18n()
   if (own) {
     return (
@@ -53,58 +56,42 @@ function Approval({ it, status, sample, own, asking, canMessage, onAsk, onCancel
       </section>
     )
   }
-  if (status === 'pending') {
+  if (waiting) {
     return (
       <section className="co-card co-ask" aria-live="polite">
         <h2>{t('co.waitH', { seller: it.s })}</h2>
         <p>{t('co.waitP', { seller: it.s })}</p>
-        <div className="co-ask-btns">
-          {canMessage(it) && (
-            <button type="button" className="btn" onClick={() => onMessage(it)}>
-              <Icon name="chat" size={18} />{t('co.messageName', { seller: it.s })}
-            </button>
-          )}
-          {!sample && <button type="button" className="btn" onClick={onCancel}>{t('co.cancelAsk')}</button>}
-        </div>
       </section>
     )
   }
-  const declined = status === 'declined'
   return (
     <section className="co-card co-ask" aria-live="polite">
-      <h2>{declined ? t('co.declinedH', { seller: it.s }) : t('co.askH', { seller: it.s })}</h2>
-      <p>{declined ? t('co.declinedP') : t('co.askP')}</p>
+      <h2>{status === 'withdrawn' ? t('co.withdrawnH', { seller: it.s }) : t('co.talkH', { seller: it.s })}</h2>
+      <p>{t('co.talkP', { seller: it.s })}</p>
       <div className="co-ask-btns">
-        <button type="button" className="btn primary" disabled={asking} onClick={onAsk}>
-          <Icon name="check" size={18} />{asking ? t('co.asking') : declined ? t('co.askAgain') : t('co.ask', { seller: it.s })}
+        <button type="button" className="btn primary" onClick={onContact}>
+          <Icon name="chat" size={18} />{t('co.messageName', { seller: it.s })}
         </button>
       </div>
     </section>
   )
 }
 
-export default function Checkout({ item: it, me, uid, approval, onSampleApproved, onAsk, onCancelAsk, canMessage, onMessage, onShowMap, onClose, onPaid }) {
+export default function Checkout({ item: it, me, uid, approval, onSampleApproved, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
   const sample = !it.sid
   const own = !!it.sid && it.sid === uid
-  const [sampleStatus, setSampleStatus] = useState(null)
-  const [asking, setAsking] = useState(false)
-  const status = sample ? (approval ?? sampleStatus) : approval
-  const approved = status === 'approved' && !own
+  const [sampleWaiting, setSampleWaiting] = useState(false)
+  const approved = approval === 'approved' && !own
 
   useEffect(() => {
-    if (sampleStatus !== 'pending') return
+    if (!sampleWaiting) return
     const t = setTimeout(() => onSampleApproved(it), 2500)
     return () => clearTimeout(t)
-  }, [sampleStatus, it, onSampleApproved])
+  }, [sampleWaiting, it, onSampleApproved])
 
-  const ask = async () => {
-    if (sample) return setSampleStatus('pending')
-    setAsking(true)
-    await onAsk(it)
-    setAsking(false)
-  }
+  const contact = () => (sample ? setSampleWaiting(true) : onMessage(it))
 
   const [method, setMethod] = useState('card')
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
@@ -194,17 +181,7 @@ export default function Checkout({ item: it, me, uid, approval, onSampleApproved
         <p className="co-test"><Icon name="walk" size={16} />{t('co.collect', { seller: it.s })}</p>
 
         {!approved ? (
-          <Approval
-            it={it}
-            status={status}
-            sample={sample}
-            own={own}
-            asking={asking}
-            canMessage={canMessage}
-            onAsk={ask}
-            onCancel={() => onCancelAsk(it)}
-            onMessage={onMessage}
-          />
+          <Approval it={it} status={approval} waiting={sample && sampleWaiting} own={own} onContact={contact} />
         ) : (
           <>
             <p className="co-ok"><Icon name="check" size={16} sw={2.5} />{t('co.approved', { seller: it.s })}</p>

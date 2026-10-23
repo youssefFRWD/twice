@@ -238,7 +238,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at),purchase_requests(status)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at),sale_approvals(status)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -251,7 +251,7 @@ export async function fetchConversations(uid) {
       const partner = names.get(partnerOf(r)) || 'Neighbour'
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
-      const req = [].concat(r.purchase_requests ?? [])[0]
+      const approval = [].concat(r.sale_approvals ?? [])[0]
       return {
         id: r.id,
         iAmBuyer,
@@ -259,7 +259,7 @@ export async function fetchConversations(uid) {
         partnerId: partnerOf(r),
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
-        request: req?.status ?? null,
+        approval: approval?.status ?? null,
         itemTitle,
         partner,
         last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
@@ -299,21 +299,13 @@ export async function startConversation(uid, item) {
   return ok(await supabase.from('conversations').insert({ item_id: item.id, buyer_id: uid, seller_id: item.sid }).select('id').single()).id
 }
 
-/* ---------- purchase requests ---------- */
+/* ---------- sale approvals ---------- */
 
-/** Asks the seller to approve a purchase (or asks again after a decline). Returns the conversation id. */
-export async function requestPurchase(uid, item) {
-  const conversationId = await startConversation(uid, item)
-  const found = ok(await supabase.from('purchase_requests').select('status').eq('conversation_id', conversationId).maybeSingle())
-  if (found && (found.status === 'pending' || found.status === 'approved')) return conversationId
-  if (found) ok(await supabase.from('purchase_requests').update({ status: 'pending' }).eq('conversation_id', conversationId))
-  else ok(await supabase.from('purchase_requests').insert({ conversation_id: conversationId }))
-  await sendMessage(uid, conversationId, `I'd like to buy "${item.t}" for €${item.p}. Could you approve the purchase?`)
-  return conversationId
-}
-
-/** Seller approves/declines, or buyer cancels. The note is posted in the thread so the other person sees it. */
-export async function updatePurchaseRequest(uid, conversationId, status, note) {
-  ok(await supabase.from('purchase_requests').update({ status }).eq('conversation_id', conversationId))
+/** Seller approves the sale to this buyer, or withdraws it. The note is posted in the thread so the buyer sees it. */
+export async function setSaleApproval(uid, conversationId, approved, note) {
+  const status = approved ? 'approved' : 'withdrawn'
+  const found = ok(await supabase.from('sale_approvals').select('status').eq('conversation_id', conversationId).maybeSingle())
+  if (found) ok(await supabase.from('sale_approvals').update({ status }).eq('conversation_id', conversationId))
+  else ok(await supabase.from('sale_approvals').insert({ conversation_id: conversationId, status }))
   if (note) await sendMessage(uid, conversationId, note)
 }

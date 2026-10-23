@@ -147,7 +147,7 @@ export default function App() {
   const uid = session?.user?.id ?? null
   const synced = !backendEnabled || (uid !== null && syncedUid === uid)
   const signedOut = backendEnabled && !session
-  const approvedForMe = convs.filter(c => c.iAmBuyer && c.request === 'approved').map(c => c.itemId)
+  const approvedForMe = convs.filter(c => c.iAmBuyer && c.approval === 'approved').map(c => c.itemId)
   const data = { me, saved, passed, reserved: [...reserved, ...approvedForMe] }
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
@@ -308,40 +308,23 @@ export default function App() {
   }
   const unread = convs.reduce((n, c) => n + c.unread, 0)
 
-  /* ---------- purchase approval ---------- */
-  const requestOf = it =>
-    it.sid ? (convs.find(c => c.iAmBuyer && c.itemId === it.id)?.request ?? null) : reserved.includes(it.id) ? 'approved' : null
+  /* ---------- sale approval: the seller approves in the conversation, then the buyer can pay ---------- */
+  const approvalOf = it =>
+    it.sid ? (convs.find(c => c.iAmBuyer && c.itemId === it.id)?.approval ?? null) : reserved.includes(it.id) ? 'approved' : null
   const reserveSample = useCallback(it => setReserved(r => (r.includes(it.id) ? r : [...r, it.id])), [])
-  const askToBuy = async it => {
-    if (!uid) {
-      setAuthOpen(true)
-      return showToast('Sign in to ask the seller.')
-    }
+  const approveSale = async (conv, approve) => {
     try {
-      await api.requestPurchase(uid, it)
-      await reloadConvs()
-    } catch {
-      showToast('Could not send your request. Try again.')
-    }
-  }
-  const updateRequest = async (convId, status, note) => {
-    try {
-      await api.updatePurchaseRequest(uid, convId, status, note)
+      await api.setSaleApproval(
+        uid,
+        conv.id,
+        approve,
+        approve ? `Approved. You can pay for "${conv.itemTitle}" now.` : `I've withdrawn my approval for "${conv.itemTitle}".`,
+      )
       await Promise.all([reloadConvs(), reloadItems()])
     } catch {
-      showToast('Could not update the request. Try again.')
+      showToast(approve ? 'Could not approve the sale. The item may already be reserved for someone else.' : 'Could not withdraw the approval. Try again.')
     }
   }
-  const cancelAsk = it => {
-    const c = convs.find(c => c.iAmBuyer && c.itemId === it.id)
-    if (c) return updateRequest(c.id, 'cancelled', "I've cancelled my purchase request.")
-  }
-  const decideAsk = (conv, approve) =>
-    updateRequest(
-      conv.id,
-      approve ? 'approved' : 'declined',
-      approve ? `Approved. You can pay for "${conv.itemTitle}" now.` : "Sorry, I can't approve this purchase.",
-    )
   const openCheckout = id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))
 
   useEffect(() => {
@@ -638,7 +621,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onDecide={decideAsk} onBuy={openCheckout} />
+              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={openCheckout} paid={paidDeals} onPay={deal => (itemById(deal.itemId) ? (setDealPay(deal), setBuyId(deal.itemId)) : showToast('This listing is no longer available.'))} onApprove={approveSale} onBuy={openCheckout} />
             )}
           </section>
           <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
@@ -705,10 +688,8 @@ export default function App() {
           item={dealPay && dealPay.itemId === buyId ? { ...buyItem, p: dealPay.eur } : buyItem}
           me={me}
           uid={uid}
-          approval={requestOf(buyItem)}
+          approval={approvalOf(buyItem)}
           onSampleApproved={reserveSample}
-          onAsk={askToBuy}
-          onCancelAsk={cancelAsk}
           canMessage={canMessage}
           onPaid={() => dealPay && markPaid(dealPay.id)}
           onMessage={it => {

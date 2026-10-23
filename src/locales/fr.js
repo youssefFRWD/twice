@@ -70,11 +70,10 @@ export default {
   'msg.offline': 'La messagerie n’est disponible que lorsque twice est connecté en ligne.', 'msg.noConvs': 'Pas encore de conversations',
   'msg.noConvsHint': 'Ouvrez un favori et touchez le bouton message pour poser une question au vendeur.', 'msg.you': 'Vous : ',
   'msg.none': 'Pas encore de messages', 'msg.select': 'Choisissez une conversation pour la lire.',
-  'req.buyer.pending': 'En attente de l’accord de {name} pour votre achat.', 'req.buyer.approved': '{name} a accepté votre achat.',
-  'req.buyer.declined': '{name} a refusé votre demande d’achat.', 'req.buyer.cancelled': 'Vous avez annulé votre demande d’achat.',
-  'req.seller.pending': '{name} veut acheter cet objet.', 'req.seller.approved': 'Vous avez accepté la vente. {name} peut payer.',
-  'req.seller.declined': 'Vous avez refusé cette demande d’achat.', 'req.seller.cancelled': '{name} a annulé sa demande d’achat.',
-  'req.approve': 'Accepter', 'req.decline': 'Refuser', 'req.payNow': 'Payer',
+  'appr.seller.none': 'D’accord avec {name} ? Validez la vente pour qu’il ou elle puisse payer.', 'appr.seller.approved': 'Vous avez validé la vente. {name} peut payer.',
+  'appr.seller.withdrawn': 'Vous avez retiré votre accord. L’objet est de nouveau en vente.',
+  'appr.buyer.approved': '{name} a accepté votre achat.', 'appr.buyer.withdrawn': '{name} a retiré son accord.',
+  'appr.approve': 'Valider la vente', 'appr.withdraw': 'Retirer', 'appr.payNow': 'Payer',
 
   // position, connexion, notifications
   'loc.title': 'Où êtes-vous ?', 'loc.body': 'Les distances et itinéraires partent de ce point.', 'loc.now': 'Pour l’instant : {place}.',
@@ -107,11 +106,10 @@ export default {
   'co.nameOnCard': 'Nom sur la carte', 'co.cardNumber': 'Numéro de carte', 'co.expiry': 'Expiration', 'co.summary': 'Récapitulatif',
   'co.handover': 'Remise en main propre', 'co.free': 'Gratuit', 'co.total': 'Total', 'co.waitPaypal': 'En attente de PayPal…', 'co.processing': 'Traitement…',
   'co.pay': 'Payer {amount}', 'co.payApple': 'Payer {amount} avec Apple Pay', 'co.toPaypal': 'Continuer vers PayPal · {amount}', 'co.reservePay': 'Réserver, payer {amount} en espèces',
+  'co.talkH': 'Écrivez d’abord à {seller}', 'co.talkP': '{seller} valide chaque vente dans votre conversation. Le paiement s’ouvre ici dès son accord.',
+  'co.withdrawnH': '{seller} a retiré son accord',
+  'co.waitH': 'En attente de l’accord de {seller}', 'co.waitP': 'Le paiement s’ouvre ici dès que {seller} donne son accord.',
   'co.ownH': 'C’est votre annonce', 'co.ownP': 'Vous ne pouvez pas acheter un objet que vous vendez.',
-  'co.askH': 'Demandez d’abord à {seller}', 'co.askP': 'Le vendeur valide chaque vente avant le paiement : vous ne payez jamais un objet déjà parti.',
-  'co.ask': 'Demander l’accord de {seller}', 'co.asking': 'Envoi…', 'co.askAgain': 'Redemander',
-  'co.waitH': 'En attente de l’accord de {seller}', 'co.waitP': '{seller} a reçu votre demande. Le paiement s’ouvre ici dès son accord : gardez cette page ouverte ou revenez plus tard.',
-  'co.cancelAsk': 'Annuler la demande', 'co.declinedH': '{seller} a refusé votre demande', 'co.declinedP': 'L’objet est peut-être déjà promis à quelqu’un d’autre. Vous pouvez lui écrire ou redemander.',
   'co.approved': '{seller} a accepté votre achat.',
 
   // profil
