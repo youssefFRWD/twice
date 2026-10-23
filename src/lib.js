@@ -76,7 +76,10 @@ export function toJpeg(file, max = 1280) {
       const c = document.createElement('canvas')
       c.width = Math.round(img.naturalWidth * k)
       c.height = Math.round(img.naturalHeight * k)
-      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height)
+      const ctx = c.getContext('2d')
+      ctx.fillStyle = '#fff' // JPEG has no transparency: transparent PNG areas would turn black
+      ctx.fillRect(0, 0, c.width, c.height)
+      ctx.drawImage(img, 0, 0, c.width, c.height)
       URL.revokeObjectURL(url)
       c.toBlob(b => (b ? resolve(b) : reject(new Error('encode'))), 'image/jpeg', 0.85)
     }

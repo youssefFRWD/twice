@@ -163,4 +163,6 @@ export default {
   'pv.listings': '在售商品', 'pv.noListings': '目前没有在售商品。', 'pv.open': '打开{name}的主页',
   'pf.cover': '封面', 'pf.coverColor': '封面样式 {n}', 'pf.coverUpload': '上传封面照片', 'pf.coverRemove': '移除封面照片', 'pf.coverChange': '更换封面',
   soldByLabel: '卖家：', moreFrom: '{name}的更多商品',
+  'pf.complete': '完善你的主页', 'pf.completeOf': '已完成 {done}/{total}', 'pf.todo.photo': '添加头像', 'pf.todo.area': '选择你所在的巴黎区', 'pf.todo.cover': '选择封面', 'pf.todo.listing': '发布第一件商品', 'pf.todo.friend': '关注一位邻居', 'pf.allDone': '你的主页已完善，太棒了！', 'ls.emptyH': '还没有在售商品',
+  'tab.browse': '浏览', 'br.search': '搜索商品…', 'br.clear': '清除搜索', 'br.sortLabel': '排序', 'br.sort.nearest': '离我最近', 'br.sort.low': '价格从低到高', 'br.sort.high': '价格从高到低', 'br.none': '没有找到“{q}”相关的商品', 'br.noneHint': '换个词试试，或清除筛选。', 'br.reset': '清除筛选', 'br.save': '收藏{title}', 'br.count_one': '{n} 件商品', 'br.count_other': '{n} 件商品',
 }

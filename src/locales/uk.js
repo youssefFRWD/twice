@@ -165,4 +165,6 @@ export default {
   'pv.listings': 'Оголошення', 'pv.noListings': 'Зараз немає активних оголошень.', 'pv.open': 'Відкрити профіль: {name}',
   'pf.cover': 'Обкладинка', 'pf.coverColor': 'Стиль обкладинки {n}', 'pf.coverUpload': 'Завантажити фото обкладинки', 'pf.coverRemove': 'Прибрати фото обкладинки', 'pf.coverChange': 'Змінити обкладинку',
   soldByLabel: 'Продавець:', moreFrom: 'Ще від {name}',
+  'pf.complete': 'Заповніть профіль', 'pf.completeOf': 'Готово {done} з {total}', 'pf.todo.photo': 'Додати фото профілю', 'pf.todo.area': 'Обрати округ Парижа', 'pf.todo.cover': 'Обрати обкладинку', 'pf.todo.listing': 'Розмістити першу річ', 'pf.todo.friend': 'Підписатися на сусіда', 'pf.allDone': 'Профіль заповнено. Чудово!', 'ls.emptyH': 'Поки нічого не продається',
+  'tab.browse': 'Огляд усього', 'br.search': 'Пошук оголошень…', 'br.clear': 'Очистити пошук', 'br.sortLabel': 'Сортування', 'br.sort.nearest': 'Спочатку найближчі', 'br.sort.low': 'Ціна: за зростанням', 'br.sort.high': 'Ціна: за спаданням', 'br.none': 'Немає оголошень за запитом «{q}»', 'br.noneHint': 'Спробуйте інше слово або скиньте фільтри.', 'br.reset': 'Скинути фільтри', 'br.save': 'Зберегти «{title}»', 'br.count_one': '{n} оголошення', 'br.count_other': '{n} оголошень', 'br.count_few': '{n} оголошення', 'br.count_many': '{n} оголошень',
 }

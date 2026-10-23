@@ -1,4 +1,4 @@
-import { useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import * as api from './api.js'
 import { translate, useI18n } from './i18n.js'
 import { LANGS, MAIN_CURRENCIES, allCurrencies, currencyName, currencySymbol, findCurrency, findLanguage, languageName, locale, ratesDate } from './locale.js'
@@ -9,10 +9,29 @@ import { LANGS, MAIN_CURRENCIES, allCurrencies, currencyName, currencySymbol, fi
  */
 function SearchPicker({ label, value, groups, search, describe, onPick, empty }) {
   const { t } = useI18n()
+  const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const [active, setActive] = useState(0)
   const listRef = useRef(null)
+  const rootRef = useRef(null)
+  const searchRef = useRef(null)
   const id = useId()
+
+  const close = () => {
+    setOpen(false)
+    setQ('')
+    setActive(0)
+  }
+  // close on a click or tap outside
+  useEffect(() => {
+    if (!open) return
+    const away = e => !rootRef.current?.contains(e.target) && close()
+    document.addEventListener('pointerdown', away)
+    return () => document.removeEventListener('pointerdown', away)
+  }, [open])
+  useEffect(() => {
+    if (open) searchRef.current?.focus()
+  }, [open])
 
   const query = q.trim()
   const shown = (query ? [{ ids: search(query).ids }] : groups).reduce(
@@ -23,11 +42,13 @@ function SearchPicker({ label, value, groups, search, describe, onPick, empty })
 
   const pick = choice => {
     onPick(choice)
-    setQ('')
-    setActive(0)
+    close()
   }
   const onKey = e => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      close()
+    } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault()
       const next = Math.max(0, Math.min(flat.length - 1, active + (e.key === 'ArrowDown' ? 1 : -1)))
       setActive(next)
@@ -39,22 +60,39 @@ function SearchPicker({ label, value, groups, search, describe, onPick, empty })
   }
 
   return (
-    <div className="picker">
-      <label className="field" htmlFor={`${id}-q`}>
-        {label}
+    <div className="picker" ref={rootRef}>
+      <span className="field">{label}</span>
+      <button
+        type="button"
+        className="picker-toggle"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`${label}: ${describe(value)}`}
+        onClick={() => (open ? close() : setOpen(true))}
+      >
+        <span>{describe(value)}</span>
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+      <div className="picker-pop">
+      <label className="sr" htmlFor={`${id}-q`}>{label}</label>
+      <div className="field">
         <span className="inp">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" />
           </svg>
           <input
             id={`${id}-q`}
+            ref={searchRef}
             type="search"
             role="combobox"
             aria-expanded="true"
             aria-controls={`${id}-list`}
             aria-activedescendant={flat[active] ? `${id}-${active}` : undefined}
             autoComplete="off"
-            placeholder={`${t('search')}… · ${describe(value)}`}
+            placeholder={`${t('search')}…`}
             value={q}
             onChange={e => {
               setQ(e.target.value)
@@ -63,7 +101,7 @@ function SearchPicker({ label, value, groups, search, describe, onPick, empty })
             onKeyDown={onKey}
           />
         </span>
-      </label>
+      </div>
       <div className="picker-list" id={`${id}-list`} role="listbox" aria-label={label} ref={listRef}>
         {flat.length === 0 && <p className="pf-empty picker-none">{empty(query)}</p>}
         {shown.map((g, gi) => (
@@ -90,6 +128,8 @@ function SearchPicker({ label, value, groups, search, describe, onPick, empty })
           </div>
         ))}
       </div>
+      </div>
+      )}
     </div>
   )
 }

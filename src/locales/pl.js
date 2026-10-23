@@ -165,4 +165,6 @@ export default {
   'pv.listings': 'Ogłoszenia', 'pv.noListings': 'Brak aktywnych ogłoszeń.', 'pv.open': 'Otwórz profil: {name}',
   'pf.cover': 'Okładka', 'pf.coverColor': 'Styl okładki {n}', 'pf.coverUpload': 'Prześlij zdjęcie okładki', 'pf.coverRemove': 'Usuń zdjęcie okładki', 'pf.coverChange': 'Zmień okładkę',
   soldByLabel: 'Sprzedawca:', moreFrom: 'Więcej od: {name}',
+  'pf.complete': 'Uzupełnij profil', 'pf.completeOf': 'Gotowe: {done} z {total}', 'pf.todo.photo': 'Dodaj zdjęcie profilowe', 'pf.todo.area': 'Wybierz dzielnicę Paryża', 'pf.todo.cover': 'Wybierz okładkę', 'pf.todo.listing': 'Wystaw pierwszą rzecz', 'pf.todo.friend': 'Zaobserwuj sąsiada', 'pf.allDone': 'Twój profil jest kompletny. Świetnie!', 'ls.emptyH': 'Nic jeszcze nie wystawiono',
+  'tab.browse': 'Przeglądaj', 'br.search': 'Szukaj ogłoszeń…', 'br.clear': 'Wyczyść wyszukiwanie', 'br.sortLabel': 'Sortuj', 'br.sort.nearest': 'Najbliższe najpierw', 'br.sort.low': 'Cena: od najniższej', 'br.sort.high': 'Cena: od najwyższej', 'br.none': 'Brak ogłoszeń dla „{q}”', 'br.noneHint': 'Spróbuj innego słowa lub wyczyść filtry.', 'br.reset': 'Wyczyść filtry', 'br.save': 'Zapisz „{title}”', 'br.count_one': '{n} ogłoszenie', 'br.count_other': '{n} ogłoszeń', 'br.count_few': '{n} ogłoszenia', 'br.count_many': '{n} ogłoszeń',
 }

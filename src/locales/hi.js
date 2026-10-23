@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'लिस्टिंग', 'pv.noListings': 'अभी कोई सक्रिय लिस्टिंग नहीं।', 'pv.open': '{name} की प्रोफ़ाइल खोलें',
   'pf.cover': 'कवर', 'pf.coverColor': 'कवर शैली {n}', 'pf.coverUpload': 'कवर फ़ोटो अपलोड करें', 'pf.coverRemove': 'कवर फ़ोटो हटाएँ', 'pf.coverChange': 'कवर बदलें',
   soldByLabel: 'विक्रेता:', moreFrom: '{name} की और चीज़ें',
+  'pf.complete': 'अपनी प्रोफ़ाइल पूरी करें', 'pf.completeOf': '{total} में से {done} पूरे', 'pf.todo.photo': 'प्रोफ़ाइल फ़ोटो जोड़ें', 'pf.todo.area': 'अपना पेरिस इलाका चुनें', 'pf.todo.cover': 'कवर चुनें', 'pf.todo.listing': 'अपनी पहली चीज़ बेचें', 'pf.todo.friend': 'किसी पड़ोसी को फ़ॉलो करें', 'pf.allDone': 'आपकी प्रोफ़ाइल पूरी है। बढ़िया!', 'ls.emptyH': 'अभी कुछ बिक्री के लिए नहीं',
+  'tab.browse': 'ब्राउज़ करें', 'br.search': 'लिस्टिंग खोजें…', 'br.clear': 'खोज साफ़ करें', 'br.sortLabel': 'क्रम', 'br.sort.nearest': 'सबसे नज़दीक पहले', 'br.sort.low': 'कीमत: कम से ज़्यादा', 'br.sort.high': 'कीमत: ज़्यादा से कम', 'br.none': '"{q}" से मेल खाती कोई लिस्टिंग नहीं', 'br.noneHint': 'कोई और शब्द आज़माएँ या फ़िल्टर हटाएँ।', 'br.reset': 'फ़िल्टर हटाएँ', 'br.save': '{title} सहेजें', 'br.count_one': '{n} लिस्टिंग', 'br.count_other': '{n} लिस्टिंग',
 }

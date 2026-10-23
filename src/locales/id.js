@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'Iklan', 'pv.noListings': 'Belum ada iklan aktif saat ini.', 'pv.open': 'Buka profil {name}',
   'pf.cover': 'Sampul', 'pf.coverColor': 'Gaya sampul {n}', 'pf.coverUpload': 'Unggah foto sampul', 'pf.coverRemove': 'Hapus foto sampul', 'pf.coverChange': 'Ganti sampul',
   soldByLabel: 'Dijual oleh', moreFrom: 'Lainnya dari {name}',
+  'pf.complete': 'Lengkapi profil Anda', 'pf.completeOf': '{done} dari {total} selesai', 'pf.todo.photo': 'Tambah foto profil', 'pf.todo.area': 'Pilih arondisemen Paris Anda', 'pf.todo.cover': 'Pilih sampul', 'pf.todo.listing': 'Pasang barang pertama Anda', 'pf.todo.friend': 'Ikuti seorang tetangga', 'pf.allDone': 'Profil Anda lengkap. Mantap!', 'ls.emptyH': 'Belum ada yang dijual',
+  'tab.browse': 'Jelajahi semua', 'br.search': 'Cari iklan…', 'br.clear': 'Hapus pencarian', 'br.sortLabel': 'Urutkan', 'br.sort.nearest': 'Terdekat dulu', 'br.sort.low': 'Harga: rendah ke tinggi', 'br.sort.high': 'Harga: tinggi ke rendah', 'br.none': 'Tidak ada iklan yang cocok dengan "{q}"', 'br.noneHint': 'Coba kata lain atau hapus filter.', 'br.reset': 'Hapus filter', 'br.save': 'Simpan {title}', 'br.count_one': '{n} iklan', 'br.count_other': '{n} iklan',
 }

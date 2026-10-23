@@ -288,6 +288,7 @@ function EditForm({ page, busy, onSave, onCancel }) {
 }
 
 const SECTIONS = ['listings', 'reviews', 'friends', 'settings']
+const SECTION_ICON = { listings: 'tag', reviews: 'star', friends: 'users', settings: 'gear' }
 
 function NeedsBackend() {
   const { t } = useI18n()
@@ -303,6 +304,7 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
   const [busy, setBusy] = useState(false)
   const [section, setSection] = useState('listings')
   const [viewing, setViewing] = useState(null) // someone else's profile, opened from Friends
+  const [counts, setCounts] = useState(null) // { listings, following } for the checklist
 
   const reload = () => api.fetchProfilePage(uid).then(setPage).catch(() => onToast(t('pf.refreshFail')))
 
@@ -317,6 +319,17 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
       live = false
     }
   }, [uid, backendOn])
+
+  useEffect(() => {
+    if (!backendOn || !uid) return
+    let live = true
+    Promise.all([api.fetchMyListings(uid), api.fetchConnections()])
+      .then(([l, c]) => live && setCounts({ listings: l.length, following: c.following.length }))
+      .catch(() => {})
+    return () => {
+      live = false
+    }
+  }, [uid, backendOn, section])
 
   const save = async ({ photo, coverPhoto, dropCover, ...fields }) => {
     setBusy(true)
@@ -376,6 +389,21 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
   const written = page.written || []
   const area = arrLabel(page.arrondissement)
   const avg = received.length ? received.reduce((n, r) => n + r.rating, 0) / received.length : null
+
+  // "complete your profile" steps; the two that need the server are skipped offline
+  const todo = asVisitor || editing ? [] : [
+    { id: 'photo', done: !!page.avatar, icon: 'camera', act: () => setEditing(true) },
+    { id: 'area', done: !!page.arrondissement, icon: 'pin', act: () => setEditing(true) },
+    { id: 'cover', done: !!(page.cover || page.cover_style), icon: 'all', act: () => setEditing(true) },
+    ...(backendOn && uid && counts
+      ? [
+          { id: 'listing', done: counts.listings > 0, icon: 'tag', act: () => setSection('listings') },
+          { id: 'friend', done: counts.following > 0, icon: 'users', act: () => setSection('friends') },
+        ]
+      : []),
+  ]
+  const doneCount = todo.filter(x => x.done).length
+  const allDone = todo.length > 0 && doneCount === todo.length
 
   return (
     <div className="profile-wrap gut">
@@ -445,26 +473,52 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
         </>
       ) : (
         <>
-          <div className="pf-tabs" role="tablist" aria-label={t('pf.sections')}>
-            {SECTIONS.map(id => (
-              <button key={id} role="tab" id={`pft-${id}`} aria-selected={section === id} aria-controls="pf-panel" onClick={() => setSection(id)}>
-                {t('pf.sec.' + id)}
-              </button>
-            ))}
-          </div>
-          <div id="pf-panel" role="tabpanel" aria-labelledby={`pft-${section}`} className="pf-panel">
-            {!backendOn || !uid ? (
-              section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
-
-            ) : section === 'listings' ? (
-              <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} />
-            ) : section === 'reviews' ? (
-              <ProfileReviews uid={uid} received={received} written={written} onChanged={reload} onToast={onToast} />
-            ) : section === 'friends' ? (
-              <ProfileFriends uid={uid} onToast={onToast} onOpen={setViewing} />
-            ) : (
-              <ProfileSettings uid={uid} email={email} backendOn={backendOn} onSignOut={onSignOut} onToast={onToast} />
+          <div className={`pf-body${todo.length ? ' has-aside' : ''}`}>
+            {todo.length > 0 && (
+              <aside className="pf-aside" aria-labelledby="pf-todo-h">
+                <div className="pf-card pf-todo">
+                  <h2 id="pf-todo-h">{allDone ? t('pf.allDone') : t('pf.complete')}</h2>
+                  <div className="pf-bar" role="progressbar" aria-valuemin={0} aria-valuemax={todo.length} aria-valuenow={doneCount} aria-label={t('pf.complete')}>
+                    <i style={{ width: `${(doneCount / todo.length) * 100}%` }} />
+                  </div>
+                  <small>{t('pf.completeOf', { done: doneCount, total: todo.length })}</small>
+                  <ul>
+                    {todo.map(x => (
+                      <li key={x.id} className={x.done ? 'done' : ''}>
+                        <button type="button" onClick={x.act} disabled={x.done}>
+                          <span className="pf-todo-ico" aria-hidden="true"><Icon name={x.done ? 'check' : x.icon} size={16} sw={x.done ? 2.8 : 2} /></span>
+                          <span>{t('pf.todo.' + x.id)}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </aside>
             )}
+            <div className="pf-main">
+              <div className="pf-tabs" role="tablist" aria-label={t('pf.sections')}>
+                {SECTIONS.map(id => (
+                  <button key={id} role="tab" id={`pft-${id}`} aria-selected={section === id} aria-controls="pf-panel" onClick={() => setSection(id)}>
+                    <Icon name={SECTION_ICON[id]} size={17} />
+                    {t('pf.sec.' + id)}
+                  </button>
+                ))}
+              </div>
+              <div id="pf-panel" role="tabpanel" aria-labelledby={`pft-${section}`} className="pf-panel">
+                {!backendOn || !uid ? (
+                  section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
+
+                ) : section === 'listings' ? (
+                  <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} />
+                ) : section === 'reviews' ? (
+                  <ProfileReviews uid={uid} received={received} written={written} onChanged={reload} onToast={onToast} />
+                ) : section === 'friends' ? (
+                  <ProfileFriends uid={uid} onToast={onToast} onOpen={setViewing} />
+                ) : (
+                  <ProfileSettings uid={uid} email={email} backendOn={backendOn} onSignOut={onSignOut} onToast={onToast} />
+                )}
+              </div>
+            </div>
           </div>
         </>
       )}

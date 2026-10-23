@@ -44,6 +44,18 @@ export function Cover({ style, src, children }) {
   )
 }
 
+/** A friendly empty state: icon in a soft circle, optional title, text and a button. */
+export function EmptyCard({ icon, title, text, action, compact }) {
+  return (
+    <div className={`pf-emptycard${compact ? ' compact' : ''}`}>
+      <span className="pf-emptyico" aria-hidden="true"><Icon name={icon} size={compact ? 22 : 30} /></span>
+      {title && <h3>{title}</h3>}
+      {text && <p>{text}</p>}
+      {action}
+    </div>
+  )
+}
+
 /** Round profile picture, or the name's first letter when there is none. */
 export function Avatar({ src, name, size = 96 }) {
   return (

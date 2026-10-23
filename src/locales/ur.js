@@ -163,4 +163,6 @@ export default {
   'pv.listings': 'اشتہارات', 'pv.noListings': 'ابھی کوئی فعال اشتہار نہیں۔', 'pv.open': '{name} کا پروفائل کھولیں',
   'pf.cover': 'کور', 'pf.coverColor': 'کور انداز {n}', 'pf.coverUpload': 'کور تصویر اپ لوڈ کریں', 'pf.coverRemove': 'کور تصویر ہٹائیں', 'pf.coverChange': 'کور بدلیں',
   soldByLabel: 'بیچنے والا:', moreFrom: '{name} کی مزید چیزیں',
+  'pf.complete': 'اپنا پروفائل مکمل کریں', 'pf.completeOf': '{total} میں سے {done} مکمل', 'pf.todo.photo': 'پروفائل تصویر شامل کریں', 'pf.todo.area': 'پیرس کا اپنا علاقہ منتخب کریں', 'pf.todo.cover': 'کور منتخب کریں', 'pf.todo.listing': 'اپنی پہلی چیز بیچنے کے لیے رکھیں', 'pf.todo.friend': 'کسی پڑوسی کو فالو کریں', 'pf.allDone': 'آپ کا پروفائل مکمل ہے۔ شاباش!', 'ls.emptyH': 'ابھی کچھ فروخت کے لیے نہیں',
+  'tab.browse': 'براؤز کریں', 'br.search': 'اشتہارات تلاش کریں…', 'br.clear': 'تلاش صاف کریں', 'br.sortLabel': 'ترتیب', 'br.sort.nearest': 'سب سے قریب پہلے', 'br.sort.low': 'قیمت: کم سے زیادہ', 'br.sort.high': 'قیمت: زیادہ سے کم', 'br.none': '"{q}" سے مطابقت رکھنے والا کوئی اشتہار نہیں', 'br.noneHint': 'کوئی اور لفظ آزمائیں یا فلٹر ہٹائیں۔', 'br.reset': 'فلٹر ہٹائیں', 'br.save': '{title} محفوظ کریں', 'br.count_one': '{n} اشتہار', 'br.count_other': '{n} اشتہارات',
 }

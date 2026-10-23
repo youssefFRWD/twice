@@ -165,4 +165,6 @@ export default {
   'pv.listings': 'Объявления', 'pv.noListings': 'Сейчас нет активных объявлений.', 'pv.open': 'Открыть профиль: {name}',
   'pf.cover': 'Обложка', 'pf.coverColor': 'Стиль обложки {n}', 'pf.coverUpload': 'Загрузить фото обложки', 'pf.coverRemove': 'Убрать фото обложки', 'pf.coverChange': 'Сменить обложку',
   soldByLabel: 'Продавец:', moreFrom: 'Ещё от {name}',
+  'pf.complete': 'Заполните профиль', 'pf.completeOf': 'Готово {done} из {total}', 'pf.todo.photo': 'Добавить фото профиля', 'pf.todo.area': 'Выбрать округ Парижа', 'pf.todo.cover': 'Выбрать обложку', 'pf.todo.listing': 'Разместить первую вещь', 'pf.todo.friend': 'Подписаться на соседа', 'pf.allDone': 'Профиль заполнен. Отлично!', 'ls.emptyH': 'Пока ничего не продаётся',
+  'tab.browse': 'Обзор', 'br.search': 'Поиск объявлений…', 'br.clear': 'Очистить поиск', 'br.sortLabel': 'Сортировка', 'br.sort.nearest': 'Сначала ближайшие', 'br.sort.low': 'Цена: по возрастанию', 'br.sort.high': 'Цена: по убыванию', 'br.none': 'Нет объявлений по запросу «{q}»', 'br.noneHint': 'Попробуйте другое слово или сбросьте фильтры.', 'br.reset': 'Сбросить фильтры', 'br.save': 'Сохранить «{title}»', 'br.count_one': '{n} объявление', 'br.count_other': '{n} объявлений', 'br.count_few': '{n} объявления', 'br.count_many': '{n} объявлений',
 }

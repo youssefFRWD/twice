@@ -243,17 +243,16 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <div className="gut">
         <div className="lp-in lp-nav">
           <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
-          <nav className="lp-links" aria-label="Sections">
+          <nav className="lp-links" aria-label={t('sections')}>
             {tabs.map(([id, label, ic]) => (
-              <button key={id} className="lp-link" aria-label={label} onClick={() => onNav(id)}>
-                <Icon name={ic} size={20} />
+              <button key={id} className="tab" aria-label={label} onClick={() => onNav(id)}>
+                <span className="ti"><Icon name={ic} size={22} /></span>
                 <span>{label}</span>
               </button>
             ))}
           </nav>
           <div className="lp-actions">
-            {onSignIn && <button className="btn small" onClick={onSignIn}>{t('signInUp')}</button>}
-            <button className="btn small primary" onClick={onStart}>{t('lp.open')}</button>
+            {onSignIn && <button className="btn small primary" onClick={onSignIn}>{t('signInUp')}</button>}
           </div>
         </div>
       </div>
