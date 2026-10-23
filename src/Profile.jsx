@@ -473,8 +473,8 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
         </>
       ) : (
         <>
-          <div className={`pf-body${todo.length ? ' has-aside' : ''}`}>
-            {todo.length > 0 && (
+          <div className={`pf-body${todo.length && !allDone ? ' has-aside' : ''}`}>
+            {todo.length > 0 && !allDone && (
               <aside className="pf-aside" aria-labelledby="pf-todo-h">
                 <div className="pf-card pf-todo">
                   <h2 id="pf-todo-h">{allDone ? t('pf.allDone') : t('pf.complete')}</h2>

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import * as api from './api.js'
 import { translate, useI18n } from './i18n.js'
+import { getThemePref, setThemePref } from './theme.js'
 import { LANGS, MAIN_CURRENCIES, allCurrencies, currencyName, currencySymbol, findCurrency, findLanguage, languageName, locale, ratesDate } from './locale.js'
 
 /**
@@ -138,6 +139,11 @@ function SearchPicker({ label, value, groups, search, describe, onPick, empty })
 export default function ProfilePrefs({ uid, backendOn }) {
   const { t, lang, currency, setLang, setCurrency, money } = useI18n()
   const [msg, setMsg] = useState('')
+  const [theme, setTheme] = useState(getThemePref)
+  const chooseTheme = id => {
+    setThemePref(id)
+    setTheme(id)
+  }
 
   const remember = patch => {
     if (backendOn && uid) api.updateProfile(uid, patch).catch(() => {})
@@ -193,6 +199,18 @@ export default function ProfilePrefs({ uid, backendOn }) {
         onPick={chooseCurrency}
         empty={q => t('prefs.notFoundCur', { q })}
       />
+
+      <div className="field">
+        <span id="theme-l">{t('prefs.appearance')}</span>
+        <div className="seg theme-seg" role="group" aria-labelledby="theme-l">
+          {['auto', 'light', 'dark'].map(id => (
+            <button key={id} type="button" aria-pressed={theme === id} onClick={() => chooseTheme(id)}>
+              <span className="l">{t('prefs.theme.' + id)}</span>
+            </button>
+          ))}
+        </div>
+        <small className="pf-empty">{t('prefs.themeNote')}</small>
+      </div>
 
       <p role="status" className="pf-empty">{msg}</p>
       <p className="pf-empty">{t('prefs.example', { price: money(50) })}</p>
