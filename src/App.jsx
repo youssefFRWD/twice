@@ -170,6 +170,19 @@ export default function App() {
     if (backendEnabled) reloadItems()
   }, [reloadItems])
 
+  // pick up listings other people publish while the app is open
+  useEffect(() => {
+    if (!backendEnabled || (tab !== 'discover' && tab !== 'map')) return
+    reloadItems()
+    const t = setInterval(() => document.visibilityState === 'visible' && reloadItems(), 30000)
+    const onVisible = () => document.visibilityState === 'visible' && reloadItems()
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      clearInterval(t)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [tab, reloadItems])
+
   useEffect(() => {
     if (!backendEnabled) return
     let live = true
