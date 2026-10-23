@@ -2,8 +2,9 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import * as maplibregl from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
-import { CAT_ALL, LM, fmtD, fmtT, nearStations } from './data.js'
+import { LM, fmtD, fmtT, nearStations } from './data.js'
 import { distOf, itemById, meName, reducedMotion, walkLabel } from './lib.js'
+import { useI18n } from './i18n.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
 import Navigation from './Navigation.jsx'
 import { INK, METRO_LAYERS, PARIS, buildStyle, circleFeature, idfLatLng, meElement, pinElement } from './mapStyle.js'
@@ -28,6 +29,7 @@ function Steps({ plan }) {
 }
 
 function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+  const { t, cat: catName, money } = useI18n()
   const it = sel != null ? itemById(sel) : null
   let body
   if (it && plans) {
@@ -37,8 +39,8 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
     body = (
       <>
         <div className="panel-head">
-          <h2>Directions</h2>
-          <button className="btn small" onClick={onClose}><Icon name="x" size={16} />Close</button>
+          <h2>{t('map.directions')}</h2>
+          <button className="btn small" onClick={onClose}><Icon name="x" size={16} />{t('close')}</button>
         </div>
         <div className="panel-body detail-wrap">
           <div className="detail">
@@ -47,24 +49,24 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
               <div>
                 <h3>{it.t}</h3>
                 <div className="meta">
-                  <span className="price" style={{ fontSize: 16 }}>€{it.p}</span>
+                  <span className="price" style={{ fontSize: 16 }}>{money(it.p)}</span>
                   <span>{it.a}</span>
                 </div>
                 <div className="meta mono" style={{ marginTop: 2 }}>
-                  {w.real ? `${fmtD(w.km)} · ${fmtT(w.min)} walk` : walkLabel(me, it)} from {meName(me)}
+                  {t('map.from', { label: w.real ? t('walkLabel', { d: fmtD(w.km), min: fmtT(w.min) }) : walkLabel(me, it, t), name: meName(me, t) })}
                 </div>
               </div>
             </div>
-            <div className="seg" role="group" aria-label="Travel mode">
+            <div className="seg" role="group" aria-label={t('map.travelMode')}>
               <button aria-pressed={mode === 'walk'} onClick={() => onMode('walk')}>
-                <span className="l"><Icon name="walk" size={16} />Walk</span>
+                <span className="l"><Icon name="walk" size={16} />{t('map.walk')}</span>
                 <span className="t">{fmtT(w.min)}</span>
-                {fast === 'walk' && <span className="f">Fastest</span>}
+                {fast === 'walk' && <span className="f">{t('map.fastest')}</span>}
               </button>
               <button aria-pressed={mode === 'metro'} onClick={() => onMode('metro')}>
-                <span className="l"><Icon name="train" size={16} />Metro</span>
-                <span className="t">{m.none ? 'n/a' : fmtT(m.min)}</span>
-                {fast === 'metro' && <span className="f">Fastest</span>}
+                <span className="l"><Icon name="train" size={16} />{t('map.metro')}</span>
+                <span className="t">{m.none ? t('na') : fmtT(m.min)}</span>
+                {fast === 'metro' && <span className="f">{t('map.fastest')}</span>}
               </button>
             </div>
             <button className="btn primary nav-start" disabled={!plan.nav} onClick={onStartNav}>
@@ -73,13 +75,13 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button className="btn small" onClick={() => onBuy(it.id)}>
-                <Icon name="bag" size={16} />Buy · €{it.p}
+                <Icon name="bag" size={16} />{t('buy', { price: money(it.p) })}
               </button>
               <button className="btn small" disabled={!canMessage(it)} onClick={() => onMessage(it)}>
-                <Icon name="chat" size={16} />Message seller
+                <Icon name="chat" size={16} />{t('msgSeller')}
               </button>
             </div>
-            {mode === 'metro' && m.none && <p className="note">{m.why} Showing the walking route.</p>}
+            {mode === 'metro' && m.none && <p className="note">{m.why} {t('map.showingWalk')}</p>}
             <Steps plan={plan} />
             <p className="note">
               {plan.real
@@ -91,23 +93,23 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
       </>
     )
   } else {
-    const label = CAT_ALL.find(c => c.id === cat).label
+    const label = catName(cat)
     const inR = list.filter(i => distOf(me, i) <= radius).length
     body = (
       <>
         <div className="panel-head">
           <h2>
-            {list.length} saved{cat === 'all' ? '' : ' · ' + label}
+            {t('map.saved', { n: list.length })}{cat === 'all' ? '' : ' · ' + label}
             {showNearby ? ` · ${nearby.length} nearby` : ''}
           </h2>
-          <span className="note">{inR} within {radius} km of {meName(me)}</span>
+          <span className="note">{t('map.within', { n: inR, radius, name: meName(me, t) })}</span>
         </div>
         <div className="panel-body">
           {list.length ? (
             list.map(i => (
               <button className="li" key={i.id} onClick={() => onPick(i.id)}>
                 <Art item={i} />
-                <span><b>{i.t}</b><small>{i.a} · €{i.p}</small></span>
+                <span><b>{i.t}</b><small>{i.a} · {money(i.p)}</small></span>
                 <span className="d">{fmtD(distOf(me, i))}</span>
               </button>
             ))
@@ -115,7 +117,7 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
             !showNearby && (
               <div className="empty" style={{ padding: '16px 4px' }}>
                 <Icon name="heart" size={32} />
-                <h2 style={{ fontSize: 18 }}>No pins here yet</h2>
+                <h2 style={{ fontSize: 18 }}>{t('map.noPins')}</h2>
                 <p>{savedCount ? 'Nothing saved in this category.' : 'Save items on Discover and they appear here, or tap Show all listings to see what is around you.'}</p>
               </div>
             )
@@ -126,7 +128,7 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
               {nearby.map(i => (
                 <button className="li" key={i.id} onClick={() => onPick(i.id)}>
                   <Art item={i} />
-                  <span><b>{i.t}</b><small>{i.a} · €{i.p}</small></span>
+                  <span><b>{i.t}</b><small>{i.a} · {money(i.p)}</small></span>
                   <span className="d">{fmtD(distOf(me, i))}</span>
                 </button>
               ))}
@@ -140,8 +142,8 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
     )
   }
   return (
-    <aside className={`panel${peek ? ' peek' : ''}`} ref={panelRef} aria-label="Saved items on the map">
-      <button className="handle" aria-label={`${peek ? 'Expand' : 'Collapse'} panel`} onClick={onPeek}><i /></button>
+    <aside className={`panel${peek ? ' peek' : ''}`} ref={panelRef} aria-label={t('map.panel')}>
+      <button className="handle" aria-label={peek ? t('map.expand') : t('map.collapse')} onClick={onPeek}><i /></button>
       {body}
     </aside>
   )
@@ -150,6 +152,7 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
 maplibregl.setWorkerUrl(workerUrl)
 
 export default function MapView(props) {
+  const { t } = useI18n()
   const { active, me, radius, list, nearby, showNearby, nearbyCount, onToggleNearby, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
   const { canMessage, onMessage, onBuy, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
@@ -168,7 +171,7 @@ export default function MapView(props) {
 
   // latest callbacks for the long-lived map handlers
   useEffect(() => {
-    live.current = { placing, onSelect, onPlace }
+    live.current = { placing, onSelect, onPlace, t }
   })
 
   /* create the map once */
@@ -205,7 +208,7 @@ export default function MapView(props) {
       if (!l.placing) return
       const c = { lat: e.lngLat.lat, lon: e.lngLat.lng }
       const n = nearStations(c, 5, 1)[0]
-      l.onPlace({ lat: c.lat, lon: c.lon, label: n ? `Near ${n.s.name}` : 'Dropped pin', src: 'manual' })
+      l.onPlace({ lat: c.lat, lon: c.lon, label: n ? l.t('map.near', { name: n.s.name }) : l.t('map.dropped'), src: 'manual' })
     })
     map.on('load', () => {
       setReady(true)
@@ -356,7 +359,7 @@ export default function MapView(props) {
           ref={mapElRef}
           className="mapgl"
           role="region"
-          aria-label="Map of Île-de-France with your saved items, metro and RER lines"
+          aria-label={t('map.region')}
         />
         {navOn && mapObj && plan?.nav && (
           <Navigation
@@ -376,36 +379,36 @@ export default function MapView(props) {
             {showNearby ? 'Showing all listings · Hide' : `Show all listings${nearbyCount ? ` (${nearbyCount})` : ''}`}
           </button>
           <label className="radius" htmlFor="rad">
-            <span>Within <b className="mono">{radius} km</b></span>
+            <span>{t('map.withinLabel')} <b className="mono">{radius} km</b></span>
             <input type="range" id="rad" min="1" max="25" step="1" value={radius} onChange={e => onRadius(+e.target.value)} />
           </label>
           <div>
             {placing ? (
               <div className="banner">
                 <Icon name="arrow" size={18} />
-                <span>Tap the map to set where you are.</span>
-                <button onClick={onCancelPlace}>Cancel</button>
+                <span>{t('map.tapSet')}</span>
+                <button onClick={onCancelPlace}>{t('cancel')}</button>
               </div>
             ) : me.src === 'default' ? (
               <div className="banner">
                 <Icon name="arrow" size={18} />
-                <span>Using {me.label} as your start.</span>
-                <button onClick={onOpenLoc}>Change</button>
+                <span>{t('map.using', { place: me.label })}</span>
+                <button onClick={onOpenLoc}>{t('change')}</button>
               </div>
             ) : null}
           </div>
         </div>
         <div className="mapui" hidden={navOn}>
-          <button className="mb" aria-label="Zoom in" onClick={() => zoomBtn('in')}><Icon name="plus" /></button>
-          <button className="mb" aria-label="Zoom out" onClick={() => zoomBtn('out')}><Icon name="minus" /></button>
-          <button className="mb" aria-label="Centre on my position" onClick={() => zoomBtn('me')}><Icon name="arrow" /></button>
-          <button className="mb" aria-label="Fit saved items" onClick={() => zoomBtn('fit')}><Icon name="pin" /></button>
-          <button className="mb" aria-label="Show all of Île-de-France" onClick={() => zoomBtn('all')}><Icon name="whole" /></button>
+          <button className="mb" aria-label={t('map.zoomIn')} onClick={() => zoomBtn('in')}><Icon name="plus" /></button>
+          <button className="mb" aria-label={t('map.zoomOut')} onClick={() => zoomBtn('out')}><Icon name="minus" /></button>
+          <button className="mb" aria-label={t('map.centre')} onClick={() => zoomBtn('me')}><Icon name="arrow" /></button>
+          <button className="mb" aria-label={t('map.fit')} onClick={() => zoomBtn('fit')}><Icon name="pin" /></button>
+          <button className="mb" aria-label={t('map.all')} onClick={() => zoomBtn('all')}><Icon name="whole" /></button>
           <button
             className="mb"
-            aria-label="Show metro and RER lines"
+            aria-label={t('map.showLines')}
             aria-pressed={metroOn}
-            title="Metro and RER lines"
+            title={t('map.lines')}
             onClick={() => setMetroOn(v => !v)}
           >
             <Icon name="train" />

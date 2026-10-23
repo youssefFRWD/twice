@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as maplibregl from 'maplibre-gl'
 import { fmtT } from './data.js'
+import { useI18n } from './i18n.js'
 import { reducedMotion } from './lib.js'
 import { buildPlans, headingAt, pointAt, project, secondsLeft, segmentAt, splitRoute } from './routing.js'
 import { Icon, LineBadge } from './ui.jsx'
@@ -61,6 +62,7 @@ function arrowElement() {
  * greys out the part of the route you have covered and highlights what is left.
  */
 export default function Navigation({ map, item, mode, plan: firstPlan, onExit }) {
+  const { t } = useI18n()
   const [plan, setPlan] = useState(firstPlan)
   const [view, setView] = useState(() => ({ along: 0, status: navigator.geolocation ? 'locating' : 'nogps', arrived: false, now: Date.now() }))
   const [following, setFollowing] = useState(true)
@@ -85,7 +87,7 @@ export default function Navigation({ map, item, mode, plan: firstPlan, onExit })
       st.current.lastReroute = now
       setRerouting(true)
       try {
-        const plans = await buildPlans(from, item)
+        const plans = await buildPlans(from, item, t)
         const next = mode === 'metro' && !plans.metro.none ? plans.metro : plans.walk
         if (next.nav?.coords.length > 1) setPlan(next)
       } catch {
@@ -93,7 +95,7 @@ export default function Navigation({ map, item, mode, plan: firstPlan, onExit })
       }
       setRerouting(false)
     },
-    [item, mode],
+    [item, mode, t],
   )
 
   /** Move the navigation to a new position: progress, grey/highlight split, arrow, camera. */

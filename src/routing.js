@@ -340,9 +340,10 @@ async function realMetroPlan(from, to, est) {
 }
 
 /** Walking and metro plans from a point to an item, with real walking routes where the router answers. */
-export async function buildPlans(from, item) {
-  const w = planWalk(from, item)
-  const m = planMetro(from, item)
+/** `t` translates the estimate steps; turn-by-turn text from the router is still English. */
+export async function buildPlans(from, item, t) {
+  const w = planWalk(from, item, t)
+  const m = planMetro(from, item, t)
   const [walk, metro] = await Promise.all([realWalkPlan(from, item, w), m.none ? m : realMetroPlan(from, item, m)])
   return { walk, metro }
 }

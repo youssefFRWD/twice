@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
+import { useI18n } from './i18n.js'
+import { locale } from './locale.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -71,8 +73,8 @@ const sampleMsgs = id =>
 function when(iso) {
   const d = new Date(iso)
   const now = new Date()
-  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short' })
+  if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString(locale(), { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleDateString(locale(), { day: 'numeric', month: 'short' })
 }
 
 /** Green: active today. Orange: within the last 4 days. Red: longer ago. Grey: nothing from them yet. */
@@ -327,6 +329,7 @@ function StarredPage({ items, convIds, onBack, onGo, onUnstar }) {
 }
 
 function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem }) {
+  const { t } = useI18n()
   const [msgs, setMsgs] = useState(() => (conv.sample ? sampleMsgs(conv.id) : []))
   const [text, setText] = useState('')
   const [error, setError] = useState('')
@@ -362,16 +365,16 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
           if (live) onChanged()
         }
       } catch {
-        if (live) setError('Could not load this conversation.')
+        if (live) setError(t('msg.loadFail'))
       }
     }
     load()
-    const t = setInterval(load, POLL_MS)
+    const timer = setInterval(load, POLL_MS)
     return () => {
       live = false
-      clearInterval(t)
+      clearInterval(timer)
     }
-  }, [convId, uid, onChanged, conv.sample])
+  }, [convId, uid, onChanged, conv.sample, t])
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' })
@@ -423,7 +426,7 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
       setText('')
       onChanged()
     } catch {
-      setError('Message not sent. Check your connection and try again.')
+      setError(t('msg.sendFail'))
     }
     setBusy(false)
   }
@@ -452,9 +455,9 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
   const st = presence(conv.theirAt)
 
   return (
-    <section className="msg-thread" aria-label={`Conversation with ${conv.partner}`}>
+    <section className="msg-thread" aria-label={t('msg.with', { name: conv.partner })}>
       <header className="th-head">
-        <button className="th-back btn small" onClick={onBack} aria-label="Back to conversations">
+        <button className="th-back btn small" onClick={onBack} aria-label={t('msg.back')}>
           <Icon name="undo" size={16} />Back
         </button>
         <span className="av" aria-hidden="true">{conv.partner.charAt(0).toUpperCase()}</span>
@@ -483,7 +486,7 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
       <div className="th-body" aria-live="polite" ref={bodyRef}>
-        {msgs.length === 0 && !error && <p className="note th-empty">No messages yet. Say hello and ask about the item.</p>}
+        {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
         {msgs.map(m => (
           <Bubble
@@ -510,8 +513,8 @@ function Thread({ conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, 
       <form className="th-send" onSubmit={send}>
         <input
           type="text"
-          aria-label="Write a message"
-          placeholder="Write a message"
+          aria-label={t('msg.write')}
+          placeholder={t('msg.write')}
           maxLength={4000}
           value={text}
           onChange={e => setText(e.target.value)}
@@ -550,6 +553,7 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
 }
 
 export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem }) {
+  const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
@@ -616,7 +620,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     return (
       <div className="empty">
         <Icon name="chat" size={40} />
-        <h2>Messages need an account</h2>
+        <h2>{t('msg.needAccount')}</h2>
         <p>{backendOn ? 'Sign in to message sellers about their items.' : 'Messaging is only available once twice is connected online.'}</p>
         {backendOn && onSignIn && <button className="btn primary" onClick={onSignIn}>Sign in / Sign up</button>}
       </div>
@@ -640,7 +644,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     <div className={`msgs${open || showStarred ? ' has-thread' : ''}`}>
       <div className="msg-list">
         <div className="msg-head">
-          <h1 className="msg-title">Messages</h1>
+          <h1 className="msg-title">{t('tab.messages')}</h1>
           <div className="msg-tools">
             <label className="msg-search">
               <Icon name="search" size={16} />
@@ -701,7 +705,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
             {convs.length === 0 && (
               <div className="empty" style={{ padding: '24px 4px' }}>
                 <Icon name="chat" size={40} />
-                <h2>No conversations yet</h2>
+                <h2>{t('msg.noConvs')}</h2>
                 <p>Open a saved item and tap the message button to ask the seller a question.</p>
               </div>
             )}
@@ -775,7 +779,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           onOpenItem={onOpenItem}
         />
       ) : (
-        <div className="msg-thread th-none"><p className="note">Select a conversation to read it.</p></div>
+        <div className="msg-thread th-none"><p className="note">{t('msg.select')}</p></div>
       )}
     </div>
     </div>

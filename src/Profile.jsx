@@ -1,16 +1,22 @@
 import { useEffect, useRef, useState } from 'react'
 import * as api from './api.js'
-import { Icon } from './ui.jsx'
-import ProfileListings, { SellForm } from './ProfileListings.jsx'
+import { useI18n } from './i18n.js'
+import { locale } from './locale.js'
+import { COVER_STYLES } from './data.js'
+import { Avatar, Cover, Icon } from './ui.jsx'
+import { toJpeg } from './lib.js'
+import ProfileListings from './ProfileListings.jsx'
 import ProfileReviews, { ReviewList } from './ProfileReviews.jsx'
 import ProfileFriends from './ProfileFriends.jsx'
 import ProfileSettings from './ProfileSettings.jsx'
+import ProfilePrefs from './ProfilePrefs.jsx'
+import ProfileView from './ProfileView.jsx'
 
 const LOCAL_KEY = 'twice:profile'
 const STAGE = 280
 const OUT = 512
 
-const joined = iso => new Date(iso).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
+const joined = iso => new Date(iso).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
 const arrLabel = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : null)
 
 function loadLocal() {
@@ -32,16 +38,9 @@ function saveLocal(p) {
   }
 }
 
-function Avatar({ src, name, size = 96 }) {
-  return (
-    <span className="avatar" style={{ width: size, height: size, fontSize: size * 0.42 }}>
-      {src ? <img src={src} alt="" /> : <span aria-hidden="true">{(name || '?').trim().charAt(0).toUpperCase()}</span>}
-    </span>
-  )
-}
-
 /** Pick a photo, drag it into place, zoom, then confirm. The result is a square JPEG blob. */
 function AvatarEditor({ onDone, onCancel }) {
+  const { t } = useI18n()
   const [img, setImg] = useState(null)
   const [zoom, setZoom] = useState(1)
   const [pos, setPos] = useState({ x: 0, y: 0 })
@@ -63,8 +62,8 @@ function AvatarEditor({ onDone, onCancel }) {
   const pick = e => {
     const f = e.target.files?.[0]
     if (!f) return
-    if (!f.type.startsWith('image/')) return setErr('Please choose an image file.')
-    if (f.size > 10 * 1024 * 1024) return setErr('That image is over 10 MB. Try a smaller one.')
+    if (!f.type.startsWith('image/')) return setErr(t('av.notImage'))
+    if (f.size > 10 * 1024 * 1024) return setErr(t('av.tooBig'))
     setErr('')
     if (urlRef.current) URL.revokeObjectURL(urlRef.current)
     urlRef.current = URL.createObjectURL(f)
@@ -74,7 +73,7 @@ function AvatarEditor({ onDone, onCancel }) {
       setZoom(1)
       setPos({ x: 0, y: 0 })
     }
-    el.onerror = () => setErr('We could not read that image.')
+    el.onerror = () => setErr(t('av.unreadable'))
     el.src = urlRef.current
   }
 
@@ -111,28 +110,28 @@ function AvatarEditor({ onDone, onCancel }) {
     ctx.fillStyle = '#EFE8D6'
     ctx.fillRect(0, 0, OUT, OUT)
     ctx.drawImage(img, OUT / 2 + pos.x * k - w / 2, OUT / 2 + pos.y * k - h / 2, w, h)
-    c.toBlob(b => (b ? onDone(b, c.toDataURL('image/jpeg', 0.85)) : setErr('Could not prepare the photo.')), 'image/jpeg', 0.85)
+    c.toBlob(b => (b ? onDone(b, c.toDataURL('image/jpeg', 0.85)) : setErr(t('av.prepFail'))), 'image/jpeg', 0.85)
   }
 
   return (
     <div className="scrim on" role="dialog" aria-modal="true" aria-labelledby="av-h" onClick={e => e.target === e.currentTarget && onCancel()}>
       <div className="modal">
-        <h2 id="av-h">Profile picture</h2>
+        <h2 id="av-h">{t('av.title')}</h2>
         {!img ? (
           <label className="av-drop">
             <Icon name="plus" size={28} />
-            <span>Choose a photo</span>
+            <span>{t('av.choose')}</span>
             <input type="file" accept="image/*" onChange={pick} />
           </label>
         ) : (
           <>
-            <p>Drag to reposition, use the slider to zoom. This is exactly how it will look.</p>
+            <p>{t('av.help')}</p>
             <div
               className="av-stage"
               style={{ width: STAGE, height: STAGE }}
               tabIndex={0}
               role="img"
-              aria-label="Photo preview. Use arrow keys to move the photo."
+              aria-label={t('av.preview')}
               onPointerDown={down}
               onPointerMove={move}
               onPointerUp={up}
@@ -152,19 +151,19 @@ function AvatarEditor({ onDone, onCancel }) {
               <span className="av-mask" aria-hidden="true" />
             </div>
             <label className="field">
-              Zoom
+              {t('av.zoom')}
               <input type="range" min="1" max="3" step="0.01" value={zoom} onChange={e => changeZoom(+e.target.value)} />
             </label>
             <label className="linkbtn">
-              Choose a different photo
+              {t('av.different')}
               <input type="file" accept="image/*" onChange={pick} className="sr" />
             </label>
           </>
         )}
         <p role="status" className="pf-err">{err}</p>
         <div className="pf-actions">
-          <button className="btn" type="button" onClick={onCancel}>Cancel</button>
-          <button className="btn primary" type="button" disabled={!img} onClick={confirm}>Use this photo</button>
+          <button className="btn" type="button" onClick={onCancel}>{t('cancel')}</button>
+          <button className="btn primary" type="button" disabled={!img} onClick={confirm}>{t('av.use')}</button>
         </div>
       </div>
     </div>
@@ -172,57 +171,108 @@ function AvatarEditor({ onDone, onCancel }) {
 }
 
 function EditForm({ page, busy, onSave, onCancel }) {
+  const { t } = useI18n()
   const [name, setName] = useState(page.display_name || '')
   const [arr, setArr] = useState(page.arrondissement || '')
   const [pub, setPub] = useState(page.is_public)
   const [photo, setPhoto] = useState(null) // { blob, preview } waiting to be posted
   const [editingPhoto, setEditingPhoto] = useState(false)
   const shown = photo ? photo.preview : page.avatar
+  const [coverStyle, setCoverStyle] = useState(page.cover_style || 'forest')
+  const [cover, setCover] = useState(null) // { blob, preview } new cover photo, not posted yet
+  const [dropCover, setDropCover] = useState(false)
+  const [coverErr, setCoverErr] = useState('')
+  const coverShown = cover ? cover.preview : dropCover ? null : page.cover
+
+  const pickCover = async e => {
+    const f = e.target.files?.[0]
+    e.target.value = ''
+    if (!f) return
+    if (!f.type.startsWith('image/')) return setCoverErr(t('av.notImage'))
+    try {
+      const blob = await toJpeg(f, 1600)
+      setCover({ blob, preview: URL.createObjectURL(blob) })
+      setDropCover(false)
+      setCoverErr('')
+    } catch {
+      setCoverErr(t('av.unreadable'))
+    }
+  }
 
   const submit = e => {
     e.preventDefault()
-    onSave({ display_name: name.trim(), arrondissement: arr ? +arr : null, is_public: pub, photo })
+    onSave({ display_name: name.trim(), arrondissement: arr ? +arr : null, is_public: pub, photo, ...((page.cover_style || 'forest') !== coverStyle && { cover_style: coverStyle }), coverPhoto: cover, dropCover })
   }
 
   return (
     <form className="pf-card pf-form" onSubmit={submit}>
-      <h2>Edit profile</h2>
+      <h2>{t('pf.edit')}</h2>
+      <div className="field">
+        {t('pf.cover')}
+        <Cover style={coverStyle} src={coverShown} />
+        <div className="cover-swatches" role="group" aria-label={t('pf.cover')}>
+          {COVER_STYLES.map((s, i) => (
+            <button
+              key={s}
+              type="button"
+              className={`cover-swatch cover-${s}`}
+              aria-label={t('pf.coverColor', { n: i + 1 })}
+              aria-pressed={coverStyle === s && !coverShown}
+              onClick={() => {
+                setCoverStyle(s)
+                setCover(null)
+                setDropCover(true)
+              }}
+            />
+          ))}
+        </div>
+        <div className="pf-actions left">
+          <label className="btn small">
+            {t('pf.coverUpload')}
+            <input type="file" accept="image/*" className="sr" onChange={pickCover} />
+          </label>
+          {coverShown && (
+            <button type="button" className="btn small" onClick={() => { setCover(null); setDropCover(true) }}>{t('pf.coverRemove')}</button>
+          )}
+        </div>
+        {coverErr && <small className="pf-err">{coverErr}</small>}
+      </div>
       <div className="pf-photo">
         <Avatar src={shown} name={name} size={84} />
         <div>
           <button className="btn small" type="button" onClick={() => setEditingPhoto(true)}>
-            {shown ? 'Change photo' : 'Add a photo'}
+            {shown ? t('pf.changePhoto') : t('pf.addPhoto')}
           </button>
-          {photo && <small>New photo ready. It goes live when you save.</small>}
+          {photo && <small>{t('pf.photoReady')}</small>}
         </div>
       </div>
       <label className="field" htmlFor="pf-name">
-        Name
+        {t('name')}
         <input id="pf-name" type="text" maxLength={40} required value={name} onChange={e => setName(e.target.value)} />
       </label>
       <label className="field" htmlFor="pf-arr">
-        Where in Paris do you buy and sell?
+        {t('pf.whereParis')}
         <select id="pf-arr" value={arr} onChange={e => setArr(e.target.value)}>
-          <option value="">Not specified</option>
+          <option value="">{t('pf.notSpecified')}</option>
           {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{arrLabel(n)} arrondissement</option>
+            <option key={n} value={n}>{t('pf.arrOption', { label: arrLabel(n) })}</option>
           ))}
         </select>
       </label>
       <fieldset className="pf-priv">
-        <legend>Who can see your profile</legend>
+        <legend>{t('pf.whoSees')}</legend>
         <label>
           <input type="radio" name="priv" checked={!pub} onChange={() => setPub(false)} />
-          <span><b>Private</b>Others see your name, photo, area and the reviews written about you. The reviews you wrote stay hidden.</span>
+          <span><b>{t('pf.private')}</b>{t('pf.privateHelp')}</span>
         </label>
         <label>
           <input type="radio" name="priv" checked={pub} onChange={() => setPub(true)} />
-          <span><b>Public</b>Others also see the reviews you wrote.</span>
+          <span><b>{t('pf.public')}</b>{t('pf.publicHelp')}</span>
         </label>
       </fieldset>
       <div className="pf-actions">
-        <button className="btn" type="button" onClick={onCancel} disabled={busy}>Cancel</button>
-        <button className="btn primary" type="submit" disabled={busy || !name.trim()}>{busy ? 'Saving…' : 'Save changes'}</button>
+        <button className="btn" type="button" onClick={onCancel} disabled={busy}>{t('cancel')}</button>
+        <button className="btn primary" type="submit" disabled={busy || !name.trim()}>{busy ? t('saving') : t('saveChanges')}</button>
       </div>
       {editingPhoto && (
         <AvatarEditor
@@ -237,21 +287,24 @@ function EditForm({ page, busy, onSave, onCancel }) {
   )
 }
 
-const SECTIONS = [['sell', 'Sell'], ['listings', 'My listings'], ['reviews', 'Reviews'], ['friends', 'Friends'], ['settings', 'Settings']]
+const SECTIONS = ['listings', 'reviews', 'friends', 'settings']
 
 function NeedsBackend() {
-  return <p className="pf-empty">This section needs the Twice account service. Add your Supabase keys to .env.local to use it.</p>
+  const { t } = useI18n()
+  return <p className="pf-empty">{t('pf.needsBackend')}</p>
 }
 
-export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged }) {
+export default function Profile({ uid, email, backendOn, me, onSignOut, onToast, onItemsChanged, onShowMap, onBuy, canMessage, onMessage }) {
+  const { t } = useI18n()
   const [page, setPage] = useState(() => (backendOn ? null : loadLocal()))
   const [loadErr, setLoadErr] = useState(false)
   const [editing, setEditing] = useState(false)
   const [preview, setPreview] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [section, setSection] = useState('sell')
+  const [section, setSection] = useState('listings')
+  const [viewing, setViewing] = useState(null) // someone else's profile, opened from Friends
 
-  const reload = () => api.fetchProfilePage(uid).then(setPage).catch(() => onToast('Could not refresh your profile.'))
+  const reload = () => api.fetchProfilePage(uid).then(setPage).catch(() => onToast(t('pf.refreshFail')))
 
   useEffect(() => {
     if (!backendOn || !uid) return
@@ -265,23 +318,29 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
     }
   }, [uid, backendOn])
 
-  const save = async ({ photo, ...fields }) => {
+  const save = async ({ photo, coverPhoto, dropCover, ...fields }) => {
     setBusy(true)
     try {
       if (backendOn) {
         const patch = { ...fields }
         if (photo) patch.avatar_path = await api.uploadAvatar(uid, photo.blob, page.avatar_path)
+        if (coverPhoto) patch.cover_path = await api.uploadAvatar(uid, coverPhoto.blob, page.cover_path, 'cover')
+        else if (dropCover && page.cover_path) {
+          await api.removeProfileFile(page.cover_path)
+          patch.cover_path = null
+        }
         await api.updateProfile(uid, patch)
         setPage(await api.fetchProfilePage(uid))
       } else {
-        const next = { ...page, ...fields, avatar: photo ? photo.preview : page.avatar }
+        const coverUrl = coverPhoto ? await new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.readAsDataURL(coverPhoto.blob) }) : dropCover ? null : page.cover
+        const next = { ...page, ...fields, avatar: photo ? photo.preview : page.avatar, cover: coverUrl }
         saveLocal(next)
         setPage(next)
       }
       setEditing(false)
-      onToast('Profile saved')
+      onToast(t('pf.saved'))
     } catch {
-      onToast('Could not save your profile. Try again.')
+      onToast(t('pf.saveFail'))
     }
     setBusy(false)
   }
@@ -289,87 +348,122 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
   if (loadErr) {
     return (
       <div className="empty">
-        <h2>Could not load your profile</h2>
-        <p>Check your connection and try again.</p>
-        <button className="btn primary" onClick={() => { setLoadErr(false); setPage(null); api.fetchProfilePage(uid).then(setPage).catch(() => setLoadErr(true)) }}>Retry</button>
+        <h2>{t('pf.loadFail')}</h2>
+        <p>{t('pf.checkConn')}</p>
+        <button className="btn primary" onClick={() => { setLoadErr(false); setPage(null); api.fetchProfilePage(uid).then(setPage).catch(() => setLoadErr(true)) }}>{t('retry')}</button>
       </div>
     )
   }
-  if (!page) return <div className="empty"><p role="status">Loading your profile…</p></div>
+  if (!page) return <div className="empty"><p role="status">{t('pf.loading')}</p></div>
+  if (viewing) {
+    return (
+      <ProfileView
+        key={viewing}
+        uid={uid}
+        userId={viewing}
+        onBack={() => setViewing(null)}
+        onToast={onToast}
+        onShowMap={onShowMap}
+        onBuy={onBuy}
+        canMessage={canMessage}
+        onMessage={onMessage}
+      />
+    )
+  }
 
   const asVisitor = preview
   const received = page.received || []
   const written = page.written || []
   const area = arrLabel(page.arrondissement)
+  const avg = received.length ? received.reduce((n, r) => n + r.rating, 0) / received.length : null
 
   return (
     <div className="profile-wrap gut">
       {asVisitor && (
         <div className="pf-banner" role="status">
-          <span>This is how other people see your profile.</span>
-          <button className="linkbtn" onClick={() => setPreview(false)}>Back to my profile</button>
+          <span>{t('pf.asOthers')}</span>
         </div>
       )}
 
       {editing && !asVisitor ? (
         <EditForm page={page} busy={busy} onSave={save} onCancel={() => setEditing(false)} />
       ) : (
-        <section className="pf-card pf-head" aria-label="Profile">
-          <Avatar src={page.avatar} name={page.display_name} />
-          <div className="pf-id">
-            <h1>{page.display_name}</h1>
-            <p>
-              {area && <span><Icon name="pin" size={15} />{area}</span>}
-              <span>Joined {joined(page.created_at)}</span>
-              <span className={`pf-pill${page.is_public ? ' on' : ''}`}>{page.is_public ? 'Public profile' : 'Private profile'}</span>
-            </p>
+        <section className="pf-hero" aria-label={t('tab.profile')}>
+          <Cover style={page.cover_style} src={page.cover}>
             {!asVisitor && (
-              <div className="pf-actions left">
-                <button className="btn primary small" onClick={() => setEditing(true)}>Edit profile</button>
-                <button className="btn small" onClick={() => setPreview(true)}>See my profile as others do</button>
-              </div>
+              <button className="btn small cover-edit" onClick={() => setEditing(true)}>
+                <Icon name="edit" size={15} />{t('pf.coverChange')}
+              </button>
             )}
+          </Cover>
+          <div className="pf-hero-body">
+            <Avatar src={page.avatar} name={page.display_name} size={112} />
+            <div className="pf-id">
+              <h1>{page.display_name}</h1>
+              <p>
+                {area && <span><Icon name="pin" size={15} />{area}</span>}
+                {asVisitor && <span>{t('pf.joined', { date: joined(page.created_at) })}</span>}
+                <span className={`pf-pill${page.is_public ? ' on' : ''}`}>{page.is_public ? t('pf.publicProfile') : t('pf.privateProfile')}</span>
+              </p>
+            </div>
+            <div className="pf-actions">
+              {asVisitor ? (
+                <button className="btn primary small" onClick={() => setPreview(false)}>{t('pf.backToMine')}</button>
+              ) : (
+                <>
+                  <button className="btn primary small" onClick={() => setEditing(true)}>{t('pf.edit')}</button>
+                  <button className="btn small" onClick={() => setPreview(true)}>{t('pf.seeAsOthers')}</button>
+                </>
+              )}
+            </div>
           </div>
+          <dl className="pf-stats">
+            <div>
+              <dt>{t('pf.statRating')}</dt>
+              <dd>{avg == null ? '–' : <><span className="stars">★</span> {avg.toLocaleString(locale(), { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</>}</dd>
+            </div>
+            <div><dt>{t('pf.statReceived')}</dt><dd>{received.length}</dd></div>
+            <div><dt>{t('pf.statWritten')}</dt><dd>{page.written ? written.length : '–'}</dd></div>
+          </dl>
         </section>
       )}
 
       {asVisitor ? (
         <>
           <section className="pf-sec" aria-labelledby="pf-rec">
-            <div className="pf-sec-h"><h2 id="pf-rec">Reviews about me</h2></div>
-            <ReviewList list={received} who="from" empty="No reviews yet." />
+            <div className="pf-sec-h"><h2 id="pf-rec">{t('rv.aboutMe')}</h2></div>
+            <ReviewList list={received} who="from" empty={t('rv.noneShort')} />
           </section>
           <section className="pf-sec" aria-labelledby="pf-wrote">
-            <div className="pf-sec-h"><h2 id="pf-wrote">Reviews I wrote</h2></div>
+            <div className="pf-sec-h"><h2 id="pf-wrote">{t('rv.iWrote')}</h2></div>
             {page.is_public ? (
-              <ReviewList list={written} who="for" empty="No reviews written yet." />
+              <ReviewList list={written} who="for" empty={t('rv.noWrittenShort')} />
             ) : (
-              <p className="pf-empty">This person keeps the reviews they wrote private.</p>
+              <p className="pf-empty">{t('rv.privateWritten')}</p>
             )}
           </section>
         </>
       ) : (
         <>
-          <div className="pf-tabs" role="tablist" aria-label="Profile sections">
-            {SECTIONS.map(([id, label]) => (
+          <div className="pf-tabs" role="tablist" aria-label={t('pf.sections')}>
+            {SECTIONS.map(id => (
               <button key={id} role="tab" id={`pft-${id}`} aria-selected={section === id} aria-controls="pf-panel" onClick={() => setSection(id)}>
-                {label}
+                {t('pf.sec.' + id)}
               </button>
             ))}
           </div>
           <div id="pf-panel" role="tabpanel" aria-labelledby={`pft-${section}`} className="pf-panel">
             {!backendOn || !uid ? (
-              <NeedsBackend />
-            ) : section === 'sell' ? (
-              <SellForm uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} onDone={() => setSection('listings')} />
+              section === 'settings' ? <ProfilePrefs uid={uid} backendOn={backendOn} /> : <NeedsBackend />
+
             ) : section === 'listings' ? (
               <ProfileListings uid={uid} name={page.display_name} me={me} arrondissement={page.arrondissement} onChanged={onItemsChanged} onToast={onToast} />
             ) : section === 'reviews' ? (
               <ProfileReviews uid={uid} received={received} written={written} onChanged={reload} onToast={onToast} />
             ) : section === 'friends' ? (
-              <ProfileFriends uid={uid} onToast={onToast} />
+              <ProfileFriends uid={uid} onToast={onToast} onOpen={setViewing} />
             ) : (
-              <ProfileSettings uid={uid} email={email} onSignOut={onSignOut} onToast={onToast} />
+              <ProfileSettings uid={uid} email={email} backendOn={backendOn} onSignOut={onSignOut} onToast={onToast} />
             )}
           </div>
         </>

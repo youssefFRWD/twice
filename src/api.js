@@ -27,26 +27,30 @@ const rowToItem = r => ({
 })
 
 /** Active listings, in the shape the UI uses. */
+const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,brand,item_images(storage_path,position)'
+
 export async function fetchItems() {
-  const rows = ok(
-    await supabase
-      .from('items')
-      .select('id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,brand,item_images(storage_path,position)')
-      .eq('status', 'active')
-      .order('id'),
-  )
+  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('status', 'active').order('id'))
+  return rows.map(rowToItem)
+}
+
+/** Someone's listings that are live right now, newest first (for their public profile). */
+export async function fetchSellerListings(sellerId) {
+  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('seller_id', sellerId).eq('status', 'active').order('created_at', { ascending: false }))
   return rows.map(rowToItem)
 }
 
 /** Everything that belongs to one signed-in user. */
 export async function fetchUserData(uid) {
-  const [profile, saved, passed] = await Promise.all([
+  const [profile, saved, passed, prefs] = await Promise.all([
     supabase.from('profiles').select('home_label,home_lat,home_lon').eq('id', uid).maybeSingle(),
     supabase.from('saved_items').select('item_id').eq('user_id', uid).order('created_at'),
     supabase.from('swipes').select('item_id').eq('user_id', uid).eq('direction', 'pass'),
+    // language/currency come from a later migration, so a missing column must not break loading
+    supabase.from('profiles').select('language,currency').eq('id', uid).maybeSingle(),
   ])
   return {
-    profile: ok(profile),
+    profile: { ...ok(profile), ...(prefs.error ? null : prefs.data) },
     saved: ok(saved).map(r => r.item_id),
     passed: ok(passed).map(r => r.item_id),
   }
@@ -77,14 +81,17 @@ export const avatarUrl = path => (path ? supabase.storage.from('avatars').getPub
 /** What the viewer may see on a profile: header, reviews received, and (if public or own) saved + reviews written. */
 export async function fetchProfilePage(target) {
   const p = ok(await supabase.rpc('get_profile_page', { target }))
-  return p && { ...p, avatar: avatarUrl(p.avatar_path) }
+  return p && { ...p, avatar: avatarUrl(p.avatar_path), cover: avatarUrl(p.cover_path) }
 }
 
+export const removeProfileFile = async path => {
+  if (path) await supabase.storage.from('avatars').remove([path]).catch(() => {})
+}
 export const updateProfile = async (uid, patch) => ok(await supabase.from('profiles').update(patch).eq('id', uid))
 
-/** Uploads a new picture, then removes the previous one. Returns the new storage path. */
-export async function uploadAvatar(uid, blob, oldPath) {
-  const path = `${uid}/avatar-${Date.now()}.jpg`
+/** Uploads a new profile picture or cover (`kind`), then removes the previous file. Returns the new storage path. */
+export async function uploadAvatar(uid, blob, oldPath, kind = 'avatar') {
+  const path = `${uid}/${kind}-${Date.now()}.jpg`
   ok(await supabase.storage.from('avatars').upload(path, blob, { contentType: 'image/jpeg' }))
   if (oldPath) await supabase.storage.from('avatars').remove([oldPath]).catch(() => {})
   return path
@@ -190,6 +197,8 @@ export async function searchProfiles(q) {
   return ok(await supabase.rpc('search_profiles', { q })).map(withAvatar)
 }
 export const follow = async (uid, otherId) => ok(await supabase.from('follows').upsert({ follower_id: uid, followee_id: otherId }))
+export const isFollowing = async (uid, otherId) =>
+  !!ok(await supabase.from('follows').select('followee_id').eq('follower_id', uid).eq('followee_id', otherId).maybeSingle())
 export const unfollow = async (uid, otherId) => ok(await supabase.from('follows').delete().eq('follower_id', uid).eq('followee_id', otherId))
 
 /* ---------- account ---------- */
