@@ -14,6 +14,8 @@ import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import SellerListings from './SellerListings.jsx'
+import { ViewSwitch } from './PhoneView.jsx'
+import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
@@ -100,7 +102,7 @@ export default function App() {
   const [placing, setPlacing] = useState(false)
   const [peek, setPeek] = useState(false)
   // the welcome page is the front door: it opens on every load, not just the first visit
-  const [landing, setLanding] = useState(true)
+  const [landing, setLanding] = useState(!embedded)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
   const [dealPay, setDealPay] = useState(null)
@@ -500,6 +502,7 @@ export default function App() {
               <span><span className="wide">{t('signInUp')}</span><span className="narrow">{t('auth.signIn')}</span></span>
             </button>
           )}
+          <ViewSwitch />
           <button
             className="loc"
             aria-label={t('loc.change')}

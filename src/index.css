@@ -1048,3 +1048,24 @@ button,select,input{touch-action:manipulation}
   .msgs.show-cart .msg-list,.msgs.show-cart .msg-thread{display:none}
   .msgs.show-cart .msg-cart{display:flex;margin-left:0}
 }
+
+/* PHONE VIEW (laptops) */
+.view-switch{flex:none;white-space:nowrap;margin-inline-end:8px}
+@media (max-width:899px){.view-switch{display:none}}
+.phone-shell{min-height:100dvh;display:flex;flex-direction:column;align-items:center;gap:16px;padding:18px 16px 24px;background:radial-gradient(1200px 600px at 50% -10%,var(--accent-soft),transparent 70%),var(--surface-2)}
+.ps-bar{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center}
+.ps-sizes{grid-template-columns:auto auto;gap:4px}
+.ps-sizes button{flex-direction:row;align-items:baseline;gap:8px;padding:7px 12px}
+.ps-dim{font-size:11.5px;color:var(--muted)}
+.ps-device{flex:none;box-sizing:border-box;padding:10px;border-radius:46px;background:var(--ink);box-shadow:0 30px 60px rgba(0,0,0,.28),0 0 0 2px rgba(255,255,255,.08) inset;position:relative}
+.ps-screen{display:block;width:100%;height:100%;border:0;border-radius:36px;background:var(--bg)}
+/* six tabs must fit a 360-390px wide bottom bar */
+@media (max-width:520px){
+  .tabs-bottom{gap:0}
+  .tabs-bottom .tab{flex:1 1 0;min-width:0;padding:8px 1px;font-size:11px}
+  .tabs-bottom .ti{width:42px}
+  .tabs-bottom .tab>span:last-child{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+/* inside the laptop phone frame: no desktop scrollbars, like a real phone */
+html.embedded *{scrollbar-width:none}
+html.embedded ::-webkit-scrollbar{display:none}
