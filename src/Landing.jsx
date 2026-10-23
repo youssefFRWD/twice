@@ -296,7 +296,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                 <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">{t('pass').toUpperCase()}</span></div>
                 <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">{t('save').toUpperCase()}</span></div>
               </div>
-              <h3>{t('lp.s1h')}</h3>
+              <h3><button className="stp-link" onClick={() => onNav('discover')}>{t('lp.s1h')}</button></h3>
               <p>{t('lp.s1p')}</p>
             </li>
             <li className="stp">
@@ -308,13 +308,13 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                   </Art>
                 ))}
               </div>
-              <h3>{t('lp.s2h')}</h3>
+              <h3><button className="stp-link" onClick={() => onNav('saved')}>{t('lp.s2h')}</button></h3>
               <p>{t('lp.s2p')}</p>
             </li>
             <li className="stp">
               <span className="stn">3</span>
               <div className="vis v3"><RouteVisual /></div>
-              <h3>{t('lp.s3h')}</h3>
+              <h3><button className="stp-link" onClick={() => onNav('map')}>{t('lp.s3h')}</button></h3>
               <p>{t('lp.s3p')}</p>
             </li>
           </ol>
