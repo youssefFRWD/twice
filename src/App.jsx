@@ -334,7 +334,10 @@ export default function App() {
   const approveFromOffer = async conv => {
     if (conv.approval === 'approved') return true
     try {
-      await api.approveByOffer(conv.id)
+      // the seller accepting is simply the seller approving (as "Approve sale" does); the buyer needs the database
+      // to confirm the seller's acceptance in the messages first
+      if (conv.iAmBuyer) await api.approveByOffer(conv.id)
+      else await api.setSaleApproval(uid, conv.id, true, null)
       await Promise.all([reloadConvs(), reloadItems()])
       return true
     } catch (e) {

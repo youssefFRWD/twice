@@ -526,6 +526,14 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
   const offers = useMemo(() => deriveOffers(msgs), [msgs])
+  // an offer the seller accepted earlier but that never became an approval: approve it when the seller opens the chat
+  const needsApproval = !conv.sample && !conv.iAmBuyer && !conv.approval && [...offers.values()].some(e => e.status === 'accepted')
+  const approvedOnce = useRef(false)
+  useEffect(() => {
+    if (!needsApproval || approvedOnce.current) return
+    approvedOnce.current = true
+    onOfferAccepted?.(conv)
+  }, [needsApproval, conv, onOfferAccepted])
   const [composer, setComposer] = useState(null)
   const [text, setText] = useState('')
   const [error, setError] = useState('')
