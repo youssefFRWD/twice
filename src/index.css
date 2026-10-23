@@ -542,3 +542,22 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .nav-me{width:48px;height:48px;filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))}
 @media (min-width:900px){.nav-top,.nav-bottom{left:16px;right:auto;width:440px}}
 .mapbox.navigating .maplibregl-ctrl-bottom-left{bottom:96px}
+
+/* listings around you */
+.pin-icon .pin.other{transform:scale(.72);transform-origin:50% 88%;opacity:.92}
+.pin-icon .pin.other .pb{stroke-width:3.5}
+.li-head{margin:10px 2px 2px;font:700 12px var(--font-display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+
+/* seller's listings */
+.sl{max-height:85%}
+.sl-list{list-style:none;margin:0;padding:0;display:grid;gap:12px}
+.sl-item{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:start}
+.sl-thumb .art{aspect-ratio:1;border-radius:var(--r-md,12px);overflow:hidden}
+.sl-thumb .art svg{width:50%;height:50%}
+.sl-thumb .cl{display:none}
+.sl-body{display:grid;gap:6px;min-width:0}
+.sl-body h3{margin:0;font-size:15px}
+.sl-body .foot{display:flex;gap:8px}
+.linkbtn.seller{font-weight:600}
+.all-btn{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.1);font-weight:700;font-size:13.5px;white-space:nowrap}
+.all-btn.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}

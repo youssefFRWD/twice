@@ -2,7 +2,7 @@ import { fmtD } from './data.js'
 import { distOf, meName } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy }) {
+export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller }) {
   if (!list.length) {
     return (
       <div className="empty">
@@ -30,7 +30,7 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
                 <h3>{it.t}</h3>
                 <span className="price" style={{ fontSize: 17 }}>€{it.p}</span>
               </div>
-              <div className="meta"><span>{it.a}</span><span>{it.cond}</span></div>
+              <div className="meta"><span>{it.a}</span><span>{it.cond}</span>{it.sid && <button type="button" className="linkbtn seller" onClick={() => onSeller(it)}>More from {it.s}</button>}</div>
               <p className="desc">{it.d}</p>
               <div className="foot">
                 <button className="btn primary small" onClick={() => onBuy(it.id)}>

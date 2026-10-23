@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
-import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, persist, replaceItems } from './lib.js'
+import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, persist, replaceItems } from './lib.js'
 import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
@@ -11,6 +11,7 @@ import { buildPlans } from './routing.js'
 import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
+import SellerListings from './SellerListings.jsx'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -95,6 +96,8 @@ export default function App() {
   const [landing, setLanding] = useState(init.fresh)
   const [locOpen, setLocOpen] = useState(false)
   const [buyId, setBuyId] = useState(null)
+  const [seller, setSeller] = useState(null)
+  const [showNearby, setShowNearby] = useState(false)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -424,8 +427,11 @@ export default function App() {
   const savedAll = listFor('saved', 'all', data)
   const savedList = listFor('saved', cat.saved, data)
   const mapList = listFor('map', cat.map, data)
+  const nearbyAll = nearbyFor(cat.map, data, radius, uid)
+  const nearbyList = showNearby ? nearbyAll : []
+  const toggleNearby = () => setShowNearby(v => !v)
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || authOpen || buyId !== null
+  const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller
 
   return (
     <>
@@ -463,6 +469,7 @@ export default function App() {
                 me={me}
                 kbActive={!overlayOpen}
                 onDecide={decide}
+                onSeller={setSeller}
                 onUndo={undo}
                 onReset={resetPassed}
               />
@@ -470,7 +477,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label="Saved items">
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
@@ -480,6 +487,10 @@ export default function App() {
               me={me}
               radius={radius}
               list={mapList}
+              nearby={nearbyList}
+              showNearby={showNearby}
+              nearbyCount={nearbyAll.length}
+              onToggleNearby={toggleNearby}
               sel={sel}
               plans={plans}
               mode={mode}
@@ -540,6 +551,24 @@ export default function App() {
 
       {landing && <Landing onStart={startApp} onSignIn={signedOut ? () => setAuthOpen(true) : undefined} />}
       {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
+      {seller && (
+        <SellerListings
+          sid={seller.sid}
+          name={seller.s}
+          me={me}
+          uid={uid}
+          canMessage={canMessage}
+          onMessage={it => {
+            setSeller(null)
+            messageSeller(it)
+          }}
+          onBuy={id => {
+            setSeller(null)
+            setBuyId(id)
+          }}
+          onClose={() => setSeller(null)}
+        />
+      )}
       {buyId !== null && (
         <Checkout
           key={buyId}
