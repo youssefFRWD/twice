@@ -2,20 +2,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import * as api from './api.js'
 import { CATS } from './data.js'
 import { useI18n } from './i18n.js'
+import { ARR_NUMBERS, SUBURB_NUMBERS, areaCenter, areaFromAddress, areaName } from './areas.js'
 import { toJpeg } from './lib.js'
 import { EmptyCard, Icon } from './ui.jsx'
 
 const CONDITIONS = ['Like new', 'Very good', 'Good', 'Fair']
 const MAX_PHOTOS = 6
-
-/** Approximate centre of each arrondissement (pickup area, not an exact address). */
-const ARR_CENTER = {
-  1: [48.8625, 2.3364], 2: [48.8683, 2.344], 3: [48.863, 2.36], 4: [48.854, 2.357], 5: [48.8445, 2.35],
-  6: [48.849, 2.333], 7: [48.856, 2.312], 8: [48.8745, 2.3105], 9: [48.877, 2.338], 10: [48.876, 2.36],
-  11: [48.859, 2.378], 12: [48.835, 2.395], 13: [48.828, 2.362], 14: [48.829, 2.327], 15: [48.841, 2.293],
-  16: [48.864, 2.274], 17: [48.887, 2.32], 18: [48.892, 2.348], 19: [48.887, 2.383], 20: [48.864, 2.4],
-}
-const arrName = n => `Paris ${n}${n === 1 ? 'er' : 'e'}`
 
 function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
   const { t, cat, cond } = useI18n()
@@ -26,8 +18,8 @@ function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
   const [price, setPrice] = useState(listing ? String(listing.price) : '')
   const [condition, setCondition] = useState(listing?.condition || 'Good')
   const [area, setArea] = useState(() => {
-    const m = listing?.address.match(/Paris (\d+)/)
-    return m ? m[1] : arrondissement ? String(arrondissement) : 'here'
+    const n = areaFromAddress(listing?.address)
+    return n ? String(n) : arrondissement ? String(arrondissement) : 'here'
   })
   const [hood, setHood] = useState(() => (listing ? listing.address.replace(/,?\s*Paris \d+(er|e)$/, '') : ''))
   // photos: existing ones keep their path; new ones carry a blob and a preview URL
@@ -70,8 +62,8 @@ function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
     e.preventDefault()
     const cents = Number(price)
     if (!(cents >= 0) || cents > 100000) return setErr(t('ls.priceRange'))
-    const [lat, lon] = area === 'here' ? [me.lat, me.lon] : ARR_CENTER[area]
-    const place = area === 'here' ? me.label : arrName(+area)
+    const [lat, lon] = area === 'here' ? [me.lat, me.lon] : areaCenter(+area)
+    const place = area === 'here' ? me.label : areaName(+area)
     const address = area !== 'here' && hood.trim() ? `${hood.trim()}, ${place}` : place
     onSave({
       title: title.trim(),
@@ -154,7 +146,7 @@ function ListingForm({ listing, me, arrondissement, busy, onSave, onCancel }) {
             {t('ls.pickup')}
             <select id="lf-area" value={area} onChange={e => setArea(e.target.value)}>
               <option value="here">{t('ls.here', { place: me.label })}</option>
-              {Object.keys(ARR_CENTER).map(n => <option key={n} value={n}>{arrName(+n)}</option>)}
+              {[...ARR_NUMBERS, ...SUBURB_NUMBERS].map(n => <option key={n} value={n}>{areaName(n)}</option>)}
             </select>
           </label>
           {area !== 'here' && (

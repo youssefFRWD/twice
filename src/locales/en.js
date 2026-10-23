@@ -112,7 +112,7 @@ export default {
   'pf.asOthers': 'This is how other people see your profile.', 'pf.backToMine': 'Back to my profile', 'pf.joined': 'Joined {date}',
   'pf.publicProfile': 'Public profile', 'pf.privateProfile': 'Private profile', 'pf.edit': 'Edit profile', 'pf.seeAsOthers': 'See my profile as others do',
   'pf.changePhoto': 'Change photo', 'pf.addPhoto': 'Add a photo', 'pf.photoReady': 'New photo ready. It goes live when you save.',
-  'pf.whereParis': 'Where in Paris do you buy and sell?', 'pf.notSpecified': 'Not specified', 'pf.arrOption': '{label} arrondissement',
+  'pf.whereParis': 'Where in or near Paris do you buy and sell?', 'pf.notSpecified': 'Not specified', 'pf.nearParis': 'Near Paris', 'pf.arrOption': '{label} arrondissement',
   'pf.whoSees': 'Who can see your profile', 'pf.private': 'Private',
   'pf.privateHelp': 'Others see your name, photo, area and the reviews written about you. The reviews you wrote stay hidden.',
   'pf.public': 'Public', 'pf.publicHelp': 'Others also see the reviews you wrote.',
