@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
 import { currencyName, locale } from './locale.js'
-import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, previewOf, replyBody, toEur } from './offers.js'
+import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, previewOf, quoteBody, replyBody, splitQuote, toEur } from './offers.js'
 import { LOOPS } from './lib.js'
 import { Icon } from './ui.jsx'
 
@@ -220,7 +220,7 @@ function Guidelines({ onClose }) {
   )
 }
 
-function Bubble({ m, mine, shown, flags, isLast, seenAt, jump, onAct }) {
+function Bubble({ m, mine, shown, flags, isLast, seenAt, jump, onAct, onQuoteGo }) {
   const [open, setOpen] = useState(false)
   const [up, setUp] = useState(false)
   const rowRef = useRef(null)
@@ -236,7 +236,9 @@ function Bubble({ m, mine, shown, flags, isLast, seenAt, jump, onAct }) {
     setOpen(false)
     onAct(key, m)
   }
+  const { quote, text: plain } = splitQuote(m.body)
   const items = [
+    ['reply', 'Reply', 'undo'],
     ['star', flags.star ? 'Unstar message' : 'Star message', 'star'],
     ['report', flags.report ? 'Reported' : 'Report message', 'flag'],
     ['highlight', flags.highlight ? 'Remove highlight' : 'Highlight message', 'tag'],
@@ -260,8 +262,20 @@ function Bubble({ m, mine, shown, flags, isLast, seenAt, jump, onAct }) {
             }
           }}
         >
-          <span>{shown || m.body}</span>
-          {shown && <em className="bub-orig">Original: {m.body}</em>}
+          {quote && (
+            <span
+              className="bub-quote"
+              role="link"
+              tabIndex={0}
+              onClick={e => { e.stopPropagation(); onQuoteGo?.(quote.id) }}
+              onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); onQuoteGo?.(quote.id) } }}
+            >
+              <b>{quote.who}</b>
+              {quote.text}
+            </span>
+          )}
+          <span>{shown || plain}</span>
+          {shown && <em className="bub-orig">Original: {plain}</em>}
           <time dateTime={m.created_at}>{when(m.created_at)}</time>
           {(flags.like || flags.star) && (
             <span className="bub-tags">
@@ -528,6 +542,8 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
   const offers = useMemo(() => deriveOffers(msgs), [msgs])
   const [composer, setComposer] = useState(null)
   const [text, setText] = useState('')
+  const [replyTo, setReplyTo] = useState(null)
+  const sendRef = useRef(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [lang, setLang] = useState(null)
@@ -590,12 +606,12 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
   useEffect(() => {
     if (!lang) return
     msgs
-      .filter(m => !asked.current.has(`${lang}:${m.id}`) && !parseBody(m.body))
+      .filter(m => !asked.current.has(`${lang}:${m.id}`) && !parseBody(m.body) && splitQuote(m.body).text)
       .forEach(async m => {
         const k = `${lang}:${m.id}`
         asked.current.add(k)
         try {
-          const out = await translate(m.body, lang)
+          const out = await translate(splitQuote(m.body).text, lang)
           setTr(p => ({ ...p, [k]: out }))
         } catch {
           asked.current.delete(k)
@@ -621,8 +637,9 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
     setBusy(true)
     setError('')
     try {
-      await post(body)
+      await post(replyTo ? quoteBody(replyTo, body) : body)
       setText('')
+      setReplyTo(null)
     } catch {
       setError(t('msg.sendFail'))
     }
@@ -668,7 +685,12 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
   const toggleIn = (list, set, id) => set(list.includes(id) ? list.filter(x => x !== id) : [...list, id])
   const act = async (key, m) => {
     setFlash('')
-    if (key === 'star') onStarMsg({ id: m.id, convId, partner: conv.partner, body: m.body, at: m.created_at })
+    if (key === 'reply') {
+      setReplyTo({ id: m.id, who: m.sender_id === uid ? 'You' : conv.partner, text: splitQuote(m.body).text })
+      sendRef.current?.focus()
+      return
+    }
+    if (key === 'star') onStarMsg({ id: m.id, convId, partner: conv.partner, body: splitQuote(m.body).text, at: m.created_at })
     else if (key === 'highlight') toggleIn(marked, setMarked, m.id)
     else if (key === 'like') onLike(m.id)
     else if (key === 'report') {
@@ -676,7 +698,7 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
       setFlash('Message reported.')
     } else if (key === 'copy') {
       try {
-        await navigator.clipboard.writeText(m.body)
+        await navigator.clipboard.writeText(splitQuote(m.body).text)
         setFlash('Message copied.')
       } catch {
         setFlash('Could not copy. Select the text and copy it manually.')
@@ -758,6 +780,7 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
               seenAt={m.read_at}
               jump={jumpId === m.id}
               onAct={act}
+              onQuoteGo={id => bodyRef.current?.querySelector(`[data-mid="${CSS.escape(String(id))}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' })}
             />
           )
         })}
@@ -767,8 +790,16 @@ function Thread({ paid, onPay, onOfferAccepted, demoList, onDemoAdd, conv, uid, 
       {error && <p className="note th-error" role="alert">{error}</p>}
       <div className="th-compose">
       {composer && <OfferComposer init={composer} busy={busy} onSend={sendOffer} onClose={() => setComposer(null)} />}
+      {replyTo && (
+        <div className="reply-chip">
+          <Icon name="undo" size={14} />
+          <span><b>Replying to {replyTo.who}</b>{replyTo.text}</span>
+          <button type="button" aria-label="Cancel reply" onClick={() => setReplyTo(null)}><Icon name="x" size={14} /></button>
+        </div>
+      )}
       <form className="th-send" onSubmit={send}>
         <input
+          ref={sendRef}
           type="text"
           aria-label={t('msg.write')}
           placeholder={t('msg.write')}
@@ -822,21 +853,24 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
   const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
-  const demoConvs = useMemo(() => {
-    // sample listings the buyer contacted from checkout get a conversation with their seller, unless one exists already
-    const started = sampleChats
-      .filter(it => !SAMPLE_CONVS.some(c => c.itemId === it.id))
-      .map(it => ({ id: `demo-item-${it.id}`, sample: true, iAmBuyer: true, partnerId: `demo-seller-${it.id}`, itemId: it.id, partner: it.s, itemTitle: it.t, last: null, unread: 0, at: it.at, theirAt: null }))
-    return [...started, ...SAMPLE_CONVS].map(c => {
-      const msgs = demoMsgs[c.id] || []
-      const last = msgs[msgs.length - 1]
-      return {
-        ...c,
-        ...(last && c.id.startsWith('demo-item-') ? { last: { body: previewOf(last.body), mine: true }, at: last.created_at } : {}),
-      }
-    })
-  }, [demoMsgs, sampleChats])
-  const convs = demo ? demoConvs : realConvs
+  // sample listings the buyer contacted (from checkout or the Saved page) get a conversation with their seller
+  const startedConvs = useMemo(
+    () =>
+      sampleChats
+        .filter(it => !SAMPLE_CONVS.some(c => c.itemId === it.id))
+        .map(it => {
+          const msgs = demoMsgs[`demo-item-${it.id}`] || []
+          const last = msgs[msgs.length - 1]
+          return {
+            id: `demo-item-${it.id}`, sample: true, iAmBuyer: true, partnerId: `demo-seller-${it.id}`, itemId: it.id, partner: it.s, itemTitle: it.t, unread: 0, theirAt: null,
+            last: last ? { body: previewOf(last.body), mine: true } : null,
+            at: last ? last.created_at : it.at,
+          }
+        }),
+    [demoMsgs, sampleChats],
+  )
+  const demoConvs = useMemo(() => [...startedConvs, ...SAMPLE_CONVS], [startedConvs])
+  const convs = useMemo(() => (demo ? demoConvs : [...startedConvs, ...realConvs]), [demo, demoConvs, startedConvs, realConvs])
   const [stars, setStars] = useStored(`twice.stars.${uid}`, [])
   const [likes, setLikes] = useStored(`twice.likes.${uid}`, [])
   const [query, setQuery] = useState('')
@@ -888,7 +922,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     return [...pinned, ...sorted.filter(c => !stars.includes(c.id))]
   }, [convs, q, filter, stars])
 
-  const owners = demo ? SAMPLE_OWNERS : suggestions
+  const owners = useMemo(() => (suggestions.length ? suggestions : demo ? SAMPLE_OWNERS : []), [suggestions, demo])
   const talking = useMemo(() => new Map(convs.map(c => [c.partnerId, c.id])), [convs])
   const people = useMemo(
     () => owners.filter(s => !talking.has(s.sid) && (!q || `${s.name} ${s.title}`.toLowerCase().includes(q))),

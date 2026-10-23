@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid slice">
+<defs>
+<linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#EBE2CF"/><stop offset="1" stop-color="#DFD3B9"/></linearGradient><linearGradient id="floor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#D6C8A9"/><stop offset="1" stop-color="#C6B590"/></linearGradient>
+<radialGradient id="vig" cx="50%" cy="48%" r="75%"><stop offset=".55" stop-color="#1E2A24" stop-opacity="0"/><stop offset="1" stop-color="#1E2A24" stop-opacity=".16"/></radialGradient>
+<filter id="blur" x="-30%" y="-80%" width="160%" height="260%"><feGaussianBlur stdDeviation="9"/></filter>
+</defs>
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#wall)" /><rect x="0" y="400" width="800" height="200" rx="0" fill="url(#floor)" /><rect x="0" y="397" width="800" height="4" rx="0" fill="#000" opacity=".07"/>
+<path d="M0 0 L330 0 L520 600 L90 600 Z" fill="#FFFDF8" opacity=".07"/>
+
+<ellipse cx="410" cy="472" rx="190" ry="12" fill="#1E2A24" opacity="0.22" filter="url(#blur)"/>
+<path d="M346 246 L396 372 M396 372 L334 438 M482 384 L500 444 M396 372 L482 384" fill="none" stroke="#2B302D" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M326 246 L368 246" fill="none" stroke="#2B302D" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" />
+<circle cx="334" cy="440" r="30" fill="none" stroke="#2B302D" stroke-width="9"/><circle cx="334" cy="440" r="18" fill="#8D948E" /><circle cx="334" cy="440" r="4" fill="#2B302D" /><circle cx="500" cy="448" r="22" fill="none" stroke="#2B302D" stroke-width="9"/><circle cx="500" cy="448" r="10" fill="#8D948E" /><circle cx="500" cy="448" r="4" fill="#2B302D" />
+<path d="M398 368 L486 376 L488 396 L402 390 Z" fill="#3E6B55" />
+<path d="M398 368 L386 252 L424 246 L438 360 Z" fill="#4A7A62" />
+<path d="M384 256 Q392 196 452 204 Q486 214 482 246 Q442 228 422 252 Z" fill="#2F5E48" />
+<path d="M386 254 L400 366" fill="none" stroke="#D9704C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" /><path d="M424 248 L438 362" fill="none" stroke="#D9704C" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+<path d="M388 262 L420 258 L424 300 L394 306 Z" fill="#FFFFFF" opacity=".08"/>
+
+<rect x="0" y="0" width="800" height="600" rx="0" fill="url(#vig)" />
+</svg>

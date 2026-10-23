@@ -18,6 +18,7 @@ import ItemDetail from './ItemDetail.jsx'
 import { ViewSwitch } from './PhoneView.jsx'
 import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
+import { startScrollReveal } from './scrollReveal.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -159,6 +160,7 @@ export default function App() {
   const signedOut = backendEnabled && !session
   const approvedForMe = convs.filter(c => c.iAmBuyer && c.approval === 'approved').map(c => c.itemId)
   const data = { me, saved, passed, reserved: approvedForMe }
+  useEffect(() => startScrollReveal(document.body), [])
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
   useEffect(() => {
@@ -326,6 +328,9 @@ export default function App() {
     }
   }
   const unread = convs.reduce((n, c) => n + c.unread, 0)
+  // sample sellers have no account behind them, so those chats stay on this device (see contactOwner below)
+  const canChat = it => (it.sid ? canMessage(it) : true)
+  const chatWith = it => (it.sid ? messageSeller(it) : contactOwner(it))
 
   /* ---------- sale approval: the seller approves in the conversation, then the buyer can pay ---------- */
   // only what the database has recorded counts, so the checkout never shows an approval that payment would refuse
@@ -572,7 +577,7 @@ export default function App() {
   const discoverDeck = listFor('discover', cat.discover, data)
   const savedAll = listFor('saved', 'all', data)
   const savedList = listFor('saved', cat.saved, data)
-  const sellerSuggestions = [...new Map(savedAll.filter(canMessage).map(it => [it.sid, { sid: it.sid, name: it.s, title: it.t, item: it }])).values()]
+  const sellerSuggestions = [...new Map(savedAll.filter(canChat).map(it => { const sid = it.sid || `demo-seller-${it.id}`; return [sid, { sid, name: it.s, title: it.t, item: it }] })).values()]
   const mapList = listFor('map', cat.map, data)
   const nearbyAll = nearbyFor(cat.map, data, radius, uid)
   const nearbyList = showNearby ? nearbyAll : []
@@ -658,7 +663,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label={t('tab.saved')}>
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={openCheckout} onSeller={setSeller} onOpen={setDetail} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canChat} onMessage={chatWith} onBuy={openCheckout} onSeller={setSeller} onOpen={setDetail} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label={t('tab.map')}>

@@ -6,9 +6,6 @@ import { Art, Icon } from './ui.jsx'
 
 const SORTS = ['date', 'name', 'price']
 
-/** AI-generated picture matching the listing text; the Art tile keeps its drawing if it fails to load. */
-const aiImage = it => `https://image.pollinations.ai/prompt/${encodeURIComponent(`product photo of ${it.t}. ${it.d || ''}`.slice(0, 300))}?width=640&height=400&nologo=true&seed=${it.id}`
-
 export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller, onOpen }) {
   const { t, cond, money } = useI18n()
   const [sort, setSort] = useState('date')
@@ -64,7 +61,7 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
       <div className="grid">
         {shown.map(it => (
           <article className="sc" key={it.id} onClick={e => !e.target.closest('button, a, input, select') && onOpen(it.id)}>
-            <Art item={it.img ? it : { ...it, img: aiImage(it) }} gallery>
+            <Art item={it} gallery>
               <span className="dist-badge"><Icon name="pin" size={14} />{fmtD(distOf(me, it))}</span>
             </Art>
             <div className="body">
