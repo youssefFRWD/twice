@@ -742,7 +742,7 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .pf-hero .avatar{border:5px solid var(--surface);box-shadow:0 8px 20px rgba(30,42,36,.2)}
 .pf-hero .pf-id{flex:1;min-width:190px;padding-bottom:4px}
 .pf-hero .pf-actions{margin-inline-start:auto;padding-bottom:4px}
-.pf-stats{display:grid;grid-template-columns:repeat(3,1fr);margin:0;border-top:1px solid var(--line);background:var(--bg)}
+.pf-stats{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);margin:0;border-top:1px solid var(--line);background:var(--bg)}
 .pf-stats>div{display:grid;gap:2px;padding:14px 10px;text-align:center}
 .pf-stats>div+div{border-inline-start:1px solid var(--line)}
 .pf-stats dt{order:2;font-size:12.5px;font-weight:600;color:var(--muted)}
