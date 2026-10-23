@@ -7,6 +7,7 @@ import { Icon } from './ui.jsx'
 import Discover from './Discover.jsx'
 import Saved from './Saved.jsx'
 import Messages from './Messages.jsx'
+import { buildPlans } from './routing.js'
 import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
@@ -106,6 +107,7 @@ export default function App() {
   const histRef = useRef([])
   const toastTimer = useRef(0)
   const cmdN = useRef(0)
+  const routeKey = useRef(null)
   const firstRun = useRef(init.firstRun)
 
   const uid = session?.user?.id ?? null
@@ -318,10 +320,19 @@ export default function App() {
     const m = planMetro(me, it)
     sync(uid2 => api.logView(uid2, id))
     setSel(id)
-    setPlans({ walk: w, metro: m })
+    const key = `${id}@${me.lat},${me.lon}`
+    routeKey.current = key
+    setPlans({ walk: w, metro: m, key })
     setMode(!m.none && m.min + 3 < w.min ? 'metro' : 'walk')
     setPeek(false)
     mapCmd('fitRoute')
+    // swap the estimate for real walking routes as soon as the router answers
+    buildPlans(me, it)
+      .then(real => {
+        setPlans(cur => (cur && cur.key === key ? { ...real, key } : cur))
+        if (routeKey.current === key) mapCmd('fitRoute')
+      })
+      .catch(() => {})
   }
   const showOnMap = id => {
     setTab('map', { keepView: true })

@@ -5,6 +5,7 @@ import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import { CAT_ALL, LM, fmtD, fmtT, nearStations } from './data.js'
 import { distOf, itemById, meName, reducedMotion, walkLabel } from './lib.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
+import Navigation from './Navigation.jsx'
 import { INK, METRO_LAYERS, PARIS, buildStyle, circleFeature, idfLatLng, meElement, pinElement } from './mapStyle.js'
 
 function Steps({ plan }) {
@@ -26,7 +27,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, onBuy, panelRef, list, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
+function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek }) {
   const it = sel != null ? itemById(sel) : null
   let body
   if (it && plans) {
@@ -49,7 +50,9 @@ function Panel({ canMessage, onMessage, onBuy, panelRef, list, sel, plans, mode,
                   <span className="price" style={{ fontSize: 16 }}>€{it.p}</span>
                   <span>{it.a}</span>
                 </div>
-                <div className="meta mono" style={{ marginTop: 2 }}>{walkLabel(me, it)} from {meName(me)}</div>
+                <div className="meta mono" style={{ marginTop: 2 }}>
+                  {w.real ? `${fmtD(w.km)} · ${fmtT(w.min)} walk` : walkLabel(me, it)} from {meName(me)}
+                </div>
               </div>
             </div>
             <div className="seg" role="group" aria-label="Travel mode">
@@ -64,8 +67,12 @@ function Panel({ canMessage, onMessage, onBuy, panelRef, list, sel, plans, mode,
                 {fast === 'metro' && <span className="f">Fastest</span>}
               </button>
             </div>
+            <button className="btn primary nav-start" disabled={!plan.nav} onClick={onStartNav}>
+              <Icon name="arrow" size={18} />
+              {plan.nav ? 'Start navigation' : 'Finding the best route…'}
+            </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-              <button className="btn small primary" onClick={() => onBuy(it.id)}>
+              <button className="btn small" onClick={() => onBuy(it.id)}>
                 <Icon name="bag" size={16} />Buy · €{it.p}
               </button>
               <button className="btn small" disabled={!canMessage(it)} onClick={() => onMessage(it)}>
@@ -75,8 +82,9 @@ function Panel({ canMessage, onMessage, onBuy, panelRef, list, sel, plans, mode,
             {mode === 'metro' && m.none && <p className="note">{m.why} Showing the walking route.</p>}
             <Steps plan={plan} />
             <p className="note">
-              Times are estimates. Walking uses straight-line distance plus 25% for streets, metro uses average line
-              speeds. This is not live traffic or timetable data.
+              {plan.real
+                ? 'Walking routes follow real streets and paths (OpenStreetMap, routed by FOSSGIS). Metro times use average line speeds, not live timetables.'
+                : 'Times are estimates. Walking uses straight-line distance plus 25% for streets, metro uses average line speeds. This is not live traffic or timetable data.'}
             </p>
           </div>
         </div>
@@ -133,7 +141,9 @@ export default function MapView(props) {
   const live = useRef({})
   const doneCmd = useRef(0)
   const [ready, setReady] = useState(false)
+  const [mapObj, setMapObj] = useState(null)
   const [metroOn, setMetroOn] = useState(false)
+  const [navOn, setNavOn] = useState(false)
   const [size, setSize] = useState({ W: 0, H: 0 })
 
   // latest callbacks for the long-lived map handlers
@@ -177,7 +187,10 @@ export default function MapView(props) {
       const n = nearStations(c, 5, 1)[0]
       l.onPlace({ lat: c.lat, lon: c.lon, label: n ? `Near ${n.s.name}` : 'Dropped pin', src: 'manual' })
     })
-    map.on('load', () => setReady(true))
+    map.on('load', () => {
+      setReady(true)
+      setMapObj(map)
+    })
     mapRef.current = map
 
     const ro = new ResizeObserver(() => {
@@ -192,6 +205,7 @@ export default function MapView(props) {
       map.remove()
       mapRef.current = null
       setReady(false)
+      setMapObj(null)
     }
   }, [])
 
@@ -212,15 +226,17 @@ export default function MapView(props) {
     if (!ready || !map) return
     map.getSource('radius').setData(circleFeature(me.lat, me.lon, radius))
     markers.current.me?.remove()
+    markers.current.me = null
+    if (navOn) return
     markers.current.me = new maplibregl.Marker({ element: meElement(), anchor: 'center' }).setLngLat([me.lon, me.lat]).addTo(map)
-  }, [me, radius, ready])
+  }, [me, radius, ready, navOn])
 
   /* item pins */
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map) return
     markers.current.pins.forEach(m => m.remove())
-    markers.current.pins = list.map(it => {
+    markers.current.pins = list.filter(it => !navOn || it.id === sel).map(it => {
       const isSel = sel === it.id
       const far = distOf(me, it) > radius && !isSel
       const label = `${it.t}, ${it.p} euros, ${fmtD(distOf(me, it))} away`
@@ -242,13 +258,13 @@ export default function MapView(props) {
       })
       return new maplibregl.Marker({ element: el, anchor: 'bottom', offset: [0, 7] }).setLngLat([it.lon, it.lat]).addTo(map)
     })
-  }, [list, sel, me, radius, ready])
+  }, [list, sel, me, radius, ready, navOn])
 
   /* the chosen route */
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map) return
-    const features = plan
+    const features = plan && !navOn
       ? plan.geo.map(seg => ({
           type: 'Feature',
           properties: { kind: seg.kind, color: seg.kind === 'ride' ? LM[seg.line].col : INK },
@@ -256,7 +272,7 @@ export default function MapView(props) {
         }))
       : []
     map.getSource('route').setData({ type: 'FeatureCollection', features })
-  }, [plan, ready])
+  }, [plan, ready, navOn])
 
   /* view helpers */
   const fit = useCallback((latlngs, maxZoom, animate = true) => {
@@ -298,7 +314,7 @@ export default function MapView(props) {
       document.documentElement.style.setProperty('--sheet-h', (innerWidth < 900 && panelRef.current ? panelRef.current.offsetHeight : 0) + 'px')
     })
     return () => cancelAnimationFrame(id)
-  }, [sel, plans, mode, peek, list.length, active, size.W, size.H])
+  }, [sel, plans, mode, peek, list.length, active, size.W, size.H, navOn])
 
   const zoomBtn = a => {
     const map = mapRef.current
@@ -314,14 +330,26 @@ export default function MapView(props) {
 
   return (
     <>
-      <div className="mapbox" ref={boxRef}>
+      <div className={`mapbox${navOn ? ' navigating' : ''}`} ref={boxRef}>
         <div
           ref={mapElRef}
           className="mapgl"
           role="region"
           aria-label="Map of Île-de-France with your saved items, metro and RER lines"
         />
-        <div className="maptl">
+        {navOn && mapObj && plan?.nav && (
+          <Navigation
+            map={mapObj}
+            item={itemById(sel)}
+            mode={plan.mode}
+            plan={plan}
+            onExit={() => {
+              setNavOn(false)
+              setTimeout(fitRoute, 650)
+            }}
+          />
+        )}
+        <div className="maptl" hidden={navOn}>
           <label className="radius" htmlFor="rad">
             <span>Within <b className="mono">{radius} km</b></span>
             <input type="range" id="rad" min="1" max="25" step="1" value={radius} onChange={e => onRadius(+e.target.value)} />
@@ -342,7 +370,7 @@ export default function MapView(props) {
             ) : null}
           </div>
         </div>
-        <div className="mapui">
+        <div className="mapui" hidden={navOn}>
           <button className="mb" aria-label="Zoom in" onClick={() => zoomBtn('in')}><Icon name="plus" /></button>
           <button className="mb" aria-label="Zoom out" onClick={() => zoomBtn('out')}><Icon name="minus" /></button>
           <button className="mb" aria-label="Centre on my position" onClick={() => zoomBtn('me')}><Icon name="arrow" /></button>
@@ -359,7 +387,9 @@ export default function MapView(props) {
           </button>
         </div>
       </div>
+      {!navOn && (
       <Panel
+        onStartNav={() => setNavOn(true)}
         canMessage={canMessage}
         onMessage={onMessage}
         onBuy={onBuy}
@@ -379,6 +409,7 @@ export default function MapView(props) {
         onMode={onMode}
         onPeek={onPeek}
       />
+      )}
     </>
   )
 }
