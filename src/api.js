@@ -25,6 +25,7 @@ const rowToItem = r => ({
   d: r.description,
   b: r.brand,
   img: sortedPhotos(r.item_images)[0] ? photoUrl(sortedPhotos(r.item_images)[0].storage_path) : null,
+  imgs: sortedPhotos(r.item_images).map(i => photoUrl(i.storage_path)),
 })
 
 /** Active listings, in the shape the UI uses. */

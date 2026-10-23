@@ -14,6 +14,7 @@ import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import SellerListings from './SellerListings.jsx'
+import ItemDetail from './ItemDetail.jsx'
 import { ViewSwitch } from './PhoneView.jsx'
 import { embedded } from './viewMode.js'
 import { itemsInArr } from './arr.js'
@@ -131,6 +132,7 @@ export default function App() {
     })
   }
   const [seller, setSeller] = useState(null)
+  const [detail, setDetail] = useState(null)
   const [showNearby, setShowNearby] = useState(false)
   const [arr, setArr] = useState(null)
   const [toast, setToast] = useState(null)
@@ -492,7 +494,7 @@ export default function App() {
     else mapCmd('fitSaved')
   }
   const hasUnseen = listFor('discover', 'all', data).length > 0
-  const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller
+  const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller || detail !== null
 
   return (
     <>
@@ -532,6 +534,7 @@ export default function App() {
                 kbActive={!overlayOpen}
                 onDecide={decide}
                 onSeller={setSeller}
+                onOpen={setDetail}
                 onUndo={undo}
                 onReset={resetPassed}
               />
@@ -550,12 +553,13 @@ export default function App() {
                 canMessage={canMessage}
                 onMessage={messageSeller}
                 onSeller={setSeller}
+                onOpen={setDetail}
               />
             )}
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label={t('tab.saved')}>
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} onOpen={setDetail} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label={t('tab.map')}>
@@ -585,6 +589,7 @@ export default function App() {
               canMessage={canMessage}
               onMessage={messageSeller}
               onBuy={setBuyId}
+              onDetails={setDetail}
               onRadius={setRadius}
               onSelect={selectItem}
               onClose={clearSel}
@@ -645,6 +650,33 @@ export default function App() {
           }}
         />}
       {authOpen && signedOut && <AuthScreen onSubmit={handleAuth} onClose={() => setAuthOpen(false)} />}
+      {detail !== null && itemById(detail) && (
+        <ItemDetail
+          item={itemById(detail)}
+          me={me}
+          isSaved={saved.includes(detail)}
+          canMessage={canMessage}
+          onClose={() => setDetail(null)}
+          onSave={it => decide(it, 1)}
+          onUnsave={unsave}
+          onBuy={id => {
+            setDetail(null)
+            setBuyId(id)
+          }}
+          onShowMap={id => {
+            setDetail(null)
+            showOnMap(id)
+          }}
+          onMessage={it => {
+            setDetail(null)
+            messageSeller(it)
+          }}
+          onSeller={it => {
+            setDetail(null)
+            setSeller(it)
+          }}
+        />
+      )}
       {seller && (
         <SellerListings
           sid={seller.sid}

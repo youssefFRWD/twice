@@ -9,7 +9,7 @@ const SORTS = ['date', 'name', 'price']
 /** AI-generated picture matching the listing text; the Art tile keeps its drawing if it fails to load. */
 const aiImage = it => `https://image.pollinations.ai/prompt/${encodeURIComponent(`product photo of ${it.t}. ${it.d || ''}`.slice(0, 300))}?width=640&height=400&nologo=true&seed=${it.id}`
 
-export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller }) {
+export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, canMessage, onMessage, onBuy, onSeller, onOpen }) {
   const { t, cond, money } = useI18n()
   const [sort, setSort] = useState('date')
   const [asc, setAsc] = useState(false)
@@ -63,13 +63,13 @@ export default function Saved({ list, total, me, onGoto, onShowMap, onUnsave, ca
       {!shown.length && <p className="saved-count">{t('saved.noMatch')}</p>}
       <div className="grid">
         {shown.map(it => (
-          <article className="sc" key={it.id}>
-            <Art item={it.img ? it : { ...it, img: aiImage(it) }}>
+          <article className="sc" key={it.id} onClick={e => !e.target.closest('button, a, input, select') && onOpen(it.id)}>
+            <Art item={it.img ? it : { ...it, img: aiImage(it) }} gallery>
               <span className="dist-badge"><Icon name="pin" size={14} />{fmtD(distOf(me, it))}</span>
             </Art>
             <div className="body">
               <div className="row">
-                <h3>{it.t}</h3>
+                <h3><button type="button" className="title-btn" onClick={() => onOpen(it.id)}>{it.t}</button></h3>
                 <span className="price" style={{ fontSize: 17 }}>{money(it.p)}</span>
               </div>
               <div className="meta"><span>{it.a}</span><span>{cond(it.cond)}</span>{it.sid && <button type="button" className="linkbtn seller" onClick={() => onSeller(it)}>{t('moreFrom', { name: it.s })}</button>}</div>

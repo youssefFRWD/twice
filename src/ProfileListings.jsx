@@ -6,7 +6,7 @@ import { toJpeg } from './lib.js'
 import { EmptyCard, Icon } from './ui.jsx'
 
 const CONDITIONS = ['Like new', 'Very good', 'Good', 'Fair']
-const MAX_PHOTOS = 6
+const MAX_PHOTOS = 10
 
 /** Approximate centre of each arrondissement (pickup area, not an exact address). */
 const ARR_CENTER = {
