@@ -1,12 +1,34 @@
 import { createContext, useContext, useMemo } from 'react'
 import { catOf } from './data.js'
-import { LOCALES, money } from './locale.js'
+import { LOCALES, RATES, money } from './locale.js'
 import en from './locales/en.js'
 
 /** English is bundled; every other language is its own small file, fetched when someone picks it. */
 export const DICTS = { en }
 const LOADERS = import.meta.glob(['./locales/*.js', '!./locales/en.js'])
 export const hasDict = lang => lang === 'en' || `./locales/${lang}.js` in LOADERS
+
+const PREFS_KEY = 'twice:prefs'
+
+/** The saved language and currency, else the browser's language and euros. */
+export function initialPrefs() {
+  try {
+    const d = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null')
+    if (d && hasDict(d.lang) && RATES[d.currency]) return d
+  } catch {
+    /* storage blocked or corrupt */
+  }
+  const nav = (navigator.language || 'en').slice(0, 2)
+  return { lang: hasDict(nav) ? nav : 'en', currency: 'EUR' }
+}
+
+export function savePrefs(prefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    /* storage blocked */
+  }
+}
 export async function loadDict(lang) {
   if (!DICTS[lang]) DICTS[lang] = (await LOADERS[`./locales/${lang}.js`]()).default
 }

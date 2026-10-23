@@ -340,7 +340,6 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <div className="ticker"><div className="tk">{tk(false)}<span className="tk-dup" aria-hidden="true">{tk(true)}</span></div></div>
       <div className="gut">
         <section className="lp-in lp-how" ref={howRef}>
-          <span className="eyebrow">{t('lp.how')}</span>
           <h2 className="lp-h2">{t('lp.h2')}</h2>
           <ol className="stops">
             <li className="stp">
