@@ -71,6 +71,11 @@ export default {
   'msg.offline': 'Messaging is only available once twice is connected online.', 'msg.noConvs': 'No conversations yet',
   'msg.noConvsHint': 'Open a saved item and tap the message button to ask the seller a question.', 'msg.you': 'You: ',
   'msg.none': 'No messages yet', 'msg.select': 'Select a conversation to read it.',
+  'appr.seller.talkFirst': 'Talk with {name} first. Once you have both written, you can approve the sale here.',
+  'appr.seller.none': 'Agreed with {name}? Approve the sale so they can pay.', 'appr.seller.approved': 'You approved the sale. {name} can pay now.',
+  'appr.seller.withdrawn': 'You withdrew your approval. The item is back on sale.',
+  'appr.buyer.approved': '{name} approved your purchase.', 'appr.buyer.withdrawn': '{name} withdrew their approval.',
+  'appr.approve': 'Approve sale', 'appr.withdraw': 'Withdraw', 'appr.payNow': 'Pay now',
 
   // location, auth, toasts
   'loc.title': 'Where are you?', 'loc.body': 'Distances and directions start from this point.', 'loc.now': 'Right now: {place}.',
@@ -97,12 +102,16 @@ export default {
   'co.errName': 'Enter the name on the card.', 'co.errNumber': 'This card number is not valid.', 'co.errExp': 'Use MM/YY, not in the past.', 'co.errCvc': '3 or 4 digits.',
   'co.paid': 'Paid {amount}', 'co.reserved': 'Reserved', 'co.yours': '{title} is yours. {seller} has been told to keep it for you.',
   'co.setAside': '{title} is set aside for you. Bring {amount} in cash when you meet {seller}.', 'co.order': 'Order {ref}',
-  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.item': 'Item',
+  'co.messageName': 'Message {seller}', 'co.directions': 'Directions to the seller', 'co.title': 'Checkout', 'co.buyTitle': 'Buy this item', 'co.item': 'Item',
   'co.collect': 'You collect it in person from {seller}.', 'co.howPay': 'How do you pay?', 'co.method': 'Payment method',
   'co.testWallet': 'Test mode: no money is charged.', 'co.testCard': 'Test mode: no money is charged, and card details never leave this page.',
   'co.nameOnCard': 'Name on card', 'co.cardNumber': 'Card number', 'co.expiry': 'Expiry', 'co.summary': 'Summary',
   'co.handover': 'Handover in person', 'co.free': 'Free', 'co.total': 'Total', 'co.waitPaypal': 'Waiting for PayPal…', 'co.processing': 'Processing…',
   'co.pay': 'Pay {amount}', 'co.payApple': 'Pay {amount} with Apple Pay', 'co.toPaypal': 'Continue to PayPal · {amount}', 'co.reservePay': 'Reserve, pay {amount} in cash',
+  'co.talkH': 'Message {seller} first', 'co.talkP': 'Talk it through with {seller} in Messages. Once you have both written, they can approve the sale, and payment opens here.',
+  'co.withdrawnH': '{seller} withdrew their approval',
+  'co.ownH': 'This is your own listing', 'co.ownP': "You can't buy an item you are selling.",
+  'co.approved': '{seller} approved your purchase.',
 
   // profile
   'pf.sec.listings': 'My listings', 'pf.sec.reviews': 'Reviews', 'pf.sec.friends': 'Friends', 'pf.sec.settings': 'Settings',
@@ -136,7 +145,7 @@ export default {
   'ls.deletedToast': 'Listing deleted', 'ls.deleteFail': 'Could not delete the listing.', 'ls.loadFail': 'Could not load your listings. Check your connection and reopen this tab.',
   'ls.loading': 'Loading your listings…',
   'ls.none': 'You have not listed anything yet. Add photos, a price and a pickup area, and neighbours can find it on Discover and the map.',
-  'ls.status.active': 'Active', 'ls.status.hidden': 'Hidden', 'ls.status.sold': 'Sold',
+  'ls.status.active': 'Active', 'ls.status.hidden': 'Hidden', 'ls.status.reserved': 'Reserved', 'ls.status.sold': 'Sold',
   'ls.confirmDelete': 'Delete this listing for good?', 'ls.yesDelete': 'Yes, delete', 'ls.keep': 'Keep it',
   'ls.show': 'Show', 'ls.hide': 'Hide', 'ls.relist': 'Relist', 'ls.markSold': 'Mark sold',
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
 import { currencyName, locale } from './locale.js'
-import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, replyBody, toEur } from './offers.js'
+import { currencyList, deriveOffers, formatMoney, offerBody, parseBody, previewOf, replyBody, toEur } from './offers.js'
 import { Icon } from './ui.jsx'
 
 const POLL_MS = 4000
@@ -420,7 +420,50 @@ function OfferComposer({ init, busy, onSend, onClose }) {
   )
 }
 
-function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem }) {
+/**
+ * Sale approval at the top of a thread: the seller approves (or withdraws) here, and the approved buyer pays from here.
+ * Approving only opens once both people have written, so the sale is always agreed in conversation first.
+ */
+function ApprovalBar({ conv, talked, onApprove, onBuy }) {
+  const { t } = useI18n()
+  const [busy, setBusy] = useState(false)
+  const { approval: st, partner, iAmBuyer } = conv
+  if (conv.sample || !conv.itemId || (iAmBuyer && !st)) return null
+  const set = async approve => {
+    setBusy(true)
+    await onApprove(conv, approve)
+    setBusy(false)
+  }
+  if (!iAmBuyer && !st && !talked) {
+    return (
+      <div className="th-req withdrawn" role="status">
+        <Icon name="chat" size={18} />
+        <span>{t('appr.seller.talkFirst', { name: partner })}</span>
+      </div>
+    )
+  }
+  const state = st || 'none'
+  return (
+    <div className={`th-req ${state}`} role="status">
+      <Icon name={st === 'approved' ? 'check' : 'bag'} size={18} />
+      <span>{t(`appr.${iAmBuyer ? 'buyer' : 'seller'}.${state}`, { name: partner })}</span>
+      {!iAmBuyer && (
+        <span className="th-req-btns">
+          {st === 'approved' ? (
+            <button className="btn small" disabled={busy} onClick={() => set(false)}>{t('appr.withdraw')}</button>
+          ) : (
+            <button className="btn small primary" disabled={busy} onClick={() => set(true)}>{t('appr.approve')}</button>
+          )}
+        </span>
+      )}
+      {iAmBuyer && st === 'approved' && (
+        <button className="btn small primary" onClick={() => onBuy(conv.itemId)}>{t('appr.payNow')}</button>
+      )}
+    </div>
+  )
+}
+
+function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, starMsgs, onStarMsg, onShowStarred, jumpId, onJumped, onBack, onChanged, onOpenItem, onApprove, onBuy }) {
   const { t, currency } = useI18n()
   const [realMsgs, setMsgs] = useState([])
   const msgs = conv.sample ? demoList : realMsgs
@@ -584,6 +627,7 @@ function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, st
   }
 
   const lastSeen = [...msgs].reverse().find(m => m.sender_id === uid && m.read_at)?.id
+  const talked = msgs.some(m => m.sender_id === uid) && msgs.some(m => m.sender_id !== uid)
   const st = presence(conv.theirAt)
 
   return (
@@ -617,6 +661,7 @@ function Thread({ paid, onPay, demoList, onDemoAdd, conv, uid, liked, onLike, st
         </button>
         <LangPicker lang={lang} onPick={l => { setTrError(''); setLang(l) }} />
       </header>
+      <ApprovalBar conv={conv} talked={talked} onApprove={onApprove} onBuy={onBuy} />
       <div className="th-body" aria-live="polite" ref={bodyRef}>
         {msgs.length === 0 && !error && <p className="note th-empty">{t('msg.empty')}</p>}
         {trError && lang && <p className="note th-trnote">{trError}</p>}
@@ -711,13 +756,27 @@ function ConvButton({ c, active, starred, onOpen, onStar }) {
   )
 }
 
-export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay }) {
+export default function Messages({ uid: realUid, backendOn: realOn, convs: realConvs, openId, onOpen, onChanged, onSignIn, suggestions = [], onStart, onOpenItem, paid = [], onPay, onApprove, onBuy, sampleChats = [] }) {
   const { t } = useI18n()
   const demo = SHOW_SAMPLES && realConvs.length === 0
   const uid = demo ? 'demo' : realUid
   const backendOn = demo || realOn
   const [demoMsgs, setDemoMsgs] = useState(() => Object.fromEntries(SAMPLE_CONVS.map(c => [c.id, sampleMsgs(c.id)])))
-  const convs = demo ? SAMPLE_CONVS : realConvs
+  const demoConvs = useMemo(() => {
+    // sample listings the buyer contacted from checkout get a conversation with their seller, unless one exists already
+    const started = sampleChats
+      .filter(it => !SAMPLE_CONVS.some(c => c.itemId === it.id))
+      .map(it => ({ id: `demo-item-${it.id}`, sample: true, iAmBuyer: true, partnerId: `demo-seller-${it.id}`, itemId: it.id, partner: it.s, itemTitle: it.t, last: null, unread: 0, at: it.at, theirAt: null }))
+    return [...started, ...SAMPLE_CONVS].map(c => {
+      const msgs = demoMsgs[c.id] || []
+      const last = msgs[msgs.length - 1]
+      return {
+        ...c,
+        ...(last && c.id.startsWith('demo-item-') ? { last: { body: previewOf(last.body), mine: true }, at: last.created_at } : {}),
+      }
+    })
+  }, [demoMsgs, sampleChats])
+  const convs = demo ? demoConvs : realConvs
   const [stars, setStars] = useStored(`twice.stars.${uid}`, [])
   const [likes, setLikes] = useStored(`twice.likes.${uid}`, [])
   const [query, setQuery] = useState('')
@@ -787,7 +846,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
     )
   }
 
-  const open = convs.find(c => c.id === openId)
+  // checkout opens a sample listing's chat as demo-item-<id>; one of the built-in sample chats may cover that item
+  const open = convs.find(c => c.id === openId) ?? (demo ? convs.find(c => openId === `demo-item-${c.itemId}`) : undefined)
   const finding = filter === 'others'
   const visible = ordered.slice(0, VISIBLE)
   const rest = ordered.slice(VISIBLE)
@@ -873,7 +933,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
             {convs.length > 0 && ordered.length === 0 && <p className="note" style={{ padding: '8px 4px' }}>No conversation matches “{query}”.</p>}
             <div className="cv-stack">
               {visible.map(c => (
-                <ConvButton key={c.id} c={c} active={c.id === openId && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
+                <ConvButton key={c.id} c={c} active={c.id === open?.id && !showStarred} starred={stars.includes(c.id)} onOpen={openConv} onStar={toggleStar} />
               ))}
             </div>
             {rest.length > 0 && (
@@ -886,7 +946,7 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
                 {moreOpen && (
                   <div className="more-menu" role="menu">
                     {rest.map(c => (
-                      <ConvButton key={c.id} c={c} active={c.id === openId} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
+                      <ConvButton key={c.id} c={c} active={c.id === open?.id} starred={stars.includes(c.id)} onOpen={id => { openConv(id); setMoreOpen(false) }} onStar={toggleStar} />
                     ))}
                   </div>
                 )}
@@ -943,6 +1003,8 @@ export default function Messages({ uid: realUid, backendOn: realOn, convs: realC
           onBack={() => onOpen(null)}
           onChanged={onChanged}
           onOpenItem={onOpenItem}
+          onApprove={onApprove}
+          onBuy={onBuy}
         />
       ) : (
         <div className="msg-thread th-none"><p className="note">{t('msg.select')}</p></div>

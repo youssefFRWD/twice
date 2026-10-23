@@ -25,23 +25,27 @@ export function persist(data) {
 export const distOf = (me, it) => hav(me.lat, me.lon, it.lat, it.lon)
 export const itemById = id => ITEMS.find(i => i.id === id)
 
-/** Every listing around you that is not already saved: within the search radius, in the chosen category, closest first. */
-export function nearbyFor(cat, { me, saved }, radiusKm, ownerId) {
+/** Listings still in the store: reserved ones leave it, but stay in the approved buyer's saved list and map. */
+export const onSale = (reserved = []) => ITEMS.filter(i => !i.reserved && !reserved.includes(i.id))
+
+/** Every listing around you that is not already saved or reserved: within the search radius, in the chosen category, closest first. */
+export function nearbyFor(cat, { me, saved, reserved = [] }, radiusKm, ownerId) {
   const byDist = (a, b) => distOf(me, a) - distOf(me, b)
-  let pool = ITEMS.filter(i => !saved.includes(i.id) && (!ownerId || i.sid !== ownerId) && distOf(me, i) <= radiusKm)
+  let pool = onSale(reserved).filter(i => !saved.includes(i.id) && (!ownerId || i.sid !== ownerId) && distOf(me, i) <= radiusKm)
   pool = pool.sort(byDist)
   if (cat === 'nearest') return pool.slice(0, 8)
   return cat === 'all' ? pool : pool.filter(i => i.c === cat)
 }
 
-/** Items for a tab + category chip, given the current position and saved/passed lists. */
-export function listFor(tab, cat, { me, saved, passed }) {
+/** Items for a tab + category chip, given the current position and saved/passed/reserved lists. */
+export function listFor(tab, cat, { me, saved, passed, reserved }) {
   const byDist = (a, b) => distOf(me, a) - distOf(me, b)
   const savedItems = saved.map(itemById).filter(Boolean)
-  const unseen = ITEMS.filter(i => !saved.includes(i.id) && !passed.includes(i.id))
+  const store = onSale(reserved)
+  const unseen = store.filter(i => !saved.includes(i.id) && !passed.includes(i.id))
   const pool = tab === 'discover' ? unseen : savedItems
   if (cat === 'nearest') {
-    const base = tab === 'discover' ? ITEMS : savedItems
+    const base = tab === 'discover' ? store : savedItems
     const n = tab === 'discover' ? 8 : 6
     const ids = base.slice().sort(byDist).slice(0, n).map(i => i.id)
     return pool.filter(i => ids.includes(i.id)).sort(byDist)

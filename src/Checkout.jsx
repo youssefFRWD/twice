@@ -42,9 +42,39 @@ function cardErrors(card, t) {
   return e
 }
 
-export default function Checkout({ item: it, me, canMessage, onMessage, onShowMap, onClose, onPaid }) {
+/**
+ * Every sale needs the seller's OK before payment opens. The button here only opens the conversation with the owner;
+ * the owner approves in that conversation once both have written.
+ */
+function Approval({ it, status, own, onContact }) {
+  const { t } = useI18n()
+  if (own) {
+    return (
+      <section className="co-card co-ask">
+        <h2>{t('co.ownH')}</h2>
+        <p>{t('co.ownP')}</p>
+      </section>
+    )
+  }
+  return (
+    <section className="co-card co-ask" aria-live="polite">
+      <h2>{status === 'withdrawn' ? t('co.withdrawnH', { seller: it.s }) : t('co.talkH', { seller: it.s })}</h2>
+      <p>{t('co.talkP', { seller: it.s })}</p>
+      <div className="co-ask-btns">
+        <button type="button" className="btn primary" onClick={onContact}>
+          <Icon name="chat" size={18} />{t('co.messageName', { seller: it.s })}
+        </button>
+      </div>
+    </section>
+  )
+}
+
+export default function Checkout({ item: it, me, uid, approval, canMessage, onMessage, onShowMap, onClose, onPaid }) {
   const { t, cond, money } = useI18n()
   const eur = n => money(n, true)
+  const own = !!it.sid && it.sid === uid
+  const approved = approval === 'approved' && !own
+
   const [method, setMethod] = useState('card')
   const [card, setCard] = useState({ name: '', number: '', exp: '', cvc: '' })
   const [touched, setTouched] = useState(false)
@@ -73,6 +103,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
 
   const submit = e => {
     e.preventDefault()
+    if (!approved) return
     setTouched(true)
     if (Object.keys(errs).length || busy) return
     setBusy(true)
@@ -116,7 +147,7 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
       <form className="co-in gut" onSubmit={submit} noValidate>
         <header className="co-head">
           <button type="button" className="btn small" onClick={onClose}><Icon name="undo" size={16} />{t('back')}</button>
-          <h1 id="co-h" tabIndex={-1} ref={headRef}>{t('co.title')}</h1>
+          <h1 id="co-h" tabIndex={-1} ref={headRef}>{approved ? t('co.title') : t('co.buyTitle')}</h1>
         </header>
 
         <section className="co-item" aria-label={t('co.item')}>
@@ -131,65 +162,73 @@ export default function Checkout({ item: it, me, canMessage, onMessage, onShowMa
 
         <p className="co-test"><Icon name="walk" size={16} />{t('co.collect', { seller: it.s })}</p>
 
-        <fieldset className="co-sec">
-          <legend>{t('co.howPay')}</legend>
-          <div className="seg" role="group" aria-label={t('co.method')}>
-            {METHODS.map(([id, label, ic, sub]) => (
-              <button key={id} type="button" aria-pressed={method === id} onClick={() => setMethod(id)}>
-                <span className="l"><Icon name={ic} size={16} />{label.startsWith('co.') ? t(label) : label}</span>
-                <span className="f">{t(sub)}</span>
-              </button>
-            ))}
-          </div>
-          {WALLET_NOTE[method] && (
-            <div className="co-card">
-              <p className="co-test"><Icon name="lock" size={14} />{t('co.testWallet')}</p>
-              <p className="co-wallet">{t(WALLET_NOTE[method])}</p>
-            </div>
-          )}
-          {method === 'card' && (
-            <div className="co-card">
-              <p className="co-test"><Icon name="lock" size={14} />{t('co.testCard')}</p>
-              <label className="field">
-                {t('co.nameOnCard')}
-                <input type="text" autoComplete="off" value={card.name} onChange={setField('name')} aria-invalid={!!show('name')} />
-                {show('name') && <small className="co-err">{errs.name}</small>}
-              </label>
-              <label className="field">
-                {t('co.cardNumber')}
-                <input type="text" inputMode="numeric" autoComplete="off" placeholder="4242 4242 4242 4242" value={card.number} onChange={setField('number')} aria-invalid={!!show('number')} />
-                {show('number') && <small className="co-err">{errs.number}</small>}
-              </label>
-              <div className="co-row">
-                <label className="field">
-                  {t('co.expiry')}
-                  <input type="text" inputMode="numeric" autoComplete="off" placeholder="MM/YY" value={card.exp} onChange={setField('exp')} aria-invalid={!!show('exp')} />
-                  {show('exp') && <small className="co-err">{errs.exp}</small>}
-                </label>
-                <label className="field">
-                  CVC
-                  <input type="text" inputMode="numeric" autoComplete="off" placeholder="123" value={card.cvc} onChange={setField('cvc')} aria-invalid={!!show('cvc')} />
-                  {show('cvc') && <small className="co-err">{errs.cvc}</small>}
-                </label>
+        {!approved ? (
+          <Approval it={it} status={approval} own={own} onContact={() => onMessage(it)} />
+        ) : (
+          <>
+            <p className="co-ok"><Icon name="check" size={16} sw={2.5} />{t('co.approved', { seller: it.s })}</p>
+
+            <fieldset className="co-sec">
+              <legend>{t('co.howPay')}</legend>
+              <div className="seg" role="group" aria-label={t('co.method')}>
+                {METHODS.map(([id, label, ic, sub]) => (
+                  <button key={id} type="button" aria-pressed={method === id} onClick={() => setMethod(id)}>
+                    <span className="l"><Icon name={ic} size={16} />{label.startsWith('co.') ? t(label) : label}</span>
+                    <span className="f">{t(sub)}</span>
+                  </button>
+                ))}
               </div>
-            </div>
-          )}
-        </fieldset>
+              {WALLET_NOTE[method] && (
+                <div className="co-card">
+                  <p className="co-test"><Icon name="lock" size={14} />{t('co.testWallet')}</p>
+                  <p className="co-wallet">{t(WALLET_NOTE[method])}</p>
+                </div>
+              )}
+              {method === 'card' && (
+                <div className="co-card">
+                  <p className="co-test"><Icon name="lock" size={14} />{t('co.testCard')}</p>
+                  <label className="field">
+                    {t('co.nameOnCard')}
+                    <input type="text" autoComplete="off" value={card.name} onChange={setField('name')} aria-invalid={!!show('name')} />
+                    {show('name') && <small className="co-err">{errs.name}</small>}
+                  </label>
+                  <label className="field">
+                    {t('co.cardNumber')}
+                    <input type="text" inputMode="numeric" autoComplete="off" placeholder="4242 4242 4242 4242" value={card.number} onChange={setField('number')} aria-invalid={!!show('number')} />
+                    {show('number') && <small className="co-err">{errs.number}</small>}
+                  </label>
+                  <div className="co-row">
+                    <label className="field">
+                      {t('co.expiry')}
+                      <input type="text" inputMode="numeric" autoComplete="off" placeholder="MM/YY" value={card.exp} onChange={setField('exp')} aria-invalid={!!show('exp')} />
+                      {show('exp') && <small className="co-err">{errs.exp}</small>}
+                    </label>
+                    <label className="field">
+                      CVC
+                      <input type="text" inputMode="numeric" autoComplete="off" placeholder="123" value={card.cvc} onChange={setField('cvc')} aria-invalid={!!show('cvc')} />
+                      {show('cvc') && <small className="co-err">{errs.cvc}</small>}
+                    </label>
+                  </div>
+                </div>
+              )}
+            </fieldset>
 
-        <section className="co-sum" aria-label={t('co.summary')}>
-          <div><span>{t('co.item')}</span><span className="mono">{eur(it.p)}</span></div>
-          <div><span>{t('co.handover')}</span><span className="mono">{t('co.free')}</span></div>
-          <div className="co-total"><span>{t('co.total')}</span><span className="mono">{eur(total)}</span></div>
-        </section>
+            <section className="co-sum" aria-label={t('co.summary')}>
+              <div><span>{t('co.item')}</span><span className="mono">{eur(it.p)}</span></div>
+              <div><span>{t('co.handover')}</span><span className="mono">{t('co.free')}</span></div>
+              <div className="co-total"><span>{t('co.total')}</span><span className="mono">{eur(total)}</span></div>
+            </section>
 
-        <button className="btn primary big co-pay" type="submit" disabled={busy}>
-          {busy
-            ? method === 'paypal' ? t('co.waitPaypal') : t('co.processing')
-            : method === 'card' ? <><Icon name="lock" size={18} />{t('co.pay', { amount: eur(total) })}</>
-            : method === 'apple' ? <><Icon name="phone" size={18} />{t('co.payApple', { amount: eur(total) })}</>
-            : method === 'paypal' ? <><Icon name="wallet" size={18} />{t('co.toPaypal', { amount: eur(total) })}</>
-            : t('co.reservePay', { amount: eur(total) })}
-        </button>
+            <button className="btn primary big co-pay" type="submit" disabled={busy}>
+              {busy
+                ? method === 'paypal' ? t('co.waitPaypal') : t('co.processing')
+                : method === 'card' ? <><Icon name="lock" size={18} />{t('co.pay', { amount: eur(total) })}</>
+                : method === 'apple' ? <><Icon name="phone" size={18} />{t('co.payApple', { amount: eur(total) })}</>
+                : method === 'paypal' ? <><Icon name="wallet" size={18} />{t('co.toPaypal', { amount: eur(total) })}</>
+                : t('co.reservePay', { amount: eur(total) })}
+            </button>
+          </>
+        )}
       </form>
     </div>
   )

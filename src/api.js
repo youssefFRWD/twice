@@ -26,13 +26,14 @@ const rowToItem = r => ({
   b: r.brand,
   img: sortedPhotos(r.item_images)[0] ? photoUrl(sortedPhotos(r.item_images)[0].storage_path) : null,
   imgs: sortedPhotos(r.item_images).map(i => photoUrl(i.storage_path)),
+  reserved: r.status === 'reserved',
 })
 
-/** Active listings, in the shape the UI uses. */
-const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,brand,item_images(storage_path,position)'
+const ITEM_COLS = 'id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status,brand,item_images(storage_path,position)'
 
+/** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
-  const rows = ok(await supabase.from('items').select(ITEM_COLS).eq('status', 'active').order('id'))
+  const rows = ok(await supabase.from('items').select(ITEM_COLS).in('status', ['active', 'reserved']).order('id'))
   return rows.map(rowToItem)
 }
 
@@ -238,7 +239,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title,seller_name),messages(id,body,sender_id,created_at,read_at),sale_approvals(status)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -252,12 +253,14 @@ export async function fetchConversations(uid) {
       const partner = names.get(partnerOf(r)) || (partnerOf(r) === r.seller_id && r.items?.seller_name) || 'Unnamed user'
       const itemTitle = r.items?.title || 'Listing no longer available'
       const iAmBuyer = r.buyer_id === uid
+      const approval = [].concat(r.sale_approvals ?? [])[0]
       return {
         id: r.id,
         iAmBuyer,
         partnerId: partnerOf(r),
         theirAt: msgs.filter(m => m.sender_id !== uid).map(m => m.created_at).pop() || null,
         itemId: r.item_id,
+        approval: approval?.status ?? null,
         itemTitle,
         partner,
         last: last ? { body: previewOf(last.body), mine: last.sender_id === uid } : null,
@@ -295,4 +298,15 @@ export async function startConversation(uid, item) {
   const found = ok(await supabase.from('conversations').select('id').eq('item_id', item.id).eq('buyer_id', uid).maybeSingle())
   if (found) return found.id
   return ok(await supabase.from('conversations').insert({ item_id: item.id, buyer_id: uid, seller_id: item.sid }).select('id').single()).id
+}
+
+/* ---------- sale approvals ---------- */
+
+/** Seller approves the sale to this buyer, or withdraws it. The note is posted in the thread so the buyer sees it. */
+export async function setSaleApproval(uid, conversationId, approved, note) {
+  const status = approved ? 'approved' : 'withdrawn'
+  const found = ok(await supabase.from('sale_approvals').select('status').eq('conversation_id', conversationId).maybeSingle())
+  if (found) ok(await supabase.from('sale_approvals').update({ status }).eq('conversation_id', conversationId))
+  else ok(await supabase.from('sale_approvals').insert({ conversation_id: conversationId, status }))
+  if (note) await sendMessage(uid, conversationId, note)
 }

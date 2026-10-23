@@ -70,6 +70,11 @@ export default {
   'msg.offline': 'La messagerie n’est disponible que lorsque twice est connecté en ligne.', 'msg.noConvs': 'Pas encore de conversations',
   'msg.noConvsHint': 'Ouvrez un favori et touchez le bouton message pour poser une question au vendeur.', 'msg.you': 'Vous : ',
   'msg.none': 'Pas encore de messages', 'msg.select': 'Choisissez une conversation pour la lire.',
+  'appr.seller.talkFirst': 'Discutez d’abord avec {name}. Une fois que vous avez tous deux écrit, vous pourrez valider la vente ici.',
+  'appr.seller.none': 'D’accord avec {name} ? Validez la vente pour qu’il ou elle puisse payer.', 'appr.seller.approved': 'Vous avez validé la vente. {name} peut payer.',
+  'appr.seller.withdrawn': 'Vous avez retiré votre accord. L’objet est de nouveau en vente.',
+  'appr.buyer.approved': '{name} a accepté votre achat.', 'appr.buyer.withdrawn': '{name} a retiré son accord.',
+  'appr.approve': 'Valider la vente', 'appr.withdraw': 'Retirer', 'appr.payNow': 'Payer',
 
   // position, connexion, notifications
   'loc.title': 'Où êtes-vous ?', 'loc.body': 'Les distances et itinéraires partent de ce point.', 'loc.now': 'Pour l’instant : {place}.',
@@ -96,12 +101,16 @@ export default {
   'co.errName': 'Saisissez le nom figurant sur la carte.', 'co.errNumber': 'Ce numéro de carte n’est pas valide.', 'co.errExp': 'Utilisez MM/AA, pas dans le passé.', 'co.errCvc': '3 ou 4 chiffres.',
   'co.paid': '{amount} payés', 'co.reserved': 'Réservé', 'co.yours': '{title} est à vous. {seller} a été prévenu de vous le garder.',
   'co.setAside': '{title} est mis de côté pour vous. Apportez {amount} en espèces quand vous retrouverez {seller}.', 'co.order': 'Commande {ref}',
-  'co.messageName': 'Écrire à {seller}', 'co.directions': 'Itinéraire vers le vendeur', 'co.title': 'Paiement', 'co.item': 'Objet',
+  'co.messageName': 'Écrire à {seller}', 'co.directions': 'Itinéraire vers le vendeur', 'co.title': 'Paiement', 'co.buyTitle': 'Acheter cet objet', 'co.item': 'Objet',
   'co.collect': 'Vous le récupérez en main propre auprès de {seller}.', 'co.howPay': 'Comment payez-vous ?', 'co.method': 'Moyen de paiement',
   'co.testWallet': 'Mode test : aucun argent n’est prélevé.', 'co.testCard': 'Mode test : aucun argent n’est prélevé, et les données de carte ne quittent jamais cette page.',
   'co.nameOnCard': 'Nom sur la carte', 'co.cardNumber': 'Numéro de carte', 'co.expiry': 'Expiration', 'co.summary': 'Récapitulatif',
   'co.handover': 'Remise en main propre', 'co.free': 'Gratuit', 'co.total': 'Total', 'co.waitPaypal': 'En attente de PayPal…', 'co.processing': 'Traitement…',
   'co.pay': 'Payer {amount}', 'co.payApple': 'Payer {amount} avec Apple Pay', 'co.toPaypal': 'Continuer vers PayPal · {amount}', 'co.reservePay': 'Réserver, payer {amount} en espèces',
+  'co.talkH': 'Écrivez d’abord à {seller}', 'co.talkP': 'Discutez avec {seller} dans Messages. Une fois que vous avez échangé, {seller} peut valider la vente et le paiement s’ouvre ici.',
+  'co.withdrawnH': '{seller} a retiré son accord',
+  'co.ownH': 'C’est votre annonce', 'co.ownP': 'Vous ne pouvez pas acheter un objet que vous vendez.',
+  'co.approved': '{seller} a accepté votre achat.',
 
   // profil
   'pf.sec.listings': 'Mes annonces', 'pf.sec.reviews': 'Avis', 'pf.sec.friends': 'Amis', 'pf.sec.settings': 'Paramètres',
@@ -135,7 +144,7 @@ export default {
   'ls.deletedToast': 'Annonce supprimée', 'ls.deleteFail': 'Impossible de supprimer l’annonce.', 'ls.loadFail': 'Impossible de charger vos annonces. Vérifiez votre connexion et rouvrez cet onglet.',
   'ls.loading': 'Chargement de vos annonces…',
   'ls.none': 'Vous n’avez encore rien mis en vente. Ajoutez des photos, un prix et une zone de retrait : vos voisins la trouveront dans Découvrir et sur la carte.',
-  'ls.status.active': 'En ligne', 'ls.status.hidden': 'Masquée', 'ls.status.sold': 'Vendue',
+  'ls.status.active': 'En ligne', 'ls.status.hidden': 'Masquée', 'ls.status.reserved': 'Réservée', 'ls.status.sold': 'Vendue',
   'ls.confirmDelete': 'Supprimer définitivement cette annonce ?', 'ls.yesDelete': 'Oui, supprimer', 'ls.keep': 'La garder',
   'ls.show': 'Afficher', 'ls.hide': 'Masquer', 'ls.relist': 'Remettre en vente', 'ls.markSold': 'Marquer vendue',
 

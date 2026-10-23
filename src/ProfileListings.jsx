@@ -265,7 +265,7 @@ export default function ProfileListings({ uid, name, me, arrondissement, onChang
                 ) : (
                   <div className="pf-actions left">
                     <button className="btn small" disabled={busy} onClick={() => setForm(l)}>{t('edit')}</button>
-                    <button className="btn small" disabled={busy || l.status === 'sold'} onClick={() => toggleHidden(l)}>{l.status === 'hidden' ? t('ls.show') : t('ls.hide')}</button>
+                    <button className="btn small" disabled={busy || l.status === 'sold' || l.status === 'reserved'} onClick={() => toggleHidden(l)}>{l.status === 'hidden' ? t('ls.show') : t('ls.hide')}</button>
                     <button className="btn small" disabled={busy} onClick={() => markSold(l)}>{l.status === 'sold' ? t('ls.relist') : t('ls.markSold')}</button>
                     <button className="btn small danger" disabled={busy} onClick={() => setConfirmId(l.id)}>{t('delete')}</button>
                   </div>
