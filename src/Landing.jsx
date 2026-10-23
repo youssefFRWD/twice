@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ITEMS, LM, catOf } from './data.js'
+import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
 import secondHome from './assets/second-home.png'
@@ -11,6 +12,7 @@ const pick = id => itemById(id) || ITEMS[id % ITEMS.length]
 
 /** The phone mock-up: the top card flies off every few seconds, then goes to the back of the stack. */
 function PhoneDemo() {
+  const { t, money } = useI18n()
   const [order, setOrder] = useState(DEMO)
   const [leaving, setLeaving] = useState(null)
   const [pop, setPop] = useState({ dir: 0, n: 0 })
@@ -56,11 +58,11 @@ function PhoneDemo() {
           return (
             <div className="dcard" key={id} style={style}>
               <Art item={it} />
-              <div className="tag yes" style={{ opacity: out && leaving.dir > 0 ? 1 : 0 }}>Save</div>
-              <div className="tag no" style={{ opacity: out && leaving.dir < 0 ? 1 : 0 }}>Pass</div>
+              <div className="tag yes" style={{ opacity: out && leaving.dir > 0 ? 1 : 0 }}>{t('save')}</div>
+              <div className="tag no" style={{ opacity: out && leaving.dir < 0 ? 1 : 0 }}>{t('pass')}</div>
               <div className="b">
                 <b>{it.t}</b>
-                <div className="pr"><em>€{it.p}</em><span>{place(it.a)}</span></div>
+                <div className="pr"><em>{money(it.p)}</em><span>{place(it.a)}</span></div>
               </div>
             </div>
           )
@@ -106,6 +108,7 @@ function RouteVisual() {
 }
 
 function ItemPage({ item, onBack, onStart }) {
+  const { money, cond } = useI18n()
   const backRef = useRef(null)
   useEffect(() => {
     backRef.current?.focus({ preventScroll: true })
@@ -123,9 +126,9 @@ function ItemPage({ item, onBack, onStart }) {
           <div className="ip-body">
             <span className="eyebrow">{catOf(item.c).label}</span>
             <h1 id="ip-t">{item.t}</h1>
-            <div className="ip-price">€{item.p}</div>
+            <div className="ip-price">{money(item.p)}</div>
             <dl className="ip-facts">
-              <div><dt>Condition</dt><dd>{item.cond}</dd></div>
+              <div><dt>Condition</dt><dd>{cond(item.cond)}</dd></div>
               <div><dt>Seller</dt><dd>{item.s}</dd></div>
               <div><dt>Location</dt><dd>{item.a}</dd></div>
             </dl>
@@ -199,6 +202,7 @@ function InfoPage({ id, onBack }) {
 }
 
 export default function Landing({ onStart, onSignIn, tabs, onNav }) {
+  const { t, money } = useI18n()
   const howRef = useRef(null)
   const goRef = useRef(null)
   const [viewing, setViewing] = useState(null)
@@ -230,12 +234,12 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
   const tk = copy =>
     ITEMS.slice(0, 14).map(it => (
       <button key={it.id} className="tk-item" tabIndex={copy ? -1 : 0} onClick={() => setViewing(it)}>
-        <i />{it.t} <span className="mono">€{it.p} · {place(it.a)}</span>
+        <i />{it.t} <span className="mono">{money(it.p)} · {place(it.a)}</span>
       </button>
     ))
 
   return (
-    <div className="landing on" aria-label="Welcome to twice" ref={rootRef}>
+    <div className="landing on" aria-label={t('lp.welcome')} ref={rootRef}>
       <div className="gut">
         <div className="lp-in lp-nav">
           <div className="brand"><span className="logo" aria-hidden="true" />twice</div>
@@ -248,8 +252,8 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
             ))}
           </nav>
           <div className="lp-actions">
-            {onSignIn && <button className="btn small" onClick={onSignIn}>Sign in / Sign up</button>}
-            <button className="btn small primary" onClick={onStart}>Open the app</button>
+            {onSignIn && <button className="btn small" onClick={onSignIn}>{t('signInUp')}</button>}
+            <button className="btn small primary" onClick={onStart}>{t('lp.open')}</button>
           </div>
         </div>
       </div>
@@ -257,13 +261,13 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
         <section className="lp-in lp-hero">
           <div>
             <h1 className="lp-h1">
-              <span>Swipe it.</span>
-              <span>Save it.</span>
-              <span><i className="m" style={{ fontStyle: 'normal' }}>Métro</i> to it.</span>
+              <span>{t('lp.h1a')}</span>
+              <span>{t('lp.h1b')}</span>
+              <span><i className="m" style={{ fontStyle: 'normal' }}>{t('lp.h1c')}</i> {t('lp.h1d')}</span>
             </h1>
             <div className="lp-cta">
-              <button className="btn primary big" ref={goRef} onClick={onStart}>Start swiping</button>
-              <button className="btn big" onClick={how}>How it works</button>
+              <button className="btn primary big" ref={goRef} onClick={onStart}>{t('lp.start')}</button>
+              <button className="btn big" onClick={how}>{t('lp.how')}</button>
             </div>
           </div>
           <div className="lp-stage">
@@ -275,7 +279,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
               </g>
             </svg>
             <PhoneDemo />
-            <div className="float f1" aria-hidden="true"><Icon name="heart" size={16} sw={2.4} /><span>Saved to favorites</span></div>
+            <div className="float f1" aria-hidden="true"><Icon name="heart" size={16} sw={2.4} /><span>{t('lp.savedFav')}</span></div>
             <div className="float f2" aria-hidden="true"><LineBadge id="14" /><span>Châtelet → Saint-Ouen</span><span className="mono">17 min</span></div>
             <div className="float f3" aria-hidden="true"><Icon name="pin" size={16} /><span className="mono">1.9 km</span></div>
           </div>
@@ -284,17 +288,17 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
       <div className="ticker"><div className="tk">{tk(false)}<span className="tk-dup" aria-hidden="true">{tk(true)}</span></div></div>
       <div className="gut">
         <section className="lp-in lp-how" ref={howRef}>
-          <span className="eyebrow">How it works</span>
-          <h2 className="lp-h2">Three stops from scrolling to buying.</h2>
+          <span className="eyebrow">{t('lp.how')}</span>
+          <h2 className="lp-h2">{t('lp.h2')}</h2>
           <ol className="stops">
             <li className="stp">
               <span className="stn">1</span>
               <div className="vis v1">
-                <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">PASS</span></div>
-                <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">SAVE</span></div>
+                <div className="mc l"><Art item={a} /><b>{a.t}</b><span className="st">{t('pass').toUpperCase()}</span></div>
+                <div className="mc r"><Art item={b} /><b>{b.t}</b><span className="st">{t('save').toUpperCase()}</span></div>
               </div>
-              <h3>Swipe what is near you</h3>
-              <p>Right to save, left to pass. Every card tells you how far the item is and how long the walk takes.</p>
+              <h3>{t('lp.s1h')}</h3>
+              <p>{t('lp.s1p')}</p>
             </li>
             <li className="stp">
               <span className="stn">2</span>
@@ -305,14 +309,14 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
                   </Art>
                 ))}
               </div>
-              <h3>Keep your favourites together</h3>
-              <p>Everything you save lands in one place. Filter by category, or by what is closest to you.</p>
+              <h3>{t('lp.s2h')}</h3>
+              <p>{t('lp.s2p')}</p>
             </li>
             <li className="stp">
               <span className="stn">3</span>
               <div className="vis v3"><RouteVisual /></div>
-              <h3>Get there on foot or by métro</h3>
-              <p>Your saves become pins on a map of Île-de-France. Tap one to see which line to take, which way, and how many stops.</p>
+              <h3>{t('lp.s3h')}</h3>
+              <p>{t('lp.s3p')}</p>
             </li>
           </ol>
         </section>
@@ -321,12 +325,12 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
         <div className="gut">
           <div className="lp-in">
             <div className="le-copy">
-              <h2>Good things deserve a second home.</h2>
+              <h2>{t('lp.endH')}</h2>
               <p>
                 Your next find is probably a few stops away. Buyers and sellers use the same app, so tell us which one you
                 are and start with what is nearest.
               </p>
-              <button className="btn inv big" onClick={onStart}>Start swiping</button>
+              <button className="btn inv big" onClick={onStart}>{t('lp.start')}</button>
             </div>
             <div className="le-vis" aria-hidden="true">
               <img src={secondHome} alt="" />
@@ -354,7 +358,7 @@ export default function Landing({ onStart, onSignIn, tabs, onNav }) {
             </div>
             <div className="lf-base">
               <span>© 2026 twice</span>
-              <span>Listings shown are examples.</span>
+              <span>{t('lp.examples')}</span>
             </div>
           </div>
         </div>

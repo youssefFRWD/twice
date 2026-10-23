@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import { CAT_ALL, catOf, planMetro, planWalk } from './data.js'
+import { useI18n } from './i18n.js'
 import * as api from './api.js'
 import { backendEnabled } from './api.js'
 import { DEFAULT_ME, SEED_SAVED, itemById, listFor, loadStored, nearbyFor, persist, replaceItems } from './lib.js'
@@ -17,8 +18,8 @@ import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
 
-const TABS = [['discover', 'Discover', 'disc'], ['saved', 'Saved', 'heart'], ['map', 'Map', 'map'], ['messages', 'Messages', 'chat'], ['profile', 'Profile', 'user']]
-const SAMPLE_TOAST = 'We saved six sample items so the map has something on it.'
+const GPS_LABEL = 'Your location' // stored value that marks a GPS position; shown translated
+const TABS = [['discover', 'disc'], ['saved', 'heart'], ['map', 'map'], ['messages', 'chat'], ['profile', 'user']]
 
 function initState() {
   const d = loadStored()
@@ -29,15 +30,16 @@ function initState() {
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
     passed: d?.passed || [],
     me: d?.me?.lat ? d.me : DEFAULT_ME,
-    tab: TABS.some(t => t[0] === hash) ? hash : 'discover',
+    tab: TABS.some(x => x[0] === hash) ? hash : 'discover',
     firstRun: !seeded && !backendEnabled,
   }
 }
 
 function Chips({ tab, cat, counts, onCat }) {
+  const { t, cat: catName } = useI18n()
   return (
     <div className="chips-wrap">
-      <div className="chips gut" role="group" aria-label="Categories">
+      <div className="chips gut" role="group" aria-label={t('categories')}>
         {CAT_ALL.map(c => {
           const n = counts[c.id]
           const iconName = c.id === 'all' ? 'all' : c.id === 'nearest' ? 'arrow' : null
@@ -54,7 +56,7 @@ function Chips({ tab, cat, counts, onCat }) {
                   />
                 </svg>
               )}
-              {c.label}
+              {catName(c.id)}
               <b>{n}</b>
             </button>
           )
@@ -65,15 +67,16 @@ function Chips({ tab, cat, counts, onCat }) {
 }
 
 function Tabs({ tab, onTab, className, unread }) {
+  const { t } = useI18n()
   return (
-    <nav className={`tabs ${className}`} aria-label="Sections">
-      {TABS.map(([id, label, ic]) => (
+    <nav className={`tabs ${className}`} aria-label={t('sections')}>
+      {TABS.map(([id, ic]) => (
         <button key={id} className="tab" aria-current={tab === id ? 'page' : undefined} onClick={() => onTab(id)}>
           <span className="ti">
             <Icon name={ic} size={22} />
-            {id === 'messages' && unread > 0 && <span className="tab-badge" aria-label={`${unread} unread`}>{unread}</span>}
+            {id === 'messages' && unread > 0 && <span className="tab-badge" aria-label={t('unread', { n: unread })}>{unread}</span>}
           </span>
-          <span>{label}</span>
+          <span>{t('tab.' + id)}</span>
         </button>
       ))}
     </nav>
@@ -81,6 +84,7 @@ function Tabs({ tab, onTab, className, unread }) {
 }
 
 export default function App() {
+  const { t, setLang, setCurrency } = useI18n()
   const [init] = useState(initState)
   const [saved, setSaved] = useState(init.saved)
   const [passed, setPassed] = useState(init.passed)
@@ -109,6 +113,7 @@ export default function App() {
   const [syncedUid, setSyncedUid] = useState(null)
   const [, setItemsVersion] = useState(0)
   const uidRef = useRef(null)
+  const tRef = useRef(t)
   const histRef = useRef([])
   const toastTimer = useRef(0)
   const cmdN = useRef(0)
@@ -148,14 +153,15 @@ export default function App() {
   useEffect(() => {
     uidRef.current = uid
     histRef.current = hist
-  }, [uid, hist])
+    tRef.current = t
+  }, [uid, hist, t])
 
   const sync = useCallback(
     fn => {
       const id = uidRef.current
-      if (id) fn(id).catch(() => showToast('Could not sync with the server. Your last change may not be saved.'))
+      if (id) fn(id).catch(() => showToast(t('toast.syncFail')))
     },
-    [showToast],
+    [showToast, t],
   )
 
   const reloadItems = useCallback(() => {
@@ -220,8 +226,10 @@ export default function App() {
         setPassed(d.passed)
         setHist([])
         const p = d.profile
+        if (p?.language) setLang(p.language)
+        if (p?.currency) setCurrency(p.currency)
         if (p?.home_lat != null) {
-          const gps = p.home_label === 'Your location'
+          const gps = p.home_label === GPS_LABEL
           setMeState({ lat: p.home_lat, lon: p.home_lon, label: p.home_label || 'Home', src: gps ? 'gps' : 'manual' })
         }
         setSyncedUid(uid)
@@ -229,12 +237,12 @@ export default function App() {
       .catch(() => {
         if (!live) return
         setSyncedUid(uid)
-        showToast('Could not load your saved items.')
+        showToast(tRef.current('toast.loadFail'))
       })
     return () => {
       live = false
     }
-  }, [uid, showToast])
+  }, [uid, showToast, setLang, setCurrency])
 
   const reloadConvs = useCallback(async () => {
     const id = uidRef.current
@@ -257,16 +265,16 @@ export default function App() {
   const messageSeller = async it => {
     if (!uid) {
       setAuthOpen(true)
-      return showToast('Sign in to message sellers.')
+      return showToast(t('toast.signInMsg'))
     }
-    if (!canMessage(it)) return showToast(it.sid ? 'This is your own listing.' : 'Sample listings have no seller to message.')
+    if (!canMessage(it)) return showToast(it.sid ? t('toast.ownListing') : t('toast.sampleNoSeller'))
     try {
       const id = await api.startConversation(uid, it)
       await reloadConvs()
       setChatId(id)
       setTab('messages')
     } catch {
-      showToast('Could not start the conversation. Try again.')
+      showToast(t('toast.convFail'))
     }
   }
   const unread = convs.reduce((n, c) => n + c.unread, 0)
@@ -307,15 +315,15 @@ export default function App() {
     (it, dir) => {
       if (backendEnabled && !uidRef.current) {
         setAuthOpen(true)
-        return showToast('Sign in to save items and keep your swipes.')
+        return showToast(t('toast.signInSave'))
       }
       if (dir > 0) setSaved(s => (s.includes(it.id) ? s : [...s, it.id]))
       else setPassed(p => [...p, it.id])
       setHist(h => [...h, { id: it.id, dir }])
       sync(id => (dir > 0 ? api.saveItem(id, it.id) : api.passItem(id, it.id)))
-      showToast(dir > 0 ? `Saved "${it.t}"` : `Passed "${it.t}"`, () => undo())
+      showToast(t(dir > 0 ? 'toast.saved' : 'toast.passed', { title: it.t }), () => undo())
     },
-    [showToast, undo, sync],
+    [showToast, undo, sync, t],
   )
   const resetPassed = () => {
     setPassed([])
@@ -325,7 +333,7 @@ export default function App() {
   const unsave = itemId => {
     setSaved(s => s.filter(i => i !== itemId))
     sync(id => api.unsaveItem(id, itemId))
-    showToast('Removed from favorites', () => {
+    showToast(t('toast.removed'), () => {
       setSaved(s => [...s, itemId])
       sync(id => api.saveItem(id, itemId))
     })
@@ -334,8 +342,8 @@ export default function App() {
   /* ---------- map selection ---------- */
   const selectItem = id => {
     const it = itemById(id)
-    const w = planWalk(me, it)
-    const m = planMetro(me, it)
+    const w = planWalk(me, it, t)
+    const m = planMetro(me, it, t)
     sync(uid2 => api.logView(uid2, id))
     setSel(id)
     const key = `${id}@${me.lat},${me.lon}`
@@ -345,7 +353,7 @@ export default function App() {
     setPeek(false)
     mapCmd('fitRoute')
     // swap the estimate for real walking routes as soon as the router answers
-    buildPlans(me, it)
+    buildPlans(me, it, t)
       .then(real => {
         setPlans(cur => (cur && cur.key === key ? { ...real, key } : cur))
         if (routeKey.current === key) mapCmd('fitRoute')
@@ -394,7 +402,7 @@ export default function App() {
             clearTimeout(to)
             const { latitude: la, longitude: lo } = p.coords
             if (la < 48.1 || la > 49.25 || lo < 1.4 || lo > 3.6) return cb?.(false, 'outside')
-            setMe({ lat: la, lon: lo, label: 'Your location', src: 'gps' })
+            setMe({ lat: la, lon: lo, label: GPS_LABEL, src: 'gps' })
             cb?.(true)
           },
           fail,
@@ -427,13 +435,13 @@ export default function App() {
     setTab('discover')
     if (firstRun.current) {
       firstRun.current = false
-      setTimeout(() => showToast(SAMPLE_TOAST), 600)
+      setTimeout(() => showToast(t('toast.sample')), 600)
     }
   }
   const handleAuth = async (mode, email, password) => {
     if (mode === 'signin') return void (await api.signIn(email, password))
     const res = await api.signUp(email, password)
-    return res.session ? undefined : 'Check your email to confirm your account, then sign in.'
+    return res.session ? undefined : t('auth.confirmEmail')
   }
 
   /* ---------- derived ---------- */
@@ -461,29 +469,29 @@ export default function App() {
     <>
       <div id="app">
         <header className="top gut">
-          <button className="brand" aria-label="About twice" onClick={() => setLanding(true)}>
+          <button className="brand" aria-label={t('aboutTwice')} onClick={() => setLanding(true)}>
             <span className="logo" aria-hidden="true" />twice
           </button>
           <Tabs tab={tab} onTab={setTab} className="tabs-top" unread={unread} />
           {signedOut && (
             <button className="btn primary small signin" onClick={() => setAuthOpen(true)}>
               <Icon name="user" size={16} />
-              <span><span className="wide">Sign in / Sign up</span><span className="narrow">Sign in</span></span>
+              <span><span className="wide">{t('signInUp')}</span><span className="narrow">{t('auth.signIn')}</span></span>
             </button>
           )}
           <button
             className="loc"
-            aria-label="Change your position"
-            title={me.src === 'default' ? 'Starting point. Tap to set your position.' : 'Tap to change your position.'}
+            aria-label={t('loc.change')}
+            title={me.src === 'default' ? t('loc.titleDefault') : t('loc.titleChange')}
             onClick={() => setLocOpen(true)}
           >
             <Icon name="arrow" size={16} />
-            <span>{me.src === 'gps' ? 'Your location' : me.label}</span>
+            <span>{me.src === 'gps' ? t('yourLocation') : me.label}</span>
           </button>
         </header>
         {tab !== 'messages' && tab !== 'profile' && <Chips tab={tab} cat={cat} counts={counts} onCat={pickCat} />}
         <main>
-          <section className={`view${tab === 'discover' ? ' on' : ''}`} id="v-discover" aria-label="Discover">
+          <section className={`view${tab === 'discover' ? ' on' : ''}`} id="v-discover" aria-label={t('tab.discover')}>
             {tab === 'discover' && (
               <Discover
                 deck={discoverDeck}
@@ -499,12 +507,12 @@ export default function App() {
               />
             )}
           </section>
-          <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label="Saved items">
+          <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label={t('tab.saved')}>
             {tab === 'saved' && (
               <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} />
             )}
           </section>
-          <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label="Map">
+          <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label={t('tab.map')}>
             <Suspense fallback={null}>
             <MapView
               active={tab === 'map'}
@@ -539,25 +547,25 @@ export default function App() {
               onPlace={m => {
                 setMe(m)
                 setPlacing(false)
-                showToast('Position set')
+                showToast(t('toast.posSet'))
               }}
               onCancelPlace={() => setPlacing(false)}
               onOpenLoc={() => setLocOpen(true)}
             />
             </Suspense>
           </section>
-          <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
+          <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label={t('tab.messages')}>
             {tab === 'messages' && (
               <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} onSignIn={() => setAuthOpen(true)} suggestions={sellerSuggestions} onStart={messageSeller} onOpenItem={id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))} />
             )}
           </section>
-          <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label="Profile">
+          <section className={`view${tab === 'profile' ? ' on' : ''}`} id="v-profile" aria-label={t('tab.profile')}>
             {tab === 'profile' && signedOut && (
               <div className="empty">
                 <Icon name="user" size={40} />
-                <h2>Your profile lives here</h2>
-                <p>Sign in to add a photo, list items, write reviews and follow neighbours.</p>
-                <button className="btn primary" onClick={() => setAuthOpen(true)}>Sign in / Sign up</button>
+                <h2>{t('pf.guestH')}</h2>
+                <p>{t('pf.guestP')}</p>
+                <button className="btn primary" onClick={() => setAuthOpen(true)}>{t('signInUp')}</button>
               </div>
             )}
             {tab === 'profile' && !signedOut && (
@@ -570,6 +578,10 @@ export default function App() {
                 onSignOut={() => api.signOut()}
                 onToast={showToast}
                 onItemsChanged={reloadItems}
+                onShowMap={showOnMap}
+                onBuy={setBuyId}
+                canMessage={canMessage}
+                onMessage={messageSeller}
               />
             )}
           </section>
@@ -635,7 +647,7 @@ export default function App() {
           tryGPS((ok, why) => {
             if (ok) {
               setLocOpen(false)
-              showToast('Using your location')
+              showToast(t('toast.usingLoc'))
             }
             cb(ok, why)
           })
@@ -649,7 +661,7 @@ export default function App() {
         onStation={s => {
           setLocOpen(false)
           setMe({ lat: s.lat, lon: s.lon, label: s.name, src: 'manual' })
-          showToast('Starting from ' + s.name)
+          showToast(t('toast.startingFrom', { name: s.name }))
         }}
       />
       <Toast toast={toast} onUndo={runToastUndo} />
