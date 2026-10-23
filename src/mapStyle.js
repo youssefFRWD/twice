@@ -3,6 +3,7 @@ import IDF from './geo/idf.json'
 import PARIS_RING from './geo/paris.json'
 import ARR from './geo/arrondissements.json'
 import { LINE_ST, LM, STN, catOf } from './data.js'
+import { NAMES } from './arr.js'
 
 /* twice palette (same values as the CSS variables) */
 const C = {
@@ -100,11 +101,6 @@ function centroid(ring) {
   return [cx / (6 * a), cy / (6 * a)]
 }
 
-const NAMES = [
-  'Louvre', 'Bourse', 'Temple', 'Hôtel-de-Ville', 'Panthéon', 'Luxembourg', 'Palais-Bourbon', 'Élysée', 'Opéra', 'Entrepôt',
-  'Popincourt', 'Reuilly', 'Gobelins', 'Observatoire', 'Vaugirard', 'Passy', 'Batignolles-Monceau', 'Butte-Montmartre',
-  'Buttes-Chaumont', 'Ménilmontant',
-]
 
 const arrData = {
   type: 'FeatureCollection',
@@ -179,6 +175,21 @@ export function buildStyle() {
       type: 'line',
       source: 'arr',
       paint: { 'line-color': '#E58B6D', 'line-width': 1, 'line-opacity': 0.85, 'line-dasharray': [3, 3] },
+    },
+    {
+      id: 'arr-sel-fill',
+      type: 'fill',
+      source: 'arr',
+      filter: ['==', ['get', 'n'], -1],
+      paint: { 'fill-color': C.coral, 'fill-opacity': 0.16 },
+    },
+    {
+      id: 'arr-sel-line',
+      type: 'line',
+      source: 'arr',
+      filter: ['==', ['get', 'n'], -1],
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': C.coralInk, 'line-width': 3, 'line-opacity': 0.95 },
     },
     { id: 'paris-glow', type: 'line', source: 'paris-line', paint: { 'line-color': C.coral, 'line-width': 9, 'line-opacity': 0.22, 'line-blur': 5 } },
     {

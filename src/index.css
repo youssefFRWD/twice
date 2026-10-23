@@ -742,3 +742,9 @@ input[type=number]{font:inherit;padding:10px 12px;border-radius:10px;border:1px 
 .ip-facts dt{color:var(--muted);font-weight:600}
 .ip-facts dd{margin:0;font-weight:700;text-align:right}
 @media (min-width:760px){.ip-in{grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:40px}.ip-in>.btn{grid-column:1/-1}.ip-art{max-height:none}}
+
+/* arrondissement picker */
+.arr-pick{display:inline-flex;align-items:center;gap:8px;padding:0 6px 0 12px;border-radius:999px;border:1px solid var(--line);background:var(--surface);box-shadow:0 2px 8px rgba(0,0,0,.1);max-width:100%}
+.arr-pick svg{flex:none;color:var(--accent)}
+.arr-pick select{border:0;background:none;padding:9px 6px 9px 0;font-weight:700;font-size:13.5px;width:auto;max-width:210px;cursor:pointer}
+.mapbox.navigating .arr-pick{display:none}

@@ -12,6 +12,7 @@ import Profile from './Profile.jsx'
 import Landing from './Landing.jsx'
 import Checkout from './Checkout.jsx'
 import SellerListings from './SellerListings.jsx'
+import { itemsInArr } from './arr.js'
 import { AuthScreen, LocModal, Toast } from './Overlays.jsx'
 
 const MapView = lazy(() => import('./MapView.jsx'))
@@ -98,6 +99,7 @@ export default function App() {
   const [buyId, setBuyId] = useState(null)
   const [seller, setSeller] = useState(null)
   const [showNearby, setShowNearby] = useState(false)
+  const [arr, setArr] = useState(null)
   const [toast, setToast] = useState(null)
   const [cmd, setCmd] = useState(null)
   const [convs, setConvs] = useState([])
@@ -444,6 +446,14 @@ export default function App() {
   const nearbyAll = nearbyFor(cat.map, data, radius, uid)
   const nearbyList = showNearby ? nearbyAll : []
   const toggleNearby = () => setShowNearby(v => !v)
+  const arrItems = arr ? itemsInArr(arr) : []
+  const pickArr = n => {
+    setArr(n)
+    setSel(null)
+    setPlans(null)
+    if (n) setCmd({ n: ++cmdN.current, type: 'fitArr', arr: n })
+    else mapCmd('fitSaved')
+  }
   const hasUnseen = listFor('discover', 'all', data).length > 0
   const overlayOpen = landing || locOpen || authOpen || buyId !== null || !!seller
 
@@ -504,6 +514,10 @@ export default function App() {
               nearby={nearbyList}
               showNearby={showNearby}
               nearbyCount={nearbyAll.length}
+              arr={arr}
+              arrItems={arrItems}
+              saved={saved}
+              onArr={pickArr}
               onToggleNearby={toggleNearby}
               sel={sel}
               plans={plans}
