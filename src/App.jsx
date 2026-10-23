@@ -498,7 +498,7 @@ export default function App() {
     <>
       <div id="app">
         <header className="top gut">
-          <button className="brand" aria-label={t('aboutTwice')} onClick={() => setLanding(true)}>
+          <button className="brand" aria-label={t('aboutTwice')} onClick={() => { setLanding(true); try { history.replaceState(null, '', '#landingpage') } catch {} }}>
             <span className="logo" aria-hidden="true" />twice
           </button>
           <Tabs tab={tab} onTab={setTab} className="tabs-top" unread={unread} />
