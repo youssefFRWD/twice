@@ -132,6 +132,11 @@ export default {
   'loops.waitOther': 'Waiting for {name} to confirm the handover.', 'loops.saleDone': 'Sale completed.',
   'loops.saleDoneEarned': 'Sale completed. You both earned {n} Loops.', 'loops.earnedToast': 'Sale completed: +{n} Loops!', 'loops.doneToast': 'Sale completed.',
   'loops.handoverFail': 'Could not confirm the handover. Try again.', 'loops.boost': 'Boost · {n} Loops', 'loops.boosted': 'Listing boosted for 24 hours',
+  'loops.howH': 'How Loops work', 'loops.howIntro': 'Loops are Twice’s reward points for neighbours who trade in person.',
+  'loops.earnH': 'Earn', 'loops.earnP': 'You and your buyer or seller each get {n} Loops when you both tap “Handover done”. Sales under €5 earn nothing, and the same two people earn together at most twice in 30 days.',
+  'loops.spendH': 'Spend', 'loops.goal.boost': 'Boost a listing · {n} Loops', 'loops.goal.boostSub': 'Your listing goes to the top of Discover for 24 hours.',
+  'loops.goal.noFee': 'No fee on one sale · {n} Loops', 'loops.goal.noFeeSub': 'Removes your own 5% Twice fee on a sale paid in the app.',
+  'loops.goalReady': 'You can do this now.', 'loops.notMoney': 'Loops are not money: they can’t be paid out or sent to anyone.',
   'loops.boostFail': 'Could not boost the listing.', 'loops.boostedUntil': 'Boosted until {time}', 'loops.boostedTag': 'Boosted',
 
   // profile

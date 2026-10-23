@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { STN, STNMAP } from './data.js'
 import { useI18n } from './i18n.js'
-import { itemById } from './lib.js'
+import { itemById, LOOPS } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
 const stationOptions = STN.slice().sort((a, b) => a.name.localeCompare(b.name, 'fr'))
@@ -50,6 +50,43 @@ function LocBody({ me, signedIn, onClose, onGps, onPick, onStation, onSignOut })
           <button className="btn small" onClick={onClose}>{t('done')}</button>
         </div>
       </div>
+  )
+}
+
+export function LoopsModal({ open, loops, onClose }) {
+  const { t } = useI18n()
+  const goals = [
+    { key: 'boost', cost: LOOPS.boost },
+    { key: 'noFee', cost: LOOPS.noFee },
+  ]
+  return (
+    <div className={`scrim${open ? ' on' : ''}`} onClick={e => e.target === e.currentTarget && onClose()}>
+      {open && (
+        <div className="modal" role="dialog" aria-modal="true" aria-labelledby="lp-h">
+          <h2 id="lp-h">{t('loops.howH')}</h2>
+          <p>{t('loops.howIntro')}</p>
+          <div className="lp-balance"><Icon name="loop" size={20} /><b className="mono">{loops.toLocaleString()}</b><span>{t('loops.name')}</span></div>
+          <section className="lp-sec">
+            <h3>{t('loops.earnH')}</h3>
+            <p>{t('loops.earnP', { n: LOOPS.perSale })}</p>
+          </section>
+          <section className="lp-sec">
+            <h3>{t('loops.spendH')}</h3>
+            {goals.map(g => (
+              <div key={g.key} className="lp-goal">
+                <div><b>{t(`loops.goal.${g.key}`, { n: g.cost })}</b><small>{t(`loops.goal.${g.key}Sub`)}</small></div>
+                <div className="lp-bar" role="progressbar" aria-valuemin={0} aria-valuemax={g.cost} aria-valuenow={Math.min(loops, g.cost)}>
+                  <span style={{ width: `${Math.min(100, (loops / g.cost) * 100)}%` }} />
+                </div>
+                <small>{loops >= g.cost ? t('loops.goalReady') : t('loops.needMore', { n: g.cost - loops })}</small>
+              </div>
+            ))}
+          </section>
+          <p style={{ fontSize: 13 }}>{t('loops.notMoney')}</p>
+          <button className="btn primary" autoFocus onClick={onClose}>{t('done')}</button>
+        </div>
+      )}
+    </div>
   )
 }
 
