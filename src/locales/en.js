@@ -36,6 +36,7 @@ export default {
   'saved.noneInCat': 'Nothing saved in this category', 'saved.none': 'No favorites yet', 'saved.pickOther': 'Pick another category above.',
   'saved.swipeHint': 'Swipe right on Discover and the items you like will collect here.',
   'saved.sort': 'Sort', 'saved.by.date': 'Date', 'saved.by.name': 'Name', 'saved.by.price': 'Price', 'saved.reverse.on': 'Order: reversed', 'saved.reverse.off': 'Reverse order', 'saved.search': 'Search saved items', 'saved.noMatch': 'No saved items match your search.',
+  'saved.addedTo': 'Added to {name}', 'saved.removedFrom': 'Removed from {name}',
   'saved.layout': 'Layout', 'saved.layout.grid': 'Grid', 'saved.layout.list': 'List', 'saved.layout.large': 'Large cards',
   'saved.select': 'Select', 'saved.selected': '{n} selected', 'saved.selectAll': 'Select all', 'saved.done': 'Done', 'saved.removeN': 'Remove {n}', 'saved.bulk': 'Actions for selected items', 'saved.pick': 'Select {title}',
   'saved.boards': 'Boards', 'saved.allBoard': 'All', 'saved.newBoard': 'New board', 'saved.create': 'Create', 'saved.addToBoard': 'Add to board', 'saved.noBoards': 'No boards yet. Create your first one below.', 'saved.deleteBoard': 'Delete board {name}', 'saved.boardEmpty': 'This board is empty. Use the tag button on an item to add it.',

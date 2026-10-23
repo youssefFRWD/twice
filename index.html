@@ -10,7 +10,7 @@
           var p = localStorage.getItem('twice.theme')
           var dark = p === 'dark' || (p === 'auto' && matchMedia('(prefers-color-scheme: dark)').matches)
           document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-          if (dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#141A17')
+          if (dark) document.querySelector('meta[name="theme-color"]').setAttribute('content', '#1B1310')
         } catch (e) {}
       })()
     </script>
