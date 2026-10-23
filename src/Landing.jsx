@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ITEMS, LM, catOf } from './data.js'
+import { sendContact } from './api.js'
 import { useI18n } from './i18n.js'
 import { itemById, reducedMotion } from './lib.js'
 import { Art, Icon, LineBadge } from './ui.jsx'
@@ -156,8 +157,9 @@ const INFO = {
     ],
   },
   contact: {
-    title: 'Contact',
-    lead: 'Buyers and sellers talk to each other directly.',
+    title: 'Contact the twice team',
+    lead: 'A question, a bug or an idea? Write to us and we will answer by email.',
+    form: true,
     points: [
       'To ask about an item, open it, log in and choose Message seller. Replies land in the Messages tab.',
       'Sample listings on this page are examples and have no seller to message.',
@@ -173,6 +175,56 @@ const INFO = {
       'Your messages with other users.',
     ],
   },
+}
+
+/** Sends a message to the twice team. */
+function ContactForm() {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [message, setMessage] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+  const [sent, setSent] = useState(false)
+
+  const submit = async e => {
+    e.preventDefault()
+    setBusy(true)
+    setErr('')
+    try {
+      await sendContact({ name: name.trim(), email: email.trim(), message: message.trim() })
+      setSent(true)
+    } catch {
+      setErr('Could not send your message. Check your connection and try again.')
+    }
+    setBusy(false)
+  }
+
+  if (sent) {
+    return (
+      <div className="contact-sent" role="status">
+        <h2>Message sent</h2>
+        <p>Thank you, {name.trim()}. We will reply to {email.trim()}.</p>
+      </div>
+    )
+  }
+  return (
+    <form className="contact-form" onSubmit={submit}>
+      <label className="field" htmlFor="ct-name">
+        Your name
+        <input id="ct-name" type="text" required maxLength={80} autoComplete="name" value={name} onChange={e => setName(e.target.value)} />
+      </label>
+      <label className="field" htmlFor="ct-email">
+        Email
+        <input id="ct-email" type="email" required maxLength={200} autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} />
+      </label>
+      <label className="field" htmlFor="ct-msg">
+        Message
+        <textarea id="ct-msg" required maxLength={4000} rows={6} value={message} onChange={e => setMessage(e.target.value)} />
+      </label>
+      <p role="status" className="pf-err">{err}</p>
+      <button className="btn primary big" type="submit" disabled={busy || !name.trim() || !message.trim()}>{busy ? 'Sending…' : 'Send to the twice team'}</button>
+    </form>
+  )
 }
 
 function InfoPage({ id, onBack }) {
@@ -192,6 +244,7 @@ function InfoPage({ id, onBack }) {
           <button className="btn small" ref={backRef} onClick={onBack}>&larr; Back</button>
           <h1 id="info-t">{info.title}</h1>
           <p className="info-lead">{info.lead}</p>
+          {info.form && <ContactForm />}
           <ul>
             {info.points.map(t => <li key={t}>{t}</li>)}
           </ul>

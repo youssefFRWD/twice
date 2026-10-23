@@ -29,7 +29,7 @@ function Steps({ plan }) {
   )
 }
 
-function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearby, showNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek , hidden, onHide}) {
+function Panel({ canMessage, onMessage, onBuy, onDetails, onStartNav, panelRef, list, nearby, showNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, cat, me, radius, savedCount, onPick, onClose, onMode, onPeek , hidden, onHide}) {
   const { t, cat: catName, money } = useI18n()
   const it = sel != null ? itemById(sel) : null
   let body
@@ -45,7 +45,7 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
         </div>
         <div className="panel-body detail-wrap">
           <div className="detail">
-            <div className="top2">
+            <div className="top2 clickable" role="button" tabIndex={0} title={t('item.details')} onClick={() => onDetails(it.id)} onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onDetails(it.id))}>
               <Art item={it} />
               <div>
                 <h3>{it.t}</h3>
@@ -75,6 +75,9 @@ function Panel({ canMessage, onMessage, onBuy, onStartNav, panelRef, list, nearb
               {plan.nav ? 'Start navigation' : 'Finding the best route…'}
             </button>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn small" onClick={() => onDetails(it.id)}>
+                <Icon name="info" size={16} />{t('item.details')}
+              </button>
               <button className="btn small" onClick={() => onBuy(it.id)}>
                 <Icon name="bag" size={16} />{t('buy', { price: money(it.p) })}
               </button>
@@ -182,7 +185,7 @@ maplibregl.setWorkerUrl(workerUrl)
 export default function MapView(props) {
   const { t } = useI18n()
   const { active, me, radius, list, nearby, showNearby, nearbyCount, onToggleNearby, arr, arrItems, saved, onArr, sel, plans, mode, plan, peek, placing, cat, savedCount, cmd } = props
-  const { canMessage, onMessage, onBuy, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
+  const { canMessage, onMessage, onBuy, onDetails, onRadius, onSelect, onClose, onMode, onPeek, onPlace, onCancelPlace, onOpenLoc } = props
 
   const boxRef = useRef(null)
   const mapElRef = useRef(null)
@@ -515,6 +518,7 @@ export default function MapView(props) {
         canMessage={canMessage}
         onMessage={onMessage}
         onBuy={onBuy}
+        onDetails={onDetails}
         panelRef={panelRef}
         list={list}
         sel={sel}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
+import { ARR_NUMBERS, SUBURB_NUMBERS, areaName } from './areas.js'
 import { locale } from './locale.js'
 import { COVER_STYLES } from './data.js'
 import { Avatar, Cover, Icon } from './ui.jsx'
@@ -17,7 +18,7 @@ const STAGE = 280
 const OUT = 512
 
 const joined = iso => new Date(iso).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
-const arrLabel = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : null)
+const arrLabel = areaName
 
 function loadLocal() {
   try {
@@ -254,9 +255,14 @@ function EditForm({ page, busy, onSave, onCancel }) {
         {t('pf.whereParis')}
         <select id="pf-arr" value={arr} onChange={e => setArr(e.target.value)}>
           <option value="">{t('pf.notSpecified')}</option>
-          {Array.from({ length: 20 }, (_, i) => i + 1).map(n => (
-            <option key={n} value={n}>{t('pf.arrOption', { label: arrLabel(n) })}</option>
-          ))}
+          <optgroup label="Paris">
+            {ARR_NUMBERS.map(n => (
+              <option key={n} value={n}>{t('pf.arrOption', { label: arrLabel(n) })}</option>
+            ))}
+          </optgroup>
+          <optgroup label={t('pf.nearParis')}>
+            {SUBURB_NUMBERS.map(n => <option key={n} value={n}>{arrLabel(n)}</option>)}
+          </optgroup>
         </select>
       </label>
       <fieldset className="pf-priv">
@@ -474,8 +480,8 @@ export default function Profile({ uid, email, backendOn, me, onSignOut, onToast,
         </>
       ) : (
         <>
-          <div className={`pf-body${todo.length ? ' has-aside' : ''}`}>
-            {todo.length > 0 && (
+          <div className={`pf-body${todo.length && !allDone ? ' has-aside' : ''}`}>
+            {todo.length > 0 && !allDone && (
               <aside className="pf-aside" aria-labelledby="pf-todo-h">
                 <div className="pf-card pf-todo">
                   <h2 id="pf-todo-h">{allDone ? t('pf.allDone') : t('pf.complete')}</h2>

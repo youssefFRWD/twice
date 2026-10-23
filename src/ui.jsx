@@ -1,4 +1,5 @@
 import { COVER_STYLES, ICON, LM, catOf } from './data.js'
+import Gallery from './Gallery.jsx'
 import { useI18n } from './i18n.js'
 
 export function Icon({ name, size = 20, sw = 2 }) {
@@ -19,12 +20,14 @@ export function Icon({ name, size = 20, sw = 2 }) {
 }
 
 /** Category tile. Children render inside the tile (badges etc). */
-export function Art({ item, extra = '', children }) {
+export function Art({ item, extra = '', children, gallery = false, swipe = true }) {
   const { cat } = useI18n()
   const c = catOf(item.c)
   return (
     <div className={`art t${item.id % 8} ${extra}`.trim()}>
-      {item.img ? (
+      {gallery && item.imgs && item.imgs.length > 1 ? (
+        <Gallery key={item.id} images={item.imgs} swipe={swipe} />
+      ) : item.img ? (
         <img className="art-photo" src={item.img} alt="" loading="lazy" />
       ) : (
         <svg viewBox="0 0 100 100" aria-hidden="true" dangerouslySetInnerHTML={{ __html: c.art }} />

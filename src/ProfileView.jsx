@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
+import { areaName } from './areas.js'
 import { locale } from './locale.js'
 import { ReviewList } from './ProfileReviews.jsx'
 import { Art, Avatar, Cover, Icon } from './ui.jsx'
 
 const joined = iso => new Date(iso).toLocaleDateString(locale(), { month: 'long', year: 'numeric' })
-const arrLabel = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : null)
+const arrLabel = areaName
 
 /** Another person's profile: who they are, what they sell now, and their reviews (what their privacy allows). */
 export default function ProfileView({ uid, userId, onBack, onToast, onShowMap, onBuy, canMessage, onMessage }) {

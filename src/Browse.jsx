@@ -13,7 +13,7 @@ const fold = s =>
 const SORTS = ['nearest', 'low', 'high']
 
 /** Every listing in one searchable grid, so nothing has to be swiped to be found. */
-export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onShowMap, canMessage, onMessage, onSeller }) {
+export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onShowMap, canMessage, onMessage, onSeller, onOpen }) {
   const { t, cat, cond, money } = useI18n()
   const [q, setQ] = useState('')
   const [cat_, setCat] = useState('all')
@@ -93,13 +93,13 @@ export default function Browse({ items, me, saved, onSave, onUnsave, onBuy, onSh
           {shown.map(it => {
             const isSaved = saved.includes(it.id)
             return (
-              <article className="sc" key={it.id}>
-                <Art item={it}>
+              <article className="sc" key={it.id} onClick={e => !e.target.closest('button, a, input, select') && onOpen(it.id)}>
+                <Art item={it} gallery>
                   <span className="dist-badge"><Icon name="pin" size={14} />{fmtD(distOf(me, it))}</span>
                 </Art>
                 <div className="body">
                   <div className="row">
-                    <h3>{it.t}</h3>
+                    <h3><button type="button" className="title-btn" onClick={() => onOpen(it.id)}>{it.t}</button></h3>
                     <span className="price" style={{ fontSize: 17 }}>{money(it.p)}</span>
                   </div>
                   <div className="meta">

@@ -132,7 +132,7 @@ export default {
   'pf.asOthers': 'This is how other people see your profile.', 'pf.backToMine': 'Back to my profile', 'pf.joined': 'Joined {date}',
   'pf.publicProfile': 'Public profile', 'pf.privateProfile': 'Private profile', 'pf.edit': 'Edit profile', 'pf.seeAsOthers': 'See my profile as others do',
   'pf.changePhoto': 'Change photo', 'pf.addPhoto': 'Add a photo', 'pf.photoReady': 'New photo ready. It goes live when you save.',
-  'pf.whereParis': 'Where in Paris do you buy and sell?', 'pf.notSpecified': 'Not specified', 'pf.arrOption': '{label} arrondissement',
+  'pf.whereParis': 'Where in or near Paris do you buy and sell?', 'pf.notSpecified': 'Not specified', 'pf.nearParis': 'Near Paris', 'pf.arrOption': '{label} arrondissement',
   'pf.whoSees': 'Who can see your profile', 'pf.private': 'Private',
   'pf.privateHelp': 'Others see your name, photo, area and the reviews written about you. The reviews you wrote stay hidden.',
   'pf.public': 'Public', 'pf.publicHelp': 'Others also see the reviews you wrote.',
@@ -204,4 +204,9 @@ export default {
   'tab.browse': 'Browse', 'br.search': 'Search listings…', 'br.clear': 'Clear search', 'br.sortLabel': 'Sort', 'br.sort.nearest': 'Nearest first', 'br.sort.low': 'Price: low to high', 'br.sort.high': 'Price: high to low', 'br.none': 'No listings match “{q}”', 'br.noneHint': 'Try another word, or clear the filters.', 'br.reset': 'Clear filters', 'br.save': 'Save {title}', 'br.count_one': '{n} listing', 'br.count_other': '{n} listings',
   // sample item titles for ticker
   'it.1': 'Mid-century oak sideboard', 'it.2': 'Velvet two-seater sofa', 'it.3': 'White ladder bookshelf', 'it.4': 'Vintage leather jacket, size M', 'it.5': 'Wool trench coat, size M', 'it.6': 'Leather ankle boots, size 39', 'it.7': '13-inch ultrabook, 16 GB RAM', 'it.8': '35 mm film camera with 50 mm lens', 'it.9': 'Turntable with built-in preamp', 'it.10': 'Noise-cancelling headphones', 'it.11': 'Box of 40 French paperbacks', 'it.12': 'Illustrated atlas of Paris, 1950s', 'it.13': '30 jazz LPs, mixed labels', 'it.14': 'Road bike, 54 cm frame',
+  // item details and photo gallery
+  'item.photos': 'Photos', 'item.photoOf': 'Photo {i} of {n}', 'item.prev': 'Previous photo', 'item.next': 'Next photo',
+  'item.moreInfo': 'More info', 'item.details': 'Details', 'item.where': 'Where', 'item.distance': 'Distance', 'item.seller': 'Seller',
+  'item.about': 'About this item', 'item.noDesc': 'The seller has not added a description.', 'item.saved': 'Saved',
+  'prefs.appearance': 'Appearance', 'prefs.theme.auto': 'Automatic', 'prefs.theme.light': 'Light', 'prefs.theme.dark': 'Dark', 'prefs.themeNote': 'Automatic follows your device. This is saved on this device.',
 }

@@ -4,7 +4,7 @@ import { useI18n } from './i18n.js'
 import { isBoosted, walkLabel } from './lib.js'
 import { Art, Icon } from './ui.jsx'
 
-function SwipeCard({ item, depth, me, onDecide, onSeller, ref }) {
+function SwipeCard({ item, depth, me, onDecide, onSeller, onOpen, ref }) {
   const { t, cat, cond, money } = useI18n()
   const el = useRef(null)
   const yesTag = useRef(null)
@@ -50,6 +50,11 @@ function SwipeCard({ item, depth, me, onDecide, onSeller, ref }) {
     const d = drag.current
     if (!d.on) return
     d.on = false
+    // a tap, not a drag: open the details
+    if (Math.abs(d.dx) < 6 && performance.now() - d.t0 < 600) {
+      onOpen(item)
+      return
+    }
     const v = Math.abs(d.dx) / Math.max(1, performance.now() - d.t0)
     if (Math.abs(d.dx) > 110 || (v > 0.6 && Math.abs(d.dx) > 40)) fling(d.dx > 0 ? 1 : -1)
     else {
@@ -104,7 +109,7 @@ function SwipeCard({ item, depth, me, onDecide, onSeller, ref }) {
       }}
       {...(top ? { onPointerDown: down, onPointerMove: move, onPointerUp: end, onPointerCancel: end } : {})}
     >
-      <Art item={item}>
+      <Art item={item} gallery swipe={false}>
         <span className="dist-badge">
           <Icon name="pin" size={14} />
           {walkLabel(me, item, t)}
@@ -132,12 +137,15 @@ function SwipeCard({ item, depth, me, onDecide, onSeller, ref }) {
           )}
         </div>
         <p className="desc">{item.d}</p>
+        <button type="button" className="linkbtn more" onPointerDown={e => e.stopPropagation()} onClick={() => onOpen(item)}>
+          {t('item.moreInfo')} ›
+        </button>
       </div>
     </article>
   )
 }
 
-export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kbActive, onDecide, onSeller, onUndo, onReset }) {
+export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kbActive, onDecide, onSeller, onOpen, onUndo, onReset }) {
   const { t } = useI18n()
   const topRef = useRef(null)
   const swipe = dir => topRef.current?.fling(dir)
@@ -178,7 +186,7 @@ export default function Discover({ deck, hasUnseen, passedCount, canUndo, me, kb
           .map((it, i) => ({ it, depth: i }))
           .reverse()
           .map(({ it, depth }) => (
-            <SwipeCard key={it.id} item={it} depth={depth} me={me} onDecide={onDecide} onSeller={onSeller} ref={depth === 0 ? topRef : undefined} />
+            <SwipeCard key={it.id} item={it} depth={depth} me={me} onDecide={onDecide} onSeller={onSeller} onOpen={o => onOpen(o.id)} ref={depth === 0 ? topRef : undefined} />
           ))}
       </div>
       <div className="actions">

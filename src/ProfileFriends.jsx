@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import * as api from './api.js'
 import { useI18n } from './i18n.js'
+import { areaName } from './areas.js'
 import { Avatar, EmptyCard } from './ui.jsx'
 
-const area = n => (n ? `Paris ${n}${n === 1 ? 'er' : 'e'}` : '')
+const area = n => areaName(n) || ''
 
 /** One person; the picture and name open their profile. */
 function Person({ p, action, onOpen }) {
