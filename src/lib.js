@@ -25,14 +25,16 @@ export function persist(data) {
 export const distOf = (me, it) => hav(me.lat, me.lon, it.lat, it.lon)
 export const itemById = id => ITEMS.find(i => i.id === id)
 
-/** Items for a tab + category chip, given the current position and saved/passed lists. */
-export function listFor(tab, cat, { me, saved, passed }) {
+/** Items for a tab + category chip, given the current position and saved/passed/reserved lists. */
+export function listFor(tab, cat, { me, saved, passed, reserved }) {
   const byDist = (a, b) => distOf(me, a) - distOf(me, b)
   const savedItems = saved.map(itemById).filter(Boolean)
-  const unseen = ITEMS.filter(i => !saved.includes(i.id) && !passed.includes(i.id))
+  // reserved items leave the store, but stay in the approved buyer's saved list and map
+  const onSale = ITEMS.filter(i => !i.reserved && !reserved.includes(i.id))
+  const unseen = onSale.filter(i => !saved.includes(i.id) && !passed.includes(i.id))
   const pool = tab === 'discover' ? unseen : savedItems
   if (cat === 'nearest') {
-    const base = tab === 'discover' ? ITEMS : savedItems
+    const base = tab === 'discover' ? onSale : savedItems
     const n = tab === 'discover' ? 8 : 6
     const ids = base.slice().sort(byDist).slice(0, n).map(i => i.id)
     return pool.filter(i => ids.includes(i.id)).sort(byDist)

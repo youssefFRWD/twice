@@ -23,6 +23,7 @@ function initState() {
     fresh: !seeded,
     saved: seeded ? d.saved || [] : backendEnabled ? [] : SEED_SAVED,
     passed: d?.passed || [],
+    reserved: d?.reserved || [],
     me: d?.me?.lat ? d.me : DEFAULT_ME,
     tab: TABS.some(t => t[0] === hash) ? hash : 'discover',
     firstRun: !seeded && !backendEnabled,
@@ -79,6 +80,7 @@ export default function App() {
   const [init] = useState(initState)
   const [saved, setSaved] = useState(init.saved)
   const [passed, setPassed] = useState(init.passed)
+  const [reserved, setReserved] = useState(init.reserved) // sample listings approved offline; real ones carry item.reserved
   const [me, setMeState] = useState(init.me)
   const [tab, setTabState] = useState(init.tab)
   const [cat, setCat] = useState({ discover: 'all', saved: 'all', map: 'all' })
@@ -102,6 +104,7 @@ export default function App() {
   const [, setItemsVersion] = useState(0)
   const uidRef = useRef(null)
   const histRef = useRef([])
+  const buyRef = useRef(null)
   const toastTimer = useRef(0)
   const cmdN = useRef(0)
   const firstRun = useRef(init.firstRun)
@@ -109,12 +112,13 @@ export default function App() {
   const uid = session?.user?.id ?? null
   const synced = !backendEnabled || (uid !== null && syncedUid === uid)
   const needsAuth = backendEnabled && authReady && !session
-  const data = { me, saved, passed }
+  const approvedForMe = convs.filter(c => c.buyer && c.request === 'approved').map(c => c.itemId)
+  const data = { me, saved, passed, reserved: [...reserved, ...approvedForMe] }
   const mapCmd = (type, extra) => setCmd({ n: ++cmdN.current, type, ...extra })
 
   useEffect(() => {
-    persist({ saved, passed, seeded: true, me, tab })
-  }, [saved, passed, me, tab])
+    persist({ saved, passed, reserved, seeded: true, me, tab })
+  }, [saved, passed, reserved, me, tab])
 
   useEffect(() => {
     try {
@@ -139,7 +143,8 @@ export default function App() {
   useEffect(() => {
     uidRef.current = uid
     histRef.current = hist
-  }, [uid, hist])
+    buyRef.current = buyId
+  }, [uid, hist, buyId])
 
   const sync = useCallback(
     fn => {
@@ -148,6 +153,30 @@ export default function App() {
     },
     [showToast],
   )
+
+  const reloadItems = useCallback(async () => {
+    if (!backendEnabled) return
+    try {
+      const rows = await api.fetchItems()
+      if (!rows.length) return
+      replaceItems(rows)
+      setItemsVersion(v => v + 1)
+      // reserved for someone else while checkout was open
+      if (buyRef.current !== null && !itemById(buyRef.current)) {
+        setBuyId(null)
+        showToast('This item is no longer available.')
+      }
+    } catch {
+      /* keep the last list; the next poll retries */
+    }
+  }, [showToast])
+
+  /* refetch now and then, so items reserved for someone else leave the store */
+  useEffect(() => {
+    if (!backendEnabled) return
+    const t = setInterval(reloadItems, 30000)
+    return () => clearInterval(t)
+  }, [reloadItems])
 
   useEffect(() => {
     if (!backendEnabled) return
@@ -159,7 +188,7 @@ export default function App() {
         setItemsVersion(v => v + 1)
       })
       .catch(() => {})
-  }, [])
+  }, [uid])
 
   useEffect(() => {
     if (!backendEnabled) return
@@ -225,9 +254,9 @@ export default function App() {
   useEffect(() => {
     if (!synced || !uid) return
     reloadConvs()
-    const t = setInterval(reloadConvs, tab === 'messages' ? 5000 : 15000)
+    const t = setInterval(reloadConvs, tab === 'messages' || buyId !== null ? 5000 : 15000)
     return () => clearInterval(t)
-  }, [synced, uid, tab, reloadConvs])
+  }, [synced, uid, tab, buyId, reloadConvs])
 
   const canMessage = it => !!uid && !!it.sid && it.sid !== uid
   const messageSeller = async it => {
@@ -243,6 +272,38 @@ export default function App() {
     }
   }
   const unread = convs.reduce((n, c) => n + c.unread, 0)
+
+  /* ---------- purchase approval ---------- */
+  const requestOf = it =>
+    it.sid ? (convs.find(c => c.buyer && c.itemId === it.id)?.request ?? null) : reserved.includes(it.id) ? 'approved' : null
+  const reserveSample = useCallback(it => setReserved(r => (r.includes(it.id) ? r : [...r, it.id])), [])
+  const askToBuy = async it => {
+    try {
+      await api.requestPurchase(uid, it)
+      await reloadConvs()
+    } catch {
+      showToast('Could not send your request. Try again.')
+    }
+  }
+  const updateRequest = async (convId, status, note) => {
+    try {
+      await api.updatePurchaseRequest(uid, convId, status, note)
+      await Promise.all([reloadConvs(), reloadItems()])
+    } catch {
+      showToast('Could not update the request. Try again.')
+    }
+  }
+  const cancelAsk = it => {
+    const c = convs.find(c => c.buyer && c.itemId === it.id)
+    if (c) return updateRequest(c.id, 'cancelled', "I've cancelled my purchase request.")
+  }
+  const decideAsk = (conv, approve) =>
+    updateRequest(
+      conv.id,
+      approve ? 'approved' : 'declined',
+      approve ? `Approved. You can pay for "${conv.itemTitle}" now.` : "Sorry, I can't approve this purchase.",
+    )
+  const openCheckout = id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))
 
   useEffect(() => {
     if (synced && uid && me.src !== 'default') sync(id => api.setHome(id, me))
@@ -396,6 +457,7 @@ export default function App() {
   }
 
   /* ---------- derived ---------- */
+  const buyItem = buyId !== null ? itemById(buyId) : null
   const counts = Object.fromEntries(CAT_ALL.map(c => [c.id, listFor(tab, c.id, data).length]))
   const discoverDeck = listFor('discover', cat.discover, data)
   const savedAll = listFor('saved', 'all', data)
@@ -478,7 +540,16 @@ export default function App() {
           </section>
           <section className={`view${tab === 'messages' ? ' on' : ''}`} id="v-messages" aria-label="Messages">
             {tab === 'messages' && (
-              <Messages uid={uid} backendOn={backendEnabled} convs={convs} openId={chatId} onOpen={setChatId} onChanged={reloadConvs} />
+              <Messages
+                uid={uid}
+                backendOn={backendEnabled}
+                convs={convs}
+                openId={chatId}
+                onOpen={setChatId}
+                onChanged={reloadConvs}
+                onDecide={decideAsk}
+                onBuy={openCheckout}
+              />
             )}
           </section>
         </main>
@@ -487,11 +558,16 @@ export default function App() {
 
       {landing && <Landing onStart={startApp} />}
       {needsAuth && <AuthScreen onSubmit={handleAuth} />}
-      {buyId !== null && (
+      {buyItem && (
         <Checkout
           key={buyId}
-          item={itemById(buyId)}
+          item={buyItem}
           me={me}
+          uid={uid}
+          approval={requestOf(buyItem)}
+          onSampleApproved={reserveSample}
+          onAsk={askToBuy}
+          onCancelAsk={cancelAsk}
           canMessage={canMessage}
           onMessage={it => {
             setBuyId(null)

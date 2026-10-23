@@ -11,7 +11,37 @@ function when(iso) {
   return d.toLocaleDateString([], { day: 'numeric', month: 'short' })
 }
 
-function Thread({ conv, uid, onBack, onChanged }) {
+/** Purchase request status at the top of a thread; the seller approves or declines from here. */
+function RequestBar({ conv, onDecide, onBuy }) {
+  const [busy, setBusy] = useState(false)
+  const { request: st, partner, buyer } = conv
+  if (!st) return null
+  const decide = async approve => {
+    setBusy(true)
+    await onDecide(conv, approve)
+    setBusy(false)
+  }
+  const text = buyer
+    ? { pending: `Waiting for ${partner} to approve your purchase.`, approved: `${partner} approved your purchase.`, declined: `${partner} declined your purchase request.`, cancelled: 'You cancelled your purchase request.' }
+    : { pending: `${partner} wants to buy this item.`, approved: `You approved the sale. ${partner} can pay now.`, declined: 'You declined this purchase request.', cancelled: `${partner} cancelled their purchase request.` }
+  return (
+    <div className={`th-req ${st}`} role="status">
+      <Icon name={st === 'approved' ? 'check' : 'bag'} size={18} />
+      <span>{text[st]}</span>
+      {!buyer && st === 'pending' && (
+        <span className="th-req-btns">
+          <button className="btn small" disabled={busy} onClick={() => decide(false)}>Decline</button>
+          <button className="btn small primary" disabled={busy} onClick={() => decide(true)}>Approve</button>
+        </span>
+      )}
+      {buyer && st === 'approved' && (
+        <button className="btn small primary" onClick={() => onBuy(conv.itemId)}>Pay now</button>
+      )}
+    </div>
+  )
+}
+
+function Thread({ conv, uid, onBack, onChanged, onDecide, onBuy }) {
   const [msgs, setMsgs] = useState([])
   const [text, setText] = useState('')
   const [error, setError] = useState('')
@@ -74,6 +104,7 @@ function Thread({ conv, uid, onBack, onChanged }) {
           <small>About: {conv.itemTitle}</small>
         </div>
       </header>
+      <RequestBar conv={conv} onDecide={onDecide} onBuy={onBuy} />
       <div className="th-body" aria-live="polite">
         {msgs.length === 0 && !error && <p className="note th-empty">No messages yet. Say hello and ask about the item.</p>}
         {msgs.map(m => (
@@ -100,7 +131,7 @@ function Thread({ conv, uid, onBack, onChanged }) {
   )
 }
 
-export default function Messages({ uid, backendOn, convs, openId, onOpen, onChanged }) {
+export default function Messages({ uid, backendOn, convs, openId, onOpen, onChanged, onDecide, onBuy }) {
   if (!backendOn || !uid) {
     return (
       <div className="empty">
@@ -139,7 +170,7 @@ export default function Messages({ uid, backendOn, convs, openId, onOpen, onChan
         ))}
       </div>
       {open ? (
-        <Thread key={open.id} conv={open} uid={uid} onBack={() => onOpen(null)} onChanged={onChanged} />
+        <Thread key={open.id} conv={open} uid={uid} onBack={() => onOpen(null)} onChanged={onChanged} onDecide={onDecide} onBuy={onBuy} />
       ) : (
         <div className="msg-thread th-none"><p className="note">Select a conversation to read it.</p></div>
       )}

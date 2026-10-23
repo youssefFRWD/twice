@@ -19,15 +19,16 @@ const rowToItem = r => ({
   lat: r.lat,
   lon: r.lon,
   d: r.description,
+  reserved: r.status === 'reserved',
 })
 
-/** Active listings, in the shape the UI uses. */
+/** Listings on sale, plus any reserved for this buyer (RLS hides the rest), in the shape the UI uses. */
 export async function fetchItems() {
   const rows = ok(
     await supabase
       .from('items')
-      .select('id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon')
-      .eq('status', 'active')
+      .select('id,seller_id,seller_name,category_id,title,description,price_cents,condition,address,lat,lon,status')
+      .in('status', ['active', 'reserved'])
       .order('id'),
   )
   return rows.map(rowToItem)
@@ -81,7 +82,7 @@ export async function fetchConversations(uid) {
   const rows = ok(
     await supabase
       .from('conversations')
-      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at)'),
+      .select('id,item_id,buyer_id,seller_id,created_at,items(title),messages(id,body,sender_id,created_at,read_at),purchase_requests(status)'),
   )
   const partnerOf = r => (r.buyer_id === uid ? r.seller_id : r.buyer_id)
   const ids = [...new Set(rows.map(partnerOf))]
@@ -91,9 +92,12 @@ export async function fetchConversations(uid) {
     .map(r => {
       const msgs = (r.messages || []).slice().sort(byTime)
       const last = msgs[msgs.length - 1]
+      const req = [].concat(r.purchase_requests ?? [])[0]
       return {
         id: r.id,
         itemId: r.item_id,
+        buyer: r.buyer_id === uid,
+        request: req?.status ?? null,
         itemTitle: r.items?.title || 'Listing no longer available',
         partner: names.get(partnerOf(r)) || 'Neighbour',
         last: last ? { body: last.body, mine: last.sender_id === uid } : null,
@@ -131,4 +135,23 @@ export async function startConversation(uid, item) {
   const found = ok(await supabase.from('conversations').select('id').eq('item_id', item.id).eq('buyer_id', uid).maybeSingle())
   if (found) return found.id
   return ok(await supabase.from('conversations').insert({ item_id: item.id, buyer_id: uid, seller_id: item.sid }).select('id').single()).id
+}
+
+/* ---------- purchase requests ---------- */
+
+/** Asks the seller to approve a purchase (or asks again after a decline). Returns the conversation id. */
+export async function requestPurchase(uid, item) {
+  const conversationId = await startConversation(uid, item)
+  const found = ok(await supabase.from('purchase_requests').select('status').eq('conversation_id', conversationId).maybeSingle())
+  if (found && (found.status === 'pending' || found.status === 'approved')) return conversationId
+  if (found) ok(await supabase.from('purchase_requests').update({ status: 'pending' }).eq('conversation_id', conversationId))
+  else ok(await supabase.from('purchase_requests').insert({ conversation_id: conversationId }))
+  await sendMessage(uid, conversationId, `I'd like to buy "${item.t}" for €${item.p}. Could you approve the purchase?`)
+  return conversationId
+}
+
+/** Seller approves/declines, or buyer cancels. The note is posted in the thread so the other person sees it. */
+export async function updatePurchaseRequest(uid, conversationId, status, note) {
+  ok(await supabase.from('purchase_requests').update({ status }).eq('conversation_id', conversationId))
+  if (note) await sendMessage(uid, conversationId, note)
 }
