@@ -400,7 +400,7 @@ button.brand{border:0;background:none;padding:0;color:inherit}
 .th-back{flex:none}
 .th-body{flex:1;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
 .th-empty{margin:auto;text-align:center}
-.bub{max-width:min(78%,420px);padding:9px 12px;border-radius:16px 16px 16px 4px;background:var(--surface-2);display:grid;gap:3px;align-self:flex-start;overflow-wrap:anywhere}
+.bub{max-width:min(78%,420px);padding:9px 12px;border-radius:16px 16px 16px 4px;background:var(--surface-2);display:grid;gap:3px;align-self:flex-start;overflow-wrap:break-word}
 .bub.mine{align-self:flex-end;background:var(--accent);color:var(--on-accent);border-radius:16px 16px 4px 16px}
 .bub span{font:400 15px/1.35 var(--font-body)}
 .bub time{font:500 10.5px var(--font-mono);opacity:.7;justify-self:end}
@@ -519,9 +519,9 @@ button.brand{border:0;background:none;padding:0;color:inherit}
 .tr-btn.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
 .th-trnote{text-align:center}
 /* bubbles: like + seen */
-.bub-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;align-self:flex-start;max-width:100%}
+.bub-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px;align-self:flex-start;max-width:min(85%,460px)}
 .bub-row.mine{align-self:flex-end;justify-content:flex-end}
-.bub-row .bub{align-self:auto;position:relative}
+.bub-row .bub{align-self:auto;position:relative;max-width:100%}
 .bub-orig{font:italic 400 12px var(--font-serif);opacity:.75}
 .bub-heart{position:absolute;right:-6px;bottom:-8px;display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--surface);color:var(--coral);border:1px solid var(--line)}
 .bub-heart svg{fill:currentColor}
