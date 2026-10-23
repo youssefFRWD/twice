@@ -339,6 +339,13 @@ export default function App() {
     }
   }
   const openCheckout = id => (itemById(id) ? setBuyId(id) : showToast('This listing is no longer available.'))
+  /* Buy buttons: once the seller has approved this buyer, go to checkout; until then, open the conversation with the seller */
+  const buy = id => {
+    const it = itemById(id)
+    if (!it) return showToast('This listing is no longer available.')
+    if (approvalOf(it) === 'approved') return setBuyId(id)
+    contactOwner(it)
+  }
 
   useEffect(() => {
     if (synced && uid && me.src !== 'default') sync(id => api.setHome(id, me))
@@ -578,7 +585,7 @@ export default function App() {
                 saved={saved}
                 onSave={it => decide(it, 1)}
                 onUnsave={unsave}
-                onBuy={setBuyId}
+                onBuy={buy}
                 onShowMap={showOnMap}
                 canMessage={canMessage}
                 onMessage={messageSeller}
@@ -588,7 +595,7 @@ export default function App() {
           </section>
           <section className={`view${tab === 'saved' ? ' on' : ''}`} id="v-saved" aria-label={t('tab.saved')}>
             {tab === 'saved' && (
-              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={setBuyId} onSeller={setSeller} />
+              <Saved list={savedList} total={savedAll.length} me={me} onGoto={setTab} onShowMap={showOnMap} onUnsave={unsave} canMessage={canMessage} onMessage={messageSeller} onBuy={buy} onSeller={setSeller} />
             )}
           </section>
           <section className={`view${tab === 'map' ? ' on' : ''}`} id="v-map" aria-label={t('tab.map')}>
@@ -617,7 +624,7 @@ export default function App() {
               cmd={cmd}
               canMessage={canMessage}
               onMessage={messageSeller}
-              onBuy={setBuyId}
+              onBuy={buy}
               onRadius={setRadius}
               onSelect={selectItem}
               onClose={clearSel}
@@ -658,7 +665,7 @@ export default function App() {
                 onToast={showToast}
                 onItemsChanged={reloadItems}
                 onShowMap={showOnMap}
-                onBuy={setBuyId}
+                onBuy={buy}
                 canMessage={canMessage}
                 onMessage={messageSeller}
               />
@@ -691,7 +698,7 @@ export default function App() {
           }}
           onBuy={id => {
             setSeller(null)
-            setBuyId(id)
+            buy(id)
           }}
           onClose={() => setSeller(null)}
         />
